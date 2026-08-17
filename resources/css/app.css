@@ -1,0 +1,518 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+/* ═══════════════════════════════════════════════════════════
+   palEducation — Design Tokens
+   المصدر: DESIGN.md  ·  الأساس: Mintlify DESIGN.md
+   ⚠️ لا تكتب قيمة hex في أي مكوّن — كلها من هنا
+   ═══════════════════════════════════════════════════════════ */
+
+@theme {
+    /* ── الخطوط ────────────────────────────────────────── */
+    --font-sans: 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+    --font-latin: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'Geist Mono', 'Cascadia Mono', Consolas, monospace;
+
+    /* ── العلامة ───────────────────────────────────────── */
+    --color-primary: #0a0a0a;
+    --color-on-primary: #ffffff;
+    --color-mint: #00d4a4;
+    --color-mint-deep: #1ba673;
+    --color-mint-soft: #7cebcb;
+    --color-orange: #f55a3c;
+    --color-orange-deep: #cc3a1f;
+
+    /* ── دلالية ────────────────────────────────────────── */
+    --color-tag: #3772cf;
+    --color-warn: #c37d0d;
+    --color-error: #d45656;
+
+    /* ── الأسطح ────────────────────────────────────────── */
+    /* أرضية الموقع كلها — أبيض مائل لبرودة النعناعي بدرجة خفيفة.
+       الأبيض الناصع #ffffff يُتعب العين في جلسة دراسة طويلة،
+       والحياد الرمادي يبدو غير مقصود. هذا محايد مُختار. */
+    --color-ground: #f5f8f7;
+    --color-canvas: #ffffff;
+    --color-canvas-dark: #0a0a0a;
+    --color-surface: #f7f7f7;
+    --color-surface-soft: #fafafa;
+    --color-surface-code: #1c1c1e;
+    --color-hairline: #e5e5e5;
+    --color-hairline-soft: #ededed;
+    --color-hairline-strong: #d4d4d4;
+    --color-hairline-dark: #1f1f1f;
+
+    /* ── النص ──────────────────────────────────────────── */
+    --color-ink: #0a0a0a;
+    --color-charcoal: #1c1c1e;
+    --color-slate: #3a3a3c;
+    --color-steel: #5a5a5c;
+    --color-stone: #888888;
+    --color-muted: #a8a8aa;
+    --color-on-dark: #ffffff;
+    --color-on-dark-muted: #b3b3b3;
+
+    /* ── نطاقات الهيرو الجوّية — التدرّج الوحيد المسموح ── */
+    --color-sky-from: #87a8c8;
+    --color-sky-to: #f5e9d8;
+    --color-deep-from: #1a3d4a;
+    --color-deep-to: #2d5a4f;
+
+    /* ── سلّم الطباعة — تباعد حرفي صفر دائماً ─────────── */
+    --text-hero: 56px;
+    --text-hero--line-height: 1.35;
+    --text-display: 44px;
+    --text-display--line-height: 1.35;
+    --text-h1: 36px;
+    --text-h1--line-height: 1.35;
+    --text-h2: 28px;
+    --text-h2--line-height: 1.4;
+    --text-h3: 24px;
+    --text-h3--line-height: 1.45;
+    --text-h4: 20px;
+    --text-h4--line-height: 1.5;
+    --text-h5: 18px;
+    --text-h5--line-height: 1.55;
+    --text-lead: 18px;
+    --text-lead--line-height: 1.8;
+    --text-body: 16px;
+    --text-body--line-height: 1.75;
+    --text-ui: 15px;
+    --text-ui--line-height: 1.7;
+    --text-caption: 14px;
+    --text-caption--line-height: 1.6;
+    --text-micro: 13px;
+    --text-micro--line-height: 1.5;
+
+    /* 🔴 إلغاء أدوات التباعد الحرفي من الجذر
+       المحارف العربية متصلة؛ أي tracking يفصلها فتصير الكلمة غير مقروءة.
+       بدل توثيق الفخّ في doctrine.md فقط — نجعل استخدامه مستحيلاً:
+       tracking-tight / tracking-wide لن تُولَّد أصلاً. */
+    --tracking-*: initial;
+
+    /* ── الأنصاف ───────────────────────────────────────── */
+    --radius-xs: 4px;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-xxl: 24px;
+
+    /* ── الارتفاع — ظل واحد فقط في النظام كله ─────────── */
+    --shadow-subtle: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+    --shadow-card: 0 4px 12px 0 rgb(0 0 0 / 0.08);
+    --shadow-mockup: 0 24px 48px -8px rgb(0 0 0 / 0.12);
+    --shadow-mint-glow: 0 8px 24px 0 rgb(0 212 164 / 0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   الأساسيات
+   ═══════════════════════════════════════════════════════════ */
+
+@layer base {
+    html {
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+        /* أرضية واحدة للموقع كله — لا لون خلفية لكل قسم */
+        background-color: var(--color-ground);
+        color: var(--color-charcoal);
+        font-family: var(--font-sans);
+        font-size: var(--text-body);
+        line-height: 1.75;
+        /* 🔴 غير قابل للتفاوض — التباعد الحرفي يكسر اتصال الحروف العربية */
+        letter-spacing: 0;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* كل عنوان: وزن أعلى، تباعد صفر */
+    h1, h2, h3, h4, h5, h6 {
+        color: var(--color-ink);
+        letter-spacing: 0;
+        text-wrap: balance;
+    }
+
+    /* الأرقام والنص اللاتيني — Inter دائماً، واتجاه LTR */
+    .num,
+    time,
+    [dir='ltr'] {
+        font-family: var(--font-latin);
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* حلقة تركيز مرئية على كل عنصر تفاعلي — لا outline:none أبداً */
+    :focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px rgb(0 212 164 / 0.30);
+        border-radius: var(--radius-sm);
+    }
+
+    ::selection {
+        background-color: var(--color-mint);
+        color: var(--color-primary);
+    }
+}
+
+@layer utilities {
+    /* عرض سطر القراءة — السطر الطويل يُفقد العين مكانها */
+    .measure {
+        max-width: 68ch;
+    }
+
+    /* مقطع لاتيني داخل جملة عربية */
+    .bidi {
+        unicode-bidi: isolate;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   الحركة — أداة وظيفية لا زينة
+   كل ما يلي يُعطَّل تلقائياً عند prefers-reduced-motion
+   ═══════════════════════════════════════════════════════════ */
+
+/* كشف عند التمرير — آمن بالفشل.
+   الإخفاء مشروط بـ .js-reveal التي يضيفها JS بنفسه.
+   لو تعطّل JS لأي سبب، الصنف لا يُضاف والمحتوى يظهر طبيعياً.
+   القاعدة: لا تُخفِ بالـCSS ما لا يستطيع الـCSS إظهاره. */
+.js-reveal .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+        opacity 600ms cubic-bezier(0.16, 1, 0.3, 1),
+        transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.js-reveal .reveal.is-in {
+    opacity: 1;
+    transform: none;
+}
+
+/* تدرّج زمني للعناصر المتتابعة */
+.js-reveal .reveal[data-delay='1'] { transition-delay: 80ms; }
+.js-reveal .reveal[data-delay='2'] { transition-delay: 160ms; }
+.js-reveal .reveal[data-delay='3'] { transition-delay: 240ms; }
+
+/* شريط منساب — يعمل في الاتجاهين */
+@keyframes marquee-flow {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+
+.marquee {
+    overflow: hidden;
+    mask-image: linear-gradient(
+        to right,
+        transparent,
+        #000 8%,
+        #000 92%,
+        transparent
+    );
+}
+
+.marquee__track {
+    display: flex;
+    width: max-content;
+    animation: marquee-flow 42s linear infinite;
+}
+
+.marquee:hover .marquee__track {
+    animation-play-state: paused;
+}
+
+/* تقدّم يملأ نفسه عند الظهور */
+.bar-fill {
+    width: 0;
+    transition: width 1100ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── السلايدر ──────────────────────────────────────────
+   الشرائح مكدّسة في خلية شبكة واحدة، فالحاوية تأخذ ارتفاع
+   أطولها ولا يقفز التخطيط عند التبديل.
+   الانتقال تلاشٍ لا انزلاق أفقي — يتفادى تعقيد الاتجاه في RTL. */
+.slider {
+    display: grid;
+}
+
+/* حزام أمان: أي سلايدر يحتوي شرائحه الدوّارة، حتى لو نُسي الصنف في الـBlade */
+[data-slider] {
+    overflow: hidden;
+}
+
+.slider__slide {
+    grid-area: 1 / 1;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.slider__slide.is-active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* الشريحة الخارجة تبقى مرئية حتى تنتهي حركة الخروج */
+.slider__slide.is-leaving {
+    opacity: 1;
+    visibility: visible;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* ── حركة الشرائح — منقولة حرفياً من animate.css ───────
+   القالب يستخدم rotateInDownLeft / rotateOutUpRight بسرعة 1000ms.
+   نسخنا الإطارات كما هي، ثم عكسنا الجهة في RTL: الشريحة الداخلة
+   تأتي من جهة البداية (يمين بالعربية) لا من اليسار. */
+
+@keyframes rotate-in-down {
+    0%   { transform-origin: left bottom;  transform: rotate(-45deg); opacity: 0; }
+    100% { transform-origin: left bottom;  transform: none;           opacity: 1; }
+}
+
+@keyframes rotate-out-up {
+    0%   { transform-origin: right bottom; opacity: 1; }
+    100% { transform-origin: right bottom; transform: rotate(90deg); opacity: 0; }
+}
+
+[dir='rtl'] .slider__slide {
+    --fold-in: rotate-in-down-rtl;
+    --fold-out: rotate-out-up-rtl;
+}
+
+@keyframes rotate-in-down-rtl {
+    0%   { transform-origin: right bottom; transform: rotate(45deg); opacity: 0; }
+    100% { transform-origin: right bottom; transform: none;          opacity: 1; }
+}
+
+@keyframes rotate-out-up-rtl {
+    0%   { transform-origin: left bottom; opacity: 1; }
+    100% { transform-origin: left bottom; transform: rotate(-90deg); opacity: 0; }
+}
+
+.slider__slide {
+    --fold-in: rotate-in-down;
+    --fold-out: rotate-out-up;
+}
+
+.slider__slide.is-entering {
+    animation: var(--fold-in) 1000ms both;
+}
+
+.slider__slide.is-leaving {
+    animation: var(--fold-out) 1000ms both;
+}
+
+/* أسهم مربّعة مكدّسة عمودياً عند حافّة البداية — كالقالب */
+.slider__nav {
+    position: absolute;
+    top: 50%;
+    inset-inline-start: 0;
+    transform: translateY(-50%);
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.slider__arrow {
+    display: grid;
+    place-items: center;
+    height: 45px;
+    width: 45px;
+    background-color: var(--color-mint);
+    color: var(--color-primary);
+    transition:
+        background-color 200ms ease,
+        color 200ms ease;
+}
+
+.slider__arrow:hover {
+    background-color: var(--color-primary);
+    color: var(--color-on-primary);
+}
+
+/* نسخة داكنة داخل الكاروسيل — كأسهم testimonial في القالب */
+.slider__nav--inset {
+    inset-inline-start: 1.5rem;
+    gap: 20px;
+}
+
+.slider__arrow--dark {
+    background-color: var(--color-deep-from);
+    color: var(--color-on-dark);
+}
+
+.slider__arrow--dark:hover {
+    background-color: var(--color-canvas);
+    color: var(--color-deep-from);
+}
+
+/* مؤشّر السحب */
+[data-slider] {
+    cursor: grab;
+    touch-action: pan-y;
+}
+
+[data-slider].is-grabbing {
+    cursor: grabbing;
+    user-select: none;
+}
+
+/* ── سلوك البطاقات الموحّد ────────────────────────────
+   بطاقة واحدة، تحويم واحد، في كل الموقع. */
+
+/* ── سلوك البطاقات الموحّد ────────────────────────────
+   بطاقة واحدة، تحويم واحد، في كل الموقع. */
+/* ── شارة القسم — خطّان يعبران النص ───────────────────
+   الامتداد خارج النص يُقلَّص على الشاشات الضيقة:
+   القيم الكاملة (40px/60px) تدفع الخط خارج الحاوية
+   فتُنتج تمريراً أفقياً على الجوال. */
+.rule-line--top    { inset-inline: 0 -1.25rem; }
+.rule-line--bottom { inset-inline: 0 -2rem; }
+
+@media (min-width: 640px) {
+    .rule-line--top    { inset-inline: 0 -2.5rem; }
+    .rule-line--bottom { inset-inline: 0 -3.75rem; }
+}
+
+/* ── نقاط السلايدر ────────────────────────────────────
+   الزر نفسه يحمل مساحة اللمس (44px)، والشريط المرئي بداخله.
+   توسيع الرقعة بـ ::after يجعل النقاط المتجاورة تتنازع النقر. */
+.slider__dot {
+    display: grid;
+    place-items: center;
+    height: 44px;
+    width: 32px;
+    background: none;
+}
+
+.slider__dot > span {
+    display: block;
+    height: 6px;
+    width: 6px;
+    border-radius: 9999px;
+    background-color: var(--color-hairline-strong);
+    transition:
+        width 320ms cubic-bezier(0.16, 1, 0.3, 1),
+        background-color 320ms ease;
+}
+
+.slider__dot[aria-selected='true'] > span {
+    width: 28px;
+    background-color: var(--color-mint-deep);
+}
+
+/* ── زر العودة لأعلى الصفحة ──────────────────────────── */
+.to-top {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition:
+        opacity 240ms ease,
+        transform 240ms cubic-bezier(0.16, 1, 0.3, 1),
+        visibility 0s linear 240ms;
+}
+
+.to-top.is-shown {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition-delay: 0s;
+}
+
+.card {
+    background-color: var(--color-canvas);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-xl);
+    transition:
+        transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-hover:hover {
+    transform: translateY(-4px);
+    border-color: var(--color-hairline-strong);
+    box-shadow: var(--shadow-card);
+}
+
+.card-hover:focus-within {
+    border-color: var(--color-mint);
+    box-shadow: var(--shadow-card);
+}
+
+/* ── بطاقة بأسلوب القالب — بلا حدود، الظل وحده يرفعها ──
+   .service-item في Charitize: سطح شفاف، مربّع أيقونة 65px،
+   عنوان، نص، ورابط بخط يمتد من تحته عند التحويم. */
+.tile {
+    background-color: var(--color-canvas);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 0 30px rgb(0 0 0 / 0.05);
+    transition:
+        box-shadow 500ms ease,
+        transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tile:hover {
+    box-shadow: 0 0 30px rgb(0 0 0 / 0.12);
+    transform: translateY(-4px);
+}
+
+/* مربّع الأيقونة — 65×65 كالقالب */
+.tile__icon {
+    display: grid;
+    place-items: center;
+    height: 65px;
+    width: 65px;
+    border-radius: var(--radius-md);
+    transition: background-color 300ms ease, color 300ms ease;
+}
+
+/* رابط بخط ينمو من جهة البداية */
+.tile__link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 3px;
+}
+
+.tile__link::after {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    bottom: 0;
+    height: 1.5px;
+    width: 0;
+    background-color: currentColor;
+    transition: width 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tile:hover .tile__link::after,
+.tile__link:hover::after,
+.tile__link:focus-visible::after {
+    width: 100%;
+}
+
+/* احترام تفضيل تقليل الحركة */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    /* المحتوى يظهر فوراً — الحركة تُلغى، لا المحتوى */
+    .js-reveal .reveal {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+
+    .marquee__track {
+        animation: none !important;
+        transform: none !important;
+    }
+}
