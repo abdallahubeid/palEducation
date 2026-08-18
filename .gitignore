@@ -25,3 +25,6 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# نسخة مولّدة من مجلد images بالجذر — المصدر هو /images
+/public/images

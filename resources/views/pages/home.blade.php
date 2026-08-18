@@ -1,24 +1,26 @@
 @php
     // بيانات عرض — تُستبدل باستعلامات عند بناء نماذج المجال
     $branches = [
-        ['key' => 'sci', 'icon' => 'beaker',    'subjects' => 8, 'teachers' => 12, 'tone' => 'mint'],
+        ['key' => 'sci', 'icon' => 'beaker',    'subjects' => 8, 'teachers' => 12, 'tone' => 'accent'],
         ['key' => 'lit', 'icon' => 'book',      'subjects' => 7, 'teachers' => 9,  'tone' => 'tag'],
-        ['key' => 'com', 'icon' => 'briefcase', 'subjects' => 6, 'teachers' => 7,  'tone' => 'orange'],
+        ['key' => 'com', 'icon' => 'briefcase', 'subjects' => 6, 'teachers' => 7,  'tone' => 'amber'],
         ['key' => 'ind', 'icon' => 'wrench',    'subjects' => 6, 'teachers' => 5,  'tone' => 'warn'],
     ];
 
     $features = [
-        ['icon' => 'clipboard', 'key' => 'f1', 'tone' => 'mint'],
+        ['icon' => 'clipboard', 'key' => 'f1', 'tone' => 'accent'],
         ['icon' => 'folder',    'key' => 'f2', 'tone' => 'tag'],
-        ['icon' => 'users',     'key' => 'f3', 'tone' => 'orange'],
+        ['icon' => 'users',     'key' => 'f3', 'tone' => 'amber'],
         ['icon' => 'compass',   'key' => 'f4', 'tone' => 'warn'],
     ];
 
     $teachers = [
-        ['initials' => 'س خ', 'name' => 'أ. سامر خليل', 'subject' => 'الرياضيات',     'branch' => 'علمي',  'lectures' => 42, 'students' => 610, 'tone' => 'mint'],
-        ['initials' => 'ر ع', 'name' => 'أ. رنا عوض',   'subject' => 'الفيزياء',      'branch' => 'علمي',  'lectures' => 36, 'students' => 480, 'tone' => 'mint'],
-        ['initials' => 'م س', 'name' => 'أ. مازن سالم', 'subject' => 'اللغة العربية', 'branch' => 'أدبي',  'lectures' => 38, 'students' => 520, 'tone' => 'tag'],
-        ['initials' => 'ه ن', 'name' => 'أ. هدى ناصر',  'subject' => 'المحاسبة',      'branch' => 'تجاري', 'lectures' => 29, 'students' => 340, 'tone' => 'orange'],
+        ['photo' => 'images/teachers/team-1.jpg', 'name' => 'أ. سامر خليل', 'subject' => 'الرياضيات',        'branch' => 'علمي',  'lectures' => 42, 'students' => 610, 'tone' => 'accent'],
+        ['photo' => 'images/teachers/team-2.jpg', 'name' => 'أ. رنا عوض',   'subject' => 'الفيزياء',         'branch' => 'علمي',  'lectures' => 36, 'students' => 480, 'tone' => 'accent'],
+        ['photo' => 'images/teachers/team-3.jpg', 'name' => 'أ. وليد حمد',  'subject' => 'الكيمياء',         'branch' => 'علمي',  'lectures' => 31, 'students' => 395, 'tone' => 'accent'],
+        ['photo' => 'images/teachers/team-4.jpg', 'name' => 'أ. مازن سالم', 'subject' => 'اللغة العربية',    'branch' => 'أدبي',  'lectures' => 38, 'students' => 520, 'tone' => 'tag'],
+        ['photo' => 'images/teachers/team-5.jpg', 'name' => 'أ. لينا فرح',  'subject' => 'اللغة الإنجليزية', 'branch' => 'أدبي',  'lectures' => 34, 'students' => 460, 'tone' => 'tag'],
+        ['photo' => 'images/teachers/team-6.jpg', 'name' => 'أ. هدى ناصر',  'subject' => 'المحاسبة',         'branch' => 'تجاري', 'lectures' => 29, 'students' => 340, 'tone' => 'amber'],
     ];
 
     $stats = [
@@ -29,9 +31,9 @@
     ];
 
     $slides = [
-        ['n' => 1, 'tone' => 'mint'],
-        ['n' => 2, 'tone' => 'tag'],
-        ['n' => 3, 'tone' => 'orange'],
+        ['n' => 1, 'tone' => 'accent',   'img' => 'images/hero/slide-1-focus.jpg'],
+        ['n' => 2, 'tone' => 'tag',    'img' => 'images/hero/slide-2-quiz.jpg'],
+        ['n' => 3, 'tone' => 'amber', 'img' => 'images/hero/slide-3-library.jpg'],
     ];
 @endphp
 
@@ -40,7 +42,7 @@
     {{-- ═══════════════════════════════════════════════════════
          ١ · الهيرو — سلايدر: نص + خانة صورة
          ═══════════════════════════════════════════════════════ --}}
-    <section class="pt-14 pb-20 lg:pt-20 lg:pb-24"
+    <section class="hero-canvas pt-14 pb-24 lg:pt-20 lg:pb-28"
              aria-roledescription="carousel"
              aria-label="{{ __('home.hero_slider_label') }}">
         <div class="mx-auto max-w-[1280px] px-6">
@@ -63,7 +65,7 @@
 
                                     <h1 class="mt-6 text-h1 font-bold sm:text-display lg:text-hero">
                                         <span class="block text-ink">{{ __('home.slide_' . $slide['n'] . '_line_1') }}</span>
-                                        <span class="block text-mint-deep">{{ __('home.slide_' . $slide['n'] . '_line_2') }}</span>
+                                        <span class="block text-accent-deep">{{ __('home.slide_' . $slide['n'] . '_line_2') }}</span>
                                     </h1>
 
                                     <p class="mt-6 max-w-xl text-lead text-steel">
@@ -85,6 +87,7 @@
                                 {{-- خانة الصورة — تنطوي كصفحة عند التبديل --}}
                                 <x-ui.media-slot
                                     class="slider__media"
+                                    :src="asset($slide['img'])"
                                     :alt="__('home.slide_' . $slide['n'] . '_alt')"
                                     :tone="$slide['tone']"
                                     ratio="4/3" />
@@ -124,6 +127,27 @@
         </div>
     </section>
 
+    {{-- ═══════════════════════════════════════════════════════
+         · بانر التجربة المجانية — أول ما يراه الزائر بعد الهيرو
+         ═══════════════════════════════════════════════════════ --}}
+    <section class="pb-20 lg:pb-24">
+        <div class="mx-auto max-w-[1280px] px-6">
+            <div class="reveal flex flex-col items-center justify-between gap-6 rounded-xl
+                        bg-amber px-8 py-10 text-center lg:flex-row lg:px-14 lg:text-start">
+
+                <div>
+                    <h2 class="text-h2 font-bold text-ink">{{ __('home.banner_title') }}</h2>
+                    <p class="mt-2 text-body text-ink/80">{{ __('home.banner_lede') }}</p>
+                </div>
+
+                <x-ui.button variant="on-dark" size="lg" href="#" class="shrink-0">
+                    {{ __('home.banner_cta') }}
+                    <x-icon name="arrow" class="size-4 rtl:-scale-x-100" />
+                </x-ui.button>
+            </div>
+        </div>
+    </section>
+
 
     {{-- ═══════════════════════════════════════════════════════
          ٢ · كيف تعمل المنصة — تسلسل حقيقي، فالترقيم له معنى
@@ -149,7 +173,7 @@
                 @foreach ([1, 2, 3] as $i)
                     <li class="reveal relative flex flex-col items-center text-center" data-delay="{{ $i - 1 }}">
                         <span class="num relative z-10 grid size-16 place-items-center rounded-full
-                                     border border-hairline bg-canvas text-h4 font-bold text-mint-deep">
+                                     border border-hairline bg-canvas text-h4 font-bold text-accent-deep">
                             0{{ $i }}
                         </span>
 
@@ -173,8 +197,9 @@
                 <div class="reveal relative">
                     <x-ui.media-slot
                         class="rounded-xl"
+                        :src="asset('images/about/classroom.jpg')"
                         :alt="__('home.about_image_alt')"
-                        tone="mint"
+                        tone="accent"
                         ratio="4/3" />
 
                     <span class="pointer-events-none absolute start-0 top-0 h-[90px] w-1/3 bg-ground"
@@ -200,7 +225,7 @@
                             <ul class="mt-4 flex flex-col gap-2.5">
                                 @foreach (['about_check_1', 'about_check_2', 'about_check_3'] as $check)
                                     <li class="flex items-start gap-2.5 text-ui text-slate">
-                                        <x-icon name="check" class="mt-1 size-4 shrink-0 text-mint-deep" />
+                                        <x-icon name="check" class="mt-1 size-4 shrink-0 text-accent-deep" />
                                         {{ __('home.' . $check) }}
                                     </li>
                                 @endforeach
@@ -212,7 +237,7 @@
                                     bg-linear-to-bl from-deep-from to-deep-to p-7 text-center">
                             <p class="text-ui text-on-dark/85">{{ __('home.about_cta_body') }}</p>
 
-                            <x-ui.button variant="mint" size="md" href="#">
+                            <x-ui.button variant="accent" size="md" href="#">
                                 {{ __('home.about_cta_btn') }}
                             </x-ui.button>
                         </div>
@@ -240,7 +265,7 @@
                     <ul class="mt-7 flex flex-col gap-3.5">
                         @foreach (['stats_check_1', 'stats_check_2', 'stats_check_3'] as $check)
                             <li class="flex items-start gap-3 text-ui text-slate">
-                                <x-icon name="check" class="mt-1 size-4 shrink-0 text-mint-deep" />
+                                <x-icon name="check" class="mt-1 size-4 shrink-0 text-accent-deep" />
                                 {{ __('home.' . $check) }}
                             </li>
                         @endforeach
@@ -252,26 +277,28 @@
                     </div>
                 </div>
 
-                {{-- شبكة المربّعات — تناوب داكن، والنعناعي يبقى إشارة على الأرقام --}}
+                {{-- شبكة المربّعات — لونا العلامة متبادلان كالقالب الأول --}}
                 <div class="reveal order-2 grid grid-cols-2 overflow-hidden rounded-xl" data-delay="1">
                     @foreach ($stats as $i => $stat)
                         @php
-                            // رقعة شطرنج: 0 و3 تركوازي عميق · 1 و2 أسود
-                            $dark = in_array($i, [1, 2]);
+                            // رقعة شطرنج بلونَي العلامة — كالقالب الأول
+                            // البنفسجي يحمل نصاً أبيض، والكهرماني نصاً كحلياً:
+                            // الأبيض على #f0a500 يعطي 2.07:1 فقط — راسب.
+                            $amber = in_array($i, [1, 2]);
                         @endphp
                         {{-- المقاسات منقولة من القالب: py-5 = 48px · display-5 = 48px · fa-3x ≈ 48px --}}
                         <div @class([
                             'flex flex-col items-center justify-center gap-3 px-6 py-12 text-center',
-                            'bg-deep-from' => ! $dark,
-                            'bg-primary'   => $dark,
+                            'bg-amber text-ink' => $amber,
+                            'bg-accent text-on-primary' => ! $amber,
                         ])>
-                            <x-icon :name="$stat['icon']" class="size-12 text-mint" />
+                            <x-icon :name="$stat['icon']" class="size-12 opacity-90" />
 
-                            <p class="num text-[48px] font-bold leading-none text-on-dark">
-                                <span data-count="{{ $stat['n'] }}">0</span><span class="text-mint">+</span>
+                            <p class="num text-[48px] font-bold leading-none">
+                                <span data-count="{{ $stat['n'] }}">0</span><span class="opacity-70">+</span>
                             </p>
 
-                            <p class="text-caption text-on-dark/70">{{ $stat['l'] }}</p>
+                            <p class="text-caption opacity-80">{{ $stat['l'] }}</p>
                         </div>
                     @endforeach
                 </div>
@@ -331,9 +358,9 @@
                             data-demo-open
                             class="group relative grid aspect-video w-full cursor-pointer place-items-center
                                    overflow-hidden rounded-lg bg-canvas-dark/60 ring-1 ring-on-dark/10
-                                   transition hover:ring-mint/50">
+                                   transition hover:ring-accent/50">
 
-                        <span class="grid size-18 place-items-center rounded-full bg-mint text-primary
+                        <span class="grid size-18 place-items-center rounded-full bg-accent text-on-primary
                                      transition duration-300 group-hover:scale-110">
                             <x-icon name="play" class="size-7" />
                         </span>
@@ -389,9 +416,9 @@
                     <article class="reveal tile group p-6" data-delay="{{ $i % 4 }}">
                         <span @class([
                             'tile__icon',
-                            'bg-mint/14 text-mint-deep group-hover:bg-mint group-hover:text-primary'          => $feature['tone'] === 'mint',
+                            'bg-accent/14 text-accent-deep group-hover:bg-accent group-hover:text-on-primary'          => $feature['tone'] === 'accent',
                             'bg-tag/12 text-tag group-hover:bg-tag group-hover:text-on-dark'                  => $feature['tone'] === 'tag',
-                            'bg-orange/12 text-orange-deep group-hover:bg-orange group-hover:text-on-dark'    => $feature['tone'] === 'orange',
+                            'bg-amber/12 text-amber-deep group-hover:bg-amber group-hover:text-ink'    => $feature['tone'] === 'amber',
                             'bg-warn/14 text-warn group-hover:bg-warn group-hover:text-on-dark'               => $feature['tone'] === 'warn',
                         ])>
                             <x-icon :name="$feature['icon']" class="size-6" />
@@ -468,26 +495,6 @@
     </section>
 
 
-    {{-- ═══════════════════════════════════════════════════════
-         · بانر أوسط — كسر إيقاع بين قسمين طويلين
-         ═══════════════════════════════════════════════════════ --}}
-    <section class="pb-20 lg:pb-24">
-        <div class="mx-auto max-w-[1280px] px-6">
-            <div class="reveal flex flex-col items-center justify-between gap-6 rounded-xl
-                        bg-orange px-8 py-10 text-center lg:flex-row lg:px-14 lg:text-start">
-
-                <div>
-                    <h2 class="text-h2 font-bold text-on-dark">{{ __('home.banner_title') }}</h2>
-                    <p class="mt-2 text-body text-on-dark/85">{{ __('home.banner_lede') }}</p>
-                </div>
-
-                <x-ui.button variant="on-dark" size="lg" href="#" class="shrink-0">
-                    {{ __('home.banner_cta') }}
-                    <x-icon name="arrow" class="size-4 rtl:-scale-x-100" />
-                </x-ui.button>
-            </div>
-        </div>
-    </section>
 
 
     {{-- ═══════════════════════════════════════════════════════
@@ -512,7 +519,7 @@
                 @foreach ($teachers as $i => $teacher)
                     <div class="reveal" data-delay="{{ $i }}">
                         <x-domain.teacher-card
-                            :initials="$teacher['initials']"
+                            :photo="asset($teacher['photo'])"
                             :name="$teacher['name']"
                             :subject="$teacher['subject']"
                             :branch="$teacher['branch']"
@@ -558,12 +565,13 @@
 
                                         {{-- الصورة مع كتلة لونية خلفها كالقالب --}}
                                         <div class="relative ps-10 pt-8">
-                                            <span class="absolute inset-s-0 top-0 h-full w-[calc(50%+2.5rem)] rounded-lg bg-mint/18"
+                                            <span class="absolute inset-s-0 top-0 h-full w-[calc(50%+2.5rem)] rounded-lg bg-accent/18"
                                                   aria-hidden="true"></span>
                                             <x-ui.media-slot
                                                 class="relative rounded-lg"
+                                                :src="asset('images/voices/student-' . $i . '.jpg')"
                                                 :alt="__('home.voice_' . $i . '_name')"
-                                                tone="mint"
+                                                tone="accent"
                                                 ratio="1/1" />
                                         </div>
 
@@ -571,7 +579,7 @@
                                         <div class="ps-12 md:ps-0">
                                             <div class="flex gap-1" aria-label="{{ __('home.rating_full') }}">
                                                 @for ($s = 0; $s < 5; $s++)
-                                                    <svg class="size-4 text-mint" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                                    <svg class="size-4 text-accent" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                                         <path d="m12 2 3 6.5 7 .9-5 4.9 1.2 7L12 18l-6.2 3.3L7 14.3l-5-4.9 7-.9z"/>
                                                     </svg>
                                                 @endfor
@@ -582,7 +590,7 @@
                                             </blockquote>
 
                                             <div class="mt-6 flex items-center gap-4">
-                                                <span class="grid size-12 shrink-0 place-items-center rounded-md bg-surface text-mint-deep">
+                                                <span class="grid size-12 shrink-0 place-items-center rounded-md bg-surface text-accent-deep">
                                                     <svg class="size-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                                         <path d="M10 7H6a3 3 0 0 0-3 3v7h7v-7H6a1 1 0 0 1 1-1h3zm11 0h-4a3 3 0 0 0-3 3v7h7v-7h-4a1 1 0 0 1 1-1h3z"/>
                                                     </svg>
@@ -640,7 +648,7 @@
                 <div class="flex flex-col gap-3">
                     @foreach ([1, 2, 3, 4, 5, 6] as $i)
                         <div class="reveal" data-delay="{{ min($i - 1, 3) }}">
-                            <x-ui.accordion-item :question="__('home.faq_' . $i . '_q')" :open="$i === 1">
+                            <x-ui.accordion-item group="faq" :question="__('home.faq_' . $i . '_q')" :open="$i === 1">
                                 {{ __('home.faq_' . $i . '_a') }}
                             </x-ui.accordion-item>
                         </div>
@@ -656,20 +664,20 @@
          ═══════════════════════════════════════════════════════ --}}
     <section class="pb-20 lg:pb-24">
         <div class="mx-auto max-w-[1280px] px-6">
-            <div class="reveal overflow-hidden rounded-xl bg-linear-to-bl from-deep-from to-deep-to
+            <div class="hero-canvas reveal overflow-hidden rounded-xl
                         px-8 py-16 text-center lg:px-16 lg:py-20">
 
-                <h2 class="text-h1 font-bold text-on-dark">{{ __('home.cta_title') }}</h2>
-                <p class="mx-auto mt-4 max-w-xl text-lead text-on-dark/75">{{ __('home.cta_lede') }}</p>
+                <h2 class="text-h1 font-bold text-ink">{{ __('home.cta_title') }}</h2>
+                <p class="mx-auto mt-4 max-w-xl text-lead text-steel">{{ __('home.cta_lede') }}</p>
 
                 <div class="mt-9 flex justify-center">
-                    <x-ui.button variant="mint" size="lg" href="#">
+                    <x-ui.button variant="primary" size="lg" href="#">
                         {{ __('home.cta_btn') }}
                         <x-icon name="arrow" class="size-4 rtl:-scale-x-100" />
                     </x-ui.button>
                 </div>
 
-                <p class="mt-5 text-caption text-on-dark/55">{{ __('home.cta_note') }}</p>
+                <p class="mt-5 text-caption text-stone">{{ __('home.cta_note') }}</p>
             </div>
         </div>
     </section>

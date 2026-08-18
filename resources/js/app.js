@@ -262,8 +262,19 @@ function initToTop() {
     const btn = document.querySelector('[data-to-top]');
     if (!btn) return;
 
+    // العتبة تُحسب من ارتفاع الهيرو لا برقم ثابت:
+    // الزر لا يظهر إلا بعد تجاوز الهيرو فعلياً مهما تغيّر ارتفاعه.
+    const hero = document.querySelector('.hero-canvas');
+    let threshold = 600;
+
+    const measure = () => {
+        threshold = hero
+            ? hero.offsetTop + hero.offsetHeight - 120
+            : 600;
+    };
+
     const toggle = () => {
-        btn.classList.toggle('is-shown', window.scrollY > 600);
+        btn.classList.toggle('is-shown', window.scrollY > threshold);
     };
 
     btn.addEventListener('click', () => {
@@ -271,6 +282,9 @@ function initToTop() {
     });
 
     window.addEventListener('scroll', toggle, { passive: true });
+    window.addEventListener('resize', () => { measure(); toggle(); }, { passive: true });
+
+    measure();
     toggle();
 }
 
@@ -315,4 +329,22 @@ document.addEventListener('DOMContentLoaded', () => {
     initSliders();
     initToTop();
     initDemoModal();
+    initAccordionFallback();
 });
+
+/* ── الأكورديون الحصري ────────────────────────────────
+   خاصية details[name] الأصلية تتكفّل بالحصرية في المتصفحات
+   الحديثة. هذا احتياط للقديمة التي لا تدعمها. */
+function initAccordionFallback() {
+    if ("name" in document.createElement("details")) return;
+
+    document.querySelectorAll("details[name]").forEach((d) => {
+        d.addEventListener("toggle", () => {
+            if (!d.open) return;
+            const g = d.getAttribute("name");
+            document.querySelectorAll(`details[name="${g}"]`).forEach((o) => {
+                if (o !== d) o.open = false;
+            });
+        });
+    });
+}

@@ -2,17 +2,17 @@
     'src'   => null,      // مسار الصورة الحقيقية عند توفّرها
     'alt'   => '',
     'ratio' => '4/3',
-    'tone'  => 'mint',    // mint | tag | orange | warn
+    'tone'  => 'accent',    // accent | tag | amber | warn
 ])
 
 @php
     $tones = [
-        'mint'   => 'from-mint/16 to-mint/4 text-mint-deep',
+        'accent'   => 'from-accent/16 to-accent/4 text-accent-deep',
         'tag'    => 'from-tag/14 to-tag/4 text-tag',
-        'orange' => 'from-orange/14 to-orange/4 text-orange-deep',
+        'amber' => 'from-amber/14 to-amber/4 text-amber-deep',
         'warn'   => 'from-warn/16 to-warn/4 text-warn',
     ];
-    $t = $tones[$tone] ?? $tones['mint'];
+    $t = $tones[$tone] ?? $tones['accent'];
 @endphp
 
 <div {{ $attributes->merge([

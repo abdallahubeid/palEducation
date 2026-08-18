@@ -26,9 +26,9 @@
     <button type="button"
             data-to-top
             aria-label="{{ __('common.back_to_top') }}"
-            class="to-top fixed bottom-7 end-7 z-40 grid size-13 place-items-center rounded-lg
-                   bg-mint text-primary shadow-card transition
-                   hover:bg-primary hover:text-mint">
+            class="to-top fixed bottom-24 end-6 z-40 lg:bottom-28 lg:end-8 grid size-13 place-items-center rounded-lg
+                   bg-accent text-on-primary shadow-card transition
+                   hover:bg-amber hover:text-ink">
         <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 19V5M5 12l7-7 7 7"/>

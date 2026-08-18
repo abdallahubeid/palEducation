@@ -10,11 +10,11 @@
 
 <div @class([
     'tile relative flex h-full flex-col p-8',
-    'ring-2 ring-mint shadow-mint-glow' => $featured,
+    'ring-2 ring-accent shadow-accent-glow' => $featured,
 ])>
 
     @if ($featured)
-        <span class="absolute -top-3 inline-flex items-center rounded-full bg-mint
+        <span class="absolute -top-3 inline-flex items-center rounded-full bg-accent
                      px-3 py-1 text-micro font-semibold text-primary">
             {{ __('home.plan_popular') }}
         </span>
@@ -31,7 +31,7 @@
     <ul class="mt-7 flex flex-1 flex-col gap-3">
         @foreach ($features as $feature)
             <li class="flex items-start gap-2.5 text-ui text-slate">
-                <x-icon name="check" class="mt-1 size-4 text-mint-deep" />
+                <x-icon name="check" class="mt-1 size-4 text-accent-deep" />
                 <span>{{ $feature }}</span>
             </li>
         @endforeach

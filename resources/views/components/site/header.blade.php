@@ -23,7 +23,7 @@
             <a href="{{ route('home') }}"
                class="flex shrink-0 items-center gap-2.5 py-1 text-h5 font-bold text-ink transition hover:opacity-75">
                 <span class="grid size-9 place-items-center rounded-lg bg-primary text-ui font-bold text-on-primary">p</span>
-                <span class="hidden sm:inline">pal <span class="text-mint-deep">education</span></span>
+                <span class="hidden sm:inline">pal <span class="text-accent-deep">education</span></span>
             </a>
 
             {{-- الروابط — وسط الشريط --}}
@@ -39,7 +39,7 @@
                            ])>
                             {{ $link['label'] }}
                             @if ($active)
-                                <span class="absolute inset-x-3.5 -bottom-px h-0.5 rounded-full bg-mint"></span>
+                                <span class="absolute inset-x-3.5 -bottom-px h-0.5 rounded-full bg-accent"></span>
                             @endif
                         </a>
                     </li>

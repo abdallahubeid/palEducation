@@ -1,185 +1,76 @@
 ---
-version: 1.0
+version: 2.1
 name: palEducation-design-system
-base: Mintlify DESIGN.md — Arabic-adapted
-description: "هوية بصرية لمنصة توجيهي فلسطينية، مبنية على نظام Mintlify بالكامل: أسود #0a0a0a كلون أساسي مسيطر على الأزرار الحبّية، أخضر نعناعي #00d4a4 كتمييز نادر محجوز لإشارات التقدّم والصواب، وبرتقالي #f55a3c لكسر الإيقاع في اللحظات العاطفية. أسطح مسطّحة بحدود شعرة 1px، بلا تدرّجات إلا في نطاقات الهيرو الجوّية. نظام طباعة ثلاثي النصوص: وجه عربي للعربية، Inter للاتيني والأرقام، Geist Mono للمعادلات والكود — بتباعد حرفي مصفّر بالكامل وارتفاعات سطور مرفوعة لتناسب المحارف العربية المتصلة."
+status: ADOPTED — implemented and verified in code
+description: "Design system for a Palestinian Tawjihi (high-school exit exam) study platform. Indigo-purple #525fe1 carries every action (buttons, links); amber #f0a500 is the sole secondary color, reserved for specific moments; both sit on one background, #f5f8f7, never stark white. Headings run in navy #0b104a. The system is bidirectional by design (Arabic RTL primary, English LTR secondary), with letter-spacing hard-zeroed and line-heights raised to suit connected Arabic glyphs. Every color/text pairing in this file is measured and confirmed to clear WCAG AA."
 
-# ═══════════════════════════════════════════════
-# ALL COLORS INHERITED FROM MINTLIFY — UNCHANGED
-# ═══════════════════════════════════════════════
+# ═══════════════════════════════════════════════════
+# Source of truth: resources/css/app.css → @theme
+# Any change here must be mirrored there, and vice versa.
+# ═══════════════════════════════════════════════════
+
 colors:
-  # ── Primary / Brand ──
-  primary: "#0a0a0a"
-  on-primary: "#ffffff"
-  brand-green: "#00d4a4"
-  brand-green-deep: "#00b48a"
-  brand-green-soft: "#7cebcb"
-  brand-tag: "#3772cf"
-  brand-warn: "#c37d0d"
-  brand-annotate: "#1ba673"
-  brand-error: "#d45656"
-  accent-orange: "#f55a3c"
-  accent-orange-deep: "#cc3a1f"
+  # ── Action & brand ──
+  accent: "#525fe1"
+  accent-deep: "#3f4ab8"
+  accent-soft: "#ecedff"
+  accent-on-dark: "#bcc2f8"
 
-  # ── Atmospheric hero bands ──
-  hero-sky-from: "#87a8c8"
-  hero-sky-to: "#f5e9d8"
-  hero-dark-from: "#1a3d4a"
-  hero-dark-to: "#2d5a4f"
+  # ── Secondary color ──
+  amber: "#f0a500"
+  amber-deep: "#9c6205"
 
   # ── Surfaces ──
+  ground: "#f5f8f7"
   canvas: "#ffffff"
-  canvas-dark: "#0a0a0a"
+  canvas-dark: "#0b104a"
   surface: "#f7f7f7"
   surface-soft: "#fafafa"
   surface-code: "#1c1c1e"
+  deep-from: "#242e83"
+  deep-to: "#3945a3"
+  sky-from: "#c7cbf5"
+  sky-to: "#eef0fb"
+
+  # ── Borders ──
   hairline: "#e5e5e5"
   hairline-soft: "#ededed"
+  hairline-strong: "#d4d4d4"
   hairline-dark: "#1f1f1f"
 
   # ── Text ──
-  ink: "#0a0a0a"
-  charcoal: "#1c1c1e"
-  slate: "#3a3a3c"
-  steel: "#5a5a5c"
-  stone: "#888888"
-  muted: "#a8a8aa"
+  primary: "#0b104a"
+  on-primary: "#ffffff"
+  ink: "#0b104a"
+  charcoal: "#1a2d62"
+  slate: "#3d4a6b"
+  steel: "#4a5355"
+  stone: "#666e7c"
+  muted: "#a3aab5"
   on-dark: "#ffffff"
   on-dark-muted: "#b3b3b3"
 
-  # ── Dark mode (مشتقّ — Mintlify لم ينشر وضعاً داكناً) ──
-  dark-canvas: "#0a0a0a"
-  dark-surface: "#141416"
-  dark-surface-2: "#1c1c1e"
-  dark-hairline: "#1f1f1f"
-  dark-hairline-strong: "#2a2a2c"
+  # ── Feedback / status ──
+  tag: "#3772cf"
+  warn: "#c37d0d"
+  error: "#d45656"
 
-# ═══════════════════════════════════════════════
-# TYPOGRAPHY — tri-script, Arabic-safe
-# letterSpacing: 0 everywhere (Mintlify's negative
-# tracking breaks Arabic letter connection)
-# ═══════════════════════════════════════════════
 typography:
-  hero-display:
-    fontFamily: IBM Plex Sans Arabic
-    fontSize: 56px
-    fontWeight: 700
-    lineHeight: 1.35
-    letterSpacing: 0
-  display-lg:
-    fontFamily: IBM Plex Sans Arabic
-    fontSize: 44px
-    fontWeight: 700
-    lineHeight: 1.35
-    letterSpacing: 0
-  heading-1:
-    fontFamily: IBM Plex Sans Arabic
-    fontSize: 36px
-    fontWeight: 700
-    lineHeight: 1.35
-    letterSpacing: 0
-  heading-2:
-    fontFamily: IBM Plex Sans Arabic
-    fontSize: 28px
-    fontWeight: 600
-    lineHeight: 1.40
-    letterSpacing: 0
-  heading-3:
-    fontFamily: IBM Plex Sans Arabic
-    fontSize: 24px
-    fontWeight: 600
-    lineHeight: 1.45
-    letterSpacing: 0
-  heading-4:
-    fontFamily: IBM Plex Sans Arabic
-    fontSize: 20px
-    fontWeight: 600
-    lineHeight: 1.50
-    letterSpacing: 0
-  heading-5:
-    fontFamily: IBM Plex Sans Arabic
-    fontSize: 18px
-    fontWeight: 600
-    lineHeight: 1.55
-    letterSpacing: 0
-  subtitle:
-    fontFamily: IBM Plex Sans Arabic
-    fontSize: 18px
-    fontWeight: 400
-    lineHeight: 1.80
-    letterSpacing: 0
-  body-lg:
-    fontFamily: IBM Plex Sans Arabic
-    fontSize: 18px
-    fontWeight: 400
-    lineHeight: 1.80
-    letterSpacing: 0
-  body-md:
-    fontFamily: IBM Plex Sans Arabic
-    fontSize: 16px
-    fontWeight: 400
-    lineHeight: 1.75
-    letterSpacing: 0
-  body-md-medium:
-    fontFamily: IBM Plex Sans Arabic
-    fontSize: 16px
-    fontWeight: 500
-    lineHeight: 1.75
-    letterSpacing: 0
-  body-sm:
-    fontFamily: IBM Plex Sans Arabic
-    fontSize: 15px
-    fontWeight: 400
-    lineHeight: 1.70
-    letterSpacing: 0
-  body-sm-medium:
-    fontFamily: IBM Plex Sans Arabic
-    fontSize: 15px
-    fontWeight: 500
-    lineHeight: 1.70
-    letterSpacing: 0
-  caption:
-    fontFamily: IBM Plex Sans Arabic
-    fontSize: 14px
-    fontWeight: 400
-    lineHeight: 1.60
-    letterSpacing: 0
-  micro-label:
-    fontFamily: IBM Plex Sans Arabic
-    fontSize: 13px
-    fontWeight: 600
-    lineHeight: 1.50
-    letterSpacing: 0
-    textTransform: none
-  button-md:
-    fontFamily: IBM Plex Sans Arabic
-    fontSize: 15px
-    fontWeight: 600
-    lineHeight: 1.30
-    letterSpacing: 0
-  numeric:
-    fontFamily: Inter
-    fontVariantNumeric: tabular-nums
-    letterSpacing: 0
-  latin-inline:
-    fontFamily: Inter
-    fontWeight: 400
-  code-md:
-    fontFamily: Geist Mono
-    fontSize: 15px
-    fontWeight: 400
-    lineHeight: 1.60
-    direction: ltr
-  code-inline:
-    fontFamily: Geist Mono
-    fontSize: 14px
-    fontWeight: 500
-    lineHeight: 1.40
-    direction: ltr
+  hero:    { fontFamily: IBM Plex Sans Arabic, fontSize: 56px, fontWeight: 700, lineHeight: 1.35, letterSpacing: 0 }
+  display: { fontFamily: IBM Plex Sans Arabic, fontSize: 44px, fontWeight: 700, lineHeight: 1.35, letterSpacing: 0 }
+  h1:      { fontFamily: IBM Plex Sans Arabic, fontSize: 36px, fontWeight: 700, lineHeight: 1.35, letterSpacing: 0 }
+  h2:      { fontFamily: IBM Plex Sans Arabic, fontSize: 28px, fontWeight: 600, lineHeight: 1.40, letterSpacing: 0 }
+  h3:      { fontFamily: IBM Plex Sans Arabic, fontSize: 24px, fontWeight: 600, lineHeight: 1.45, letterSpacing: 0 }
+  h4:      { fontFamily: IBM Plex Sans Arabic, fontSize: 20px, fontWeight: 600, lineHeight: 1.50, letterSpacing: 0 }
+  h5:      { fontFamily: IBM Plex Sans Arabic, fontSize: 18px, fontWeight: 600, lineHeight: 1.55, letterSpacing: 0 }
+  lead:    { fontFamily: IBM Plex Sans Arabic, fontSize: 18px, fontWeight: 400, lineHeight: 1.80, letterSpacing: 0 }
+  body:    { fontFamily: IBM Plex Sans Arabic, fontSize: 16px, fontWeight: 400, lineHeight: 1.75, letterSpacing: 0 }
+  ui:      { fontFamily: IBM Plex Sans Arabic, fontSize: 15px, fontWeight: 400, lineHeight: 1.70, letterSpacing: 0 }
+  caption: { fontFamily: IBM Plex Sans Arabic, fontSize: 14px, fontWeight: 400, lineHeight: 1.60, letterSpacing: 0 }
+  micro:   { fontFamily: IBM Plex Sans Arabic, fontSize: 13px, fontWeight: 600, lineHeight: 1.50, letterSpacing: 0 }
+  numeric: { fontFamily: Inter, fontVariantNumeric: tabular-nums }
+  code:    { fontFamily: Geist Mono, direction: ltr }
 
-# ═══════════════════════════════════════════════
-# INHERITED UNCHANGED FROM MINTLIFY
-# ═══════════════════════════════════════════════
 rounded:
   xs: 4px
   sm: 6px
@@ -190,464 +81,397 @@ rounded:
   full: 9999px
 
 spacing:
-  xxs: 4px
-  xs: 8px
-  sm: 12px
-  md: 16px
-  lg: 20px
-  xl: 24px
-  xxl: 32px
-  xxxl: 40px
-  section-sm: 48px
-  section: 64px
-  section-lg: 96px
-  hero: 120px
-  reading-max: 68ch
+  scale: "4px base — 4 · 8 · 12 · 16 · 20 · 24 · 32 · 40 · 48 · 64 · 96"
   container-max: 1280px
+  reading-max: 68ch
+  section: "py-20 on mobile · py-24 from lg"
 
 elevation:
-  flat: "none"
-  subtle: "rgba(0, 0, 0, 0.04) 0px 1px 2px 0px"
-  card: "rgba(0, 0, 0, 0.08) 0px 4px 12px 0px"
-  mockup: "rgba(0, 0, 0, 0.12) 0px 24px 48px -8px"
-  brand-glow: "rgba(0, 212, 164, 0.08) 0px 8px 24px"
-  focus: "0 0 0 3px rgba(0, 212, 164, 0.25)"
+  subtle: "0 1px 2px 0 rgb(0 0 0 / 0.04)"
+  card: "0 4px 12px 0 rgb(0 0 0 / 0.08)"
+  mockup: "0 24px 48px -8px rgb(0 0 0 / 0.12)"
+  accent-glow: "0 8px 24px 0 rgb(82 95 225 / 0.10)"
+  focus: "0 0 0 3px rgb(82 95 225 / 0.32)"
 
 motion:
   fast: "120ms cubic-bezier(0.4, 0, 0.2, 1)"
-  base: "180ms cubic-bezier(0.4, 0, 0.2, 1)"
-
-components:
-  button-primary:
-    backgroundColor: "{colors.primary}"
-    textColor: "{colors.on-primary}"
-    typography: "{typography.button-md}"
-    rounded: "{rounded.full}"
-    padding: "11px 22px"
-  button-accent-green:
-    backgroundColor: "{colors.brand-green}"
-    textColor: "{colors.primary}"
-    typography: "{typography.button-md}"
-    rounded: "{rounded.full}"
-    padding: "11px 22px"
-  button-on-dark:
-    backgroundColor: "{colors.on-dark}"
-    textColor: "{colors.primary}"
-    rounded: "{rounded.full}"
-    padding: "11px 22px"
-  button-secondary:
-    backgroundColor: "transparent"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.full}"
-    padding: "11px 22px"
-    border: "1px solid {colors.hairline}"
-  button-ghost:
-    backgroundColor: "transparent"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.md}"
-    padding: "8px 12px"
-  button-danger:
-    backgroundColor: "{colors.brand-error}"
-    textColor: "{colors.on-dark}"
-    rounded: "{rounded.full}"
-    padding: "11px 22px"
-  card-base:
-    backgroundColor: "{colors.canvas}"
-    rounded: "{rounded.lg}"
-    padding: "{spacing.xl}"
-    border: "1px solid {colors.hairline}"
-  card-feature:
-    backgroundColor: "{colors.surface}"
-    rounded: "{rounded.lg}"
-    padding: "{spacing.xxl}"
-  branch-card:
-    backgroundColor: "{colors.canvas}"
-    rounded: "{rounded.lg}"
-    padding: "{spacing.xl}"
-    border: "1px solid {colors.hairline}"
-  subject-card:
-    backgroundColor: "{colors.canvas}"
-    rounded: "{rounded.lg}"
-    padding: "{spacing.xl}"
-    border: "1px solid {colors.hairline}"
-  lecture-row:
-    backgroundColor: "transparent"
-    typography: "{typography.body-sm}"
-    padding: "{spacing.md} 0"
-    border: "0 0 1px {colors.hairline-soft} solid"
-  file-row:
-    backgroundColor: "transparent"
-    typography: "{typography.body-sm}"
-    padding: "{spacing.md} 0"
-    border: "0 0 1px {colors.hairline-soft} solid"
-  quiz-option:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    typography: "{typography.body-md}"
-    rounded: "{rounded.md}"
-    padding: "{spacing.md} {spacing.lg}"
-    border: "1px solid {colors.hairline}"
-    minHeight: 56px
-  quiz-option-selected:
-    backgroundColor: "{colors.canvas}"
-    border: "2px solid {colors.primary}"
-  quiz-option-correct:
-    backgroundColor: "rgba(0, 212, 164, 0.10)"
-    border: "2px solid {colors.brand-annotate}"
-  quiz-option-wrong:
-    backgroundColor: "rgba(212, 86, 86, 0.08)"
-    border: "2px solid {colors.brand-error}"
-  pricing-card:
-    backgroundColor: "{colors.canvas}"
-    rounded: "{rounded.lg}"
-    padding: "{spacing.xxl}"
-    border: "1px solid {colors.hairline}"
-  pricing-card-featured:
-    backgroundColor: "{colors.canvas}"
-    rounded: "{rounded.lg}"
-    padding: "{spacing.xxl}"
-    border: "2px solid {colors.brand-green}"
-    shadow: "{elevation.brand-glow}"
-  text-input:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    typography: "{typography.body-md}"
-    rounded: "{rounded.md}"
-    padding: "{spacing.sm} {spacing.md}"
-    border: "1px solid {colors.hairline}"
-    height: 44px
-  text-input-focused:
-    border: "2px solid {colors.brand-green}"
-  badge-branch:
-    backgroundColor: "rgba(55, 114, 207, 0.12)"
-    textColor: "{colors.brand-tag}"
-    typography: "{typography.micro-label}"
-    rounded: "{rounded.sm}"
-    padding: "3px 10px"
-  badge-completed:
-    backgroundColor: "rgba(0, 212, 164, 0.14)"
-    textColor: "{colors.brand-annotate}"
-    typography: "{typography.micro-label}"
-    rounded: "{rounded.full}"
-    padding: "3px 10px"
-  badge-duration:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.steel}"
-    typography: "{typography.numeric}"
-    rounded: "{rounded.sm}"
-    padding: "3px 8px"
-  badge-sub-active:
-    backgroundColor: "rgba(0, 212, 164, 0.14)"
-    textColor: "{colors.brand-annotate}"
-    rounded: "{rounded.full}"
-    padding: "3px 10px"
-  badge-sub-expiring:
-    backgroundColor: "rgba(195, 125, 13, 0.14)"
-    textColor: "{colors.brand-warn}"
-    rounded: "{rounded.full}"
-    padding: "3px 10px"
-  badge-sub-expired:
-    backgroundColor: "rgba(212, 86, 86, 0.12)"
-    textColor: "{colors.brand-error}"
-    rounded: "{rounded.full}"
-    padding: "3px 10px"
-  promo-banner:
-    backgroundColor: "{colors.canvas-dark}"
-    textColor: "{colors.on-dark}"
-    typography: "{typography.body-sm-medium}"
-    padding: "{spacing.sm} {spacing.md}"
-  sidebar-nav-item:
-    backgroundColor: "transparent"
-    textColor: "{colors.steel}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.sm}"
-    padding: "{spacing.xs} {spacing.md}"
-  sidebar-nav-item-active:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.ink}"
-    typography: "{typography.body-sm-medium}"
-  segmented-tab:
-    textColor: "{colors.steel}"
-    typography: "{typography.body-sm-medium}"
-    padding: "{spacing.sm} {spacing.md}"
-    border: "0 0 2px transparent solid"
-  segmented-tab-active:
-    textColor: "{colors.ink}"
-    border: "0 0 2px {colors.ink} solid"
-  progress-bar:
-    backgroundColor: "{colors.hairline}"
-    fillColor: "{colors.brand-green}"
-    rounded: "{rounded.full}"
-    height: 6px
-  video-shell:
-    backgroundColor: "{colors.canvas-dark}"
-    rounded: "{rounded.lg}"
-    direction: ltr
-    aspectRatio: "16/9"
-  equation-block:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.charcoal}"
-    typography: "{typography.code-md}"
-    rounded: "{rounded.md}"
-    padding: "{spacing.md}"
-    direction: ltr
-  hero-band-sky:
-    backgroundColor: "linear-gradient(180deg, {colors.hero-sky-from} 0%, {colors.hero-sky-to} 100%)"
-    padding: "{spacing.hero}"
-  hero-band-dark:
-    backgroundColor: "linear-gradient(135deg, {colors.hero-dark-from} 0%, {colors.hero-dark-to} 100%)"
-    textColor: "{colors.on-dark}"
-    padding: "{spacing.hero}"
-  hero-product-mockup:
-    backgroundColor: "{colors.canvas}"
-    rounded: "{rounded.lg}"
-    border: "1px solid {colors.hairline-soft}"
-    shadow: "{elevation.mockup}"
-  testimonial-card-feature:
-    backgroundColor: "{colors.accent-orange}"
-    textColor: "{colors.on-dark}"
-    rounded: "{rounded.lg}"
-    padding: "{spacing.section}"
-  faq-accordion-item:
-    backgroundColor: "{colors.canvas}"
-    rounded: "{rounded.md}"
-    padding: "{spacing.xl}"
-    border: "1px solid {colors.hairline-soft}"
-  footer-region:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.steel}"
-    padding: "{spacing.section} {spacing.xxl}"
-    border: "1px 0 0 {colors.hairline} solid"
+  base: "200ms cubic-bezier(0.4, 0, 0.2, 1)"
+  reveal: "600ms cubic-bezier(0.16, 1, 0.3, 1)"
+  slide: "1000ms — matches smartSpeed in the reference template"
 ---
 
 ## Overview
 
-هوية palEducation مبنية على نظام **Mintlify** بالكامل — ألوانه الـ33، سلّم أنصافه، سلّم مسافاته، سلّم ارتفاعه، ونظام مكوّناته. التعديل الوحيد **نظام الطباعة**، لسبب تقني لا ذوقي: `Inter` و`Geist Mono` لا يحتويان محارف عربية، والتباعد الحرفي السالب يكسر اتصال الحروف.
+palEducation is a **study tool** a Palestinian teenager opens in the evening and spends two hours inside before the most important exam of their life. Every visual decision is measured against one question:
 
-**الشخصية البصرية:**
-منصة تبدو كـ**أداة يثق بها طالب**، لا كموقع تسويقي يحاول إقناعه. أسطح مسطّحة، حدود شعرة رفيعة، أسود حاسم على الأزرار، وأخضر نعناعي يظهر **نادراً** فيصير ظهوره إشارة لا زينة.
+> **Does this reduce cognitive load on a tired, anxious student, or add to it?**
 
-**الركائز الخمس:**
-1. **الأسود هو الفعل** — كل زر أساسي أسود حبّي. لا استثناء.
-2. **الأخضر النعناعي إشارة نادرة** — التقدّم · الإكمال · الإجابة الصحيحة · الاشتراك الساري. **لا شيء غيرها.**
-3. **البرتقالي يكسر الإيقاع مرة واحدة** — بطاقة واحدة في الشاشة كلها، للحظة عاطفية.
-4. **مسطّح افتراضياً** — الهرمية من الحدود والمسافات، لا من الظلال.
-5. **العربية تتنفّس** — ارتفاع سطر 1.75، تباعد حرفي صفر، حد أدنى 16px للنص المقروء.
+### The five pillars
 
----
+1. **Purple is the action color** — `{colors.accent}` on every primary button, link, and active element. One primary button per screen.
+2. **Amber is the secondary color** — `{colors.amber}` appears in a limited set of places: stat tiles, the free-trial banner, branch/track identity.
+3. **No stark-white background** — `{colors.ground}` `#f5f8f7` for the whole site; cards sit white on top of it. Pure white tires the eye over a long study session.
+4. **Flat by default** — hierarchy comes from hairline borders and spacing. One deep shadow, reserved for the mockup.
+5. **Arabic breathes** — 1.75 line-height, zero letter-spacing, 16px minimum for anything read as text.
 
-## 🚫 ما نرفضه — الابتعاد عن نمطية الذكاء الاصطناعي
+### System sources
 
-هذه ليست قائمة أذواق. كل بند منها علامة مميِّزة لواجهة مولّدة آلياً، وكلها **ممنوعة** في هذا المشروع:
-
-| ❌ ممنوع | ✅ البديل في نظامنا |
+| Source | What was taken from it |
 |---|---|
-| تدرّجات بنفسجية/زرقاء (`#667eea → #764ba2`) | أسطح مسطّحة بيضاء بحدود `{colors.hairline}` |
-| زجاجية ضبابية (glassmorphism · `backdrop-blur`) | حدود شعرة 1px صريحة |
-| بطاقات عائمة بظلال ملوّنة | `{elevation.flat}` + حد 1px |
-| توهّج نيون · ظلال ملوّنة | ظل واحد فقط: `{elevation.mockup}` للـmockup |
-| أيقونات emoji بدل أيقونات حقيقية | أيقونات خطية موحّدة السماكة |
-| كل شيء متمركز عمودياً | تخطيطات غير متماثلة · محاذاة للبداية |
-| ثلاث بطاقات متطابقة بأيقونات دائرية ملوّنة | صفوف بأوزان بصرية مختلفة |
-| أشكال blob عضوية عشوائية في الخلفية | نطاقات هيرو جوّية محدّدة فقط |
-| حدود متدرّجة (gradient borders) | `2px solid {colors.brand-green}` للمميّز فقط |
-| صور stock: أشخاص يبتسمون أمام لابتوب | لقطات حقيقية من المنصة · رسوم مخصّصة |
-| أنصاف عشوائية (17px · 23px) | سلّم الأنصاف حصراً |
-| ألوان كثيرة «للحيوية» | أسود + أخضر نعناعي + برتقالي واحد |
-
-> **الاختبار:** لو أزلت الشعار وسألت «هل هذه صُنعت بقالب؟» — الجواب يجب أن يكون لا. المصدر: الانضباط، لا الزخرفة.
+| **edunova** | The full color palette: `#525fe1` · `#0b104a` · `#1a2d62` · `#4a5355` |
+| **Charitize** | Hero paper texture · double-rule badge · stats checkerboard grid · teacher card · testimonial carousel |
+| **Mintlify** | Radius/spacing scale and the "marketing surface vs. functional surface" logic |
 
 ---
 
-## Colors
+## Color Palette
 
-### الأساسي والتمييز
+### Primary — Action Color
 
-| اللون | القيمة | يُستخدم في |
+`{colors.accent}` `#525fe1` at **235°**. Appears on: primary button, links, active nav item, progress bar fill, focus ring.
+
+- `{colors.accent-deep}` `#3f4ab8` — text on light surfaces
+- `{colors.accent-on-dark}` `#bcc2f8` — text on dark surfaces
+- `{colors.accent-soft}` `#ecedff` — faint background tint
+
+### Secondary — Accent Color
+
+`{colors.amber}` `#f0a500` at **39°** — roughly 196° from purple, close to true complementary. Blue-and-gold is a stable pairing, and in an education context it reads as **achievement**, not danger.
+
+> **Why not coral or mint:** coral `#f26b65` sits at 3° — a red that collides with an otherwise cool palette. Mint `#00d4a4` sits at 165° — too close to the semantic "success" green. Light purple `#8b5cf6` and magenta `#d946a0` fail text contrast outright (4.2:1, both).
+
+**Scarcity rule:** exactly two chromatic colors, system-wide. A third dilutes amber's signal. Semantic colors (`tag` · `warn` · `error`) are used **only for their meaning**, never as decoration.
+
+### Neutrals — Surfaces
+
+| Token | Value | Role |
 |---|---|---|
-| **Primary Black** `{colors.primary}` | `#0a0a0a` | كل زر أساسي · العناوين · التبويب النشط |
-| **Mint** `{colors.brand-green}` | `#00d4a4` | تعبئة شريط التقدّم · حد البطاقة المميّزة · حلقة التركيز · علامة الإكمال |
-| **Mint Deep** `{colors.brand-annotate}` | `#1ba673` | **نص** الحالات الخضراء (تباين أعلى من النعناعي على الأبيض) |
-| **Orange** `{colors.accent-orange}` | `#f55a3c` | بطاقة واحدة فقط في الشاشة — كسر إيقاع مقصود |
-| **Tag Blue** `{colors.brand-tag}` | `#3772cf` | شارة الفرع الدراسي |
+| `ground` | `#f5f8f7` | Whole-site background — never stark white |
+| `canvas` | `#ffffff` | Card / surface background |
+| `canvas-dark` | `#0b104a` | Dark-band background |
+| `surface` / `surface-soft` | `#f7f7f7` / `#fafafa` | Secondary surfaces |
+| `surface-code` | `#1c1c1e` | Reserved for code blocks / dark inline surfaces — defined, not yet used (no code-display component exists) |
+| `deep-from → deep-to` | `#242e83 → #3945a3` | The one gradient allowed in the system, for dark hero/CTA bands |
+| `sky-from → sky-to` | `#c7cbf5 → #eef0fb` | Light, airy gradient for hero backgrounds |
 
-> **قاعدة الندرة:** الأخضر النعناعي على سطح كبير أو نص عادي = فقدان الإشارة. لو ظهر في مكان لا يعني «تقدّم أو صواب» — احذفه.
+### Neutrals — Borders
 
-### دلالات المجال
-
-| الحالة | اللون | المكوّن |
+| Token | Value | Role |
 |---|---|---|
-| اشتراك ساري | `{colors.brand-annotate}` | `badge-sub-active` |
-| اشتراك ≤7 أيام | `{colors.brand-warn}` `#c37d0d` | `badge-sub-expiring` + `promo-banner` |
-| اشتراك منتهٍ | `{colors.brand-error}` `#d45656` | `badge-sub-expired` |
-| محاضرة مكتملة | `{colors.brand-annotate}` | `badge-completed` |
-| إجابة صحيحة | `{colors.brand-annotate}` | `quiz-option-correct` |
-| إجابة خاطئة | `{colors.brand-error}` | `quiz-option-wrong` |
-| الفرع الدراسي | `{colors.brand-tag}` | `badge-branch` |
+| `hairline` | `#e5e5e5` | Card borders |
+| `hairline-soft` | `#ededed` | Row dividers |
+| `hairline-strong` | `#d4d4d4` | Hover / active border state |
+| `hairline-dark` | `#1f1f1f` | Reserved for borders on dark/code surfaces — defined, not yet used |
 
-> 🔴 **الأحمر يوضّح ولا يوبّخ.** `{colors.brand-error}` `#d45656` أحمر **مكتوم عمداً** — ليس `#ff0000`. الخلفية عند 8% شفافية فقط. لا أيقونة ✗ عملاقة، لا اهتزاز، لا صوت.
+### Neutrals — Text
 
-### سلّم الأسطح
-`canvas` `#ffffff` → `surface-soft` `#fafafa` → `surface` `#f7f7f7`
-الحدود: `hairline` `#e5e5e5` للبطاقات · `hairline-soft` `#ededed` لفواصل الصفوف.
+| Token | Value | Role |
+|---|---|---|
+| `ink` | `#0b104a` | Headings |
+| `charcoal` | `#1a2d62` | Default body text |
+| `slate` | `#3d4a6b` | Secondary text |
+| `steel` | `#4a5355` | Paragraph text |
+| `stone` | `#666e7c` | Tertiary text (darkened to clear 4.5:1) |
+| `muted` | `#a3aab5` | Placeholder / disabled text |
+| `on-dark` / `on-dark-muted` | `#ffffff` / `#b3b3b3` | Text on dark surfaces |
 
-### سلّم النص
-`ink` `#0a0a0a` عناوين · `charcoal` `#1c1c1e` نص · `slate` `#3a3a3c` ثانوي · `steel` `#5a5a5c` وصفي · `stone` `#888888` تسميات · `muted` `#a8a8aa` معطّل.
+### Feedback / Status
 
-### الوضع الداكن
-Mintlify لم ينشر وضعاً داكناً — اشتُقّ من توكناته الداكنة الموجودة. **ليس رفاهية: الطلبة يدرسون ليلاً.**
-`dark-canvas` `#0a0a0a` → `dark-surface` `#141416` → `dark-surface-2` `#1c1c1e` · حدود `#1f1f1f` / `#2a2a2c` · نص `#ffffff` / `#b3b3b3`.
-`{colors.brand-green}` يبقى كما هو — يعمل على الداكن بتباين ممتاز.
+| Token | Value | Meaning |
+|---|---|---|
+| `tag` | `#3772cf` | Branch / track badges |
+| `warn` | `#c37d0d` | Subscription expiring soon |
+| `error` | `#d45656` | Subscription expired · wrong answer |
+
+**Domain semantics:**
+
+| State | Color |
+|---|---|
+| Active subscription · correct answer · completed lecture | `{colors.accent}` |
+| Subscription expiring soon | `{colors.warn}` |
+| Subscription expired · wrong answer | `{colors.error}` |
+| Branch / track label | `{colors.tag}` |
+
+> 🔴 **Red clarifies, it doesn't scold.** `{colors.error}` `#d45656` is deliberately muted, with an 8%-opacity background tint. No giant ✗ icon, no shake animation, no sound.
 
 ---
 
-## Typography — نظام ثلاثي النصوص
+## 🔴 Contrast Rule — Non-Negotiable
 
-### توزيع الوجوه
+**No color/text pairing ships unmeasured.** Every pair below is measured and confirmed:
 
-| النص | الوجه | لماذا |
+| Surface | Permitted text | Ratio |
 |---|---|---|
-| **العربية** (كل الواجهة) | **IBM Plex Sans Arabic** | أقرب وجه عربي لحياد Inter ووضوحه · أوزان حقيقية 400/500/600/700 · مجاني |
-| **اللاتيني والأرقام** | **Inter** ← وجه Mintlify نفسه | محفوظ كما هو |
-| **المعادلات والكود** | **Geist Mono** ← وجه Mintlify نفسه | محفوظ كما هو · `dir="ltr"` |
+| `{colors.ground}` | `ink` · `charcoal` · `slate` · `steel` · `stone` | 4.8 – 16.6:1 |
+| `{colors.ground}` | `accent` · `accent-deep` · `amber-deep` | 4.7 – 6.8:1 |
+| `{colors.accent}` `#525fe1` | **white only** | 5.14:1 |
+| `{colors.amber}` `#f0a500` | **navy (`ink`) only** — white gives 2.07:1 | 8.50:1 |
+| `{colors.amber-deep}` `#9c6205` | **white only** | 5.04:1 |
+| `{colors.deep-from}` / `deep-to` | white · `accent-on-dark` | 6.8 – 11.7:1 |
+| `{colors.canvas-dark}` `#0b104a` | white · `accent-on-dark` | 10.3 – 17.7:1 |
 
-**بدائل عربية مقبولة:** Noto Sans Arabic (أكثر حياداً) · Almarai (أنظف للعناوين). **مرفوض:** أي وجه بوزن واحد أو زخرفي.
+### Three traps this project actually hit
 
-### السلّم — والفرق عن Mintlify
+**1. One shade of a color is never enough — each color needs two.**
+`amber` `#f0a500` is an excellent surface color (8.5:1 against navy) but only **2.07:1 as text** — unreadable. Hence `amber-deep` for text. Same logic applies to `accent` / `accent-deep`.
 
-| Token | Mintlify | palEducation | سبب التغيير |
-|---|---|---|---|
-| `hero-display` | 72px · **-2px** | **56px · 0** | التباعد السالب يكسر اتصال الحروف |
-| `display-lg` | 56px · **-1.5px** | **44px · 0** | نفسه |
-| `heading-1` | 48px · **-1px** | **36px · 0** | نفسه |
-| `heading-2` | 36px · **-0.5px** | **28px · 0** | نفسه |
-| `heading-3` | 28px · 1.25 | 24px · **1.45** | ارتفاع سطر للعربية |
-| `subtitle` | 18px · 1.50 | 18px · **1.80** | نفسه |
-| `body-md` | 16px · 1.50 | 16px · **1.75** | امتدادات المحارف تتصادم عند 1.50 |
-| `body-sm` | **14px** | **15px** · 1.70 | 14px تحت الحد المقروء للعربية |
-| `micro-uppercase` | 11px · UPPERCASE · +0.5px | **13px · بلا uppercase · 0** | لا حالة أحرف في العربية |
-| `button-md` | 14px | **15px** | نفس سبب body-sm |
+**2. Lightening a dark surface silently breaks whatever sits on top of it.**
+When the dark band was lightened from `#0b104a` to `#242e83`, `accent` on top of it dropped from 3.44:1 to **2.28:1**. `accent-on-dark` `#bcc2f8` (6.8:1) was added to fix it. **Lightening any surface requires re-measuring everything on top of it.**
 
-### القواعد الملزمة
-1. **`letter-spacing: 0` على كل نص عربي** — بلا استثناء واحد
-2. **≥16px لأي نص يقرأه الطالب** — وصف المحاضرة · سؤال الكويز · نص الخبر
-3. **15px حد أدنى لعناصر الواجهة** — التنقّل · خلايا الجداول · الأزرار
-4. **14px للبيانات الوصفية فقط** — لا يُقرأ كنص
-5. **لا `text-transform: uppercase`** على العربية
-6. **الأرقام غربية 0-9** بـ Inter و`tabular-nums` في كل جدول
-7. **عرض القراءة ≤68 حرفاً**
+**3. Swapping a color can flip the direction of contrast.**
+Coral `#f26b65` was dark enough to just barely carry white text. Amber `#f0a500` is light, which flipped the rule — four spots were still putting white on a light background. **Whenever a color is swapped: re-check every spot that carries text over it.**
 
 ---
 
-## الاتجاه — RTL افتراضي
+## Typography Scale
 
-**لا `left` ولا `right` في المشروع.** logical properties حصراً: `ms/me` · `ps/pe` · `text-start/end` · `border-s/e` · `start-*/end-*`.
+| Style | Family | Size | Weight | Line-height | Letter-spacing |
+|---|---|---|---|---|---|
+| Hero | IBM Plex Sans Arabic | 56px | 700 | 1.35 | 0 |
+| Display | IBM Plex Sans Arabic | 44px | 700 | 1.35 | 0 |
+| H1 | IBM Plex Sans Arabic | 36px | 700 | 1.35 | 0 |
+| H2 | IBM Plex Sans Arabic | 28px | 600 | 1.40 | 0 |
+| H3 | IBM Plex Sans Arabic | 24px | 600 | 1.45 | 0 |
+| H4 | IBM Plex Sans Arabic | 20px | 600 | 1.50 | 0 |
+| H5 | IBM Plex Sans Arabic | 18px | 600 | 1.55 | 0 |
+| Lead | IBM Plex Sans Arabic | 18px | 400 | 1.80 | 0 |
+| Body | IBM Plex Sans Arabic | 16px | 400 | 1.75 | 0 |
+| UI text | IBM Plex Sans Arabic | 15px | 400 | 1.70 | 0 |
+| Caption | IBM Plex Sans Arabic | 14px | 400 | 1.60 | 0 |
+| Micro | IBM Plex Sans Arabic | 13px | 600 | 1.50 | 0 |
+| Numeric | Inter | — | — | — | `tabular-nums` |
+| Code | Geist Mono | — | — | — | `dir="ltr"` |
 
-**يبقى LTR دائماً:** مشغّل الفيديو (`video-shell`) · المعادلات (`equation-block`) · الكود · الأرقام والتواريخ · البريد والروابط.
+**Font assignment:** Arabic interface text runs in **IBM Plex Sans Arabic** (400/500/600/700). Latin text and numbers run in **Inter**. Math and code run in **Geist Mono** with `dir="ltr"`. All fonts load **locally** via `laravel-vite-plugin`'s font support (Bunny) — no CDN, no external request.
 
-**النص المختلط:** أي مقطع لاتيني داخل جملة عربية يُلَفّ بـ`<bdi>` — حرج في المحتوى العلمي.
+### Binding rules
 
-التفاصيل: [.claude/rules/rtl-bilingual.md](.claude/rules/rtl-bilingual.md)
+1. **`letter-spacing: 0` on every Arabic character, no exceptions.** `tracking-*` utilities are removed at the Tailwind theme root (`--tracking-*: initial` in `app.css`), so they can't be generated at all — the trap is structurally impossible, not just documented.
+2. **≥16px for anything a student reads** · **15px floor for UI chrome** · **14px reserved for metadata only**.
+3. **No `text-transform: uppercase`** on Arabic text.
+4. **Numbers are always Western 0–9**, set in Inter with `tabular-nums` in every table and score.
+5. **Reading measure ≤68 characters** (`.measure` utility).
 
 ---
 
-## Components
+## Spacing & Layout
 
-### الأزرار — حبّية دائماً `{rounded.full}`
+**Base unit:** 4px. **Scale:** 4 · 8 · 12 · 16 · 20 · 24 · 32 · 40 · 48 · 64 · 96
 
-| الصيغة | التنسيق | الاستخدام |
+| Setting | Value |
+|---|---|
+| Container max-width | 1280px |
+| Reading measure max | 68ch (`.measure`) |
+| Section rhythm | `py-20` on mobile → `py-24` from `lg` |
+
+### Radius scale
+
+| Token | Value | Assignment convention |
 |---|---|---|
-| `button-primary` | أسود `#0a0a0a` · نص أبيض | **الفعل الرئيسي — واحد لكل شاشة** |
-| `button-accent-green` | نعناعي · نص أسود | CTA التسجيل في الهيرو فقط |
-| `button-on-dark` | أبيض · نص أسود | على نطاقات الهيرو الداكنة |
-| `button-secondary` | شفاف · حد `hairline` | فعل ثانوي |
-| `button-ghost` | شفاف · `{rounded.md}` | إجراءات الجداول |
-| `button-danger` | `brand-error` | الحذف — عبر `ConfirmDialog` دائماً |
+| `xs` | 4px | Tiny chips |
+| `sm` | 6px | Small badge chips |
+| `md` | 8px | Inputs and small controls |
+| `lg` | 12px | — |
+| `xl` | 16px | Cards, modal panels |
+| `xxl` | 24px | — |
+| `full` | 9999px | Buttons — always fully pill-shaped |
 
-ارتفاع اللمس **≥44px** على الجوال. **لا تليّن الأنصاف الحبّية أبداً** — الزر المربّع يقرأ كأداة طرف ثالث.
+---
 
-### مكوّنات المجال
+## Direction — RTL by Default
 
-**`quiz-option`** — أهم مكوّن في المنصة
-حد 1px · `{rounded.md}` · ارتفاع ≥56px · مساحة نقر كاملة العرض
-مختار → حد 2px أسود · صحيح → حد `brand-annotate` وخلفية 10% · خاطئ → حد `brand-error` وخلفية 8%
+**There is no `left` or `right` anywhere in this project.** Logical properties only: `ms/me` · `ps/pe` · `text-start/end` · `border-s/e` · `start-*/end-*` · `inset-inline`.
 
-**`video-shell`** — `dir="ltr"` · 16:9 · `{rounded.lg}` · خلفية `canvas-dark` · يُطلق حدث الانتهاء الذي يفتح الكويز
+**Always stays LTR:** video player · math equations · code · numbers and dates · email addresses and links.
 
-**`progress-bar`** — مسار `hairline` · تعبئة `brand-green` · ارتفاع 6px · `{rounded.full}`
+**Mixed text:** any Latin fragment inside an Arabic sentence is wrapped in `<bdi>`.
 
-**`badge-*`** — الفرع (أزرق) · المدة (رمادي + `tabular-nums`) · الإكمال (أخضر) · الاشتراك (٣ حالات)
+**Registered RTL trap:** styles ported from Latin-first templates hardcode `left`. When porting any style, convert it to `inset-inline` or it renders on the wrong side.
 
-**`promo-banner`** — شريط أسود أعلى الصفحة، يظهر **فقط** عند اقتراب انتهاء الاشتراك
+Full rules: [.claude/rules/rtl-bilingual.md](.claude/rules/rtl-bilingual.md)
 
-**`equation-block`** — `dir="ltr"` · Geist Mono · خلفية `surface` — حرج للفرع العلمي
+---
 
-### التخطيط ثلاثي الأعمدة
-نمط Mintlify الوثائقي مُسقَط على **صفحة المادة**:
-`قائمة المحاضرات (240px)` \| `الفيديو والمحتوى (720px)` \| `معلومات المادة (200px)`
-تحت 1024px → العمودان الجانبيان يصيران درجاً · تحت 768px → عمود واحد.
+## Component Design Tokens
+
+### Buttons — always pill-shaped (`{rounded.full}`)
+
+| Variant | Style | Hover |
+|---|---|---|
+| `primary` | `accent` bg + white text | `amber-deep` bg |
+| `accent` | `amber` bg + `ink` text | `accent` bg + white text |
+| `on-dark` | white bg + `accent` text | `accent` bg + white text |
+| `secondary` | transparent + `hairline` border | `surface` bg |
+| `ghost` | transparent, `{rounded.md}` (not pill) | `surface` bg + `ink` text |
+| `danger` | `error` bg + white text | dimmed brightness |
+
+**Sizes:** `sm` 44px → 36px from `lg` · `md` 48px → 44px from `lg` · `lg` 52px (fixed, no shrink).
+Tablets are touch input too, so the size reduction happens at the `lg` breakpoint (desktop pointer input), not at `sm`.
+
+**Rule:** one primary button per screen, no exceptions.
+
+### Badges
+
+| Variant | Style |
+|---|---|
+| `neutral` | `surface` bg, `steel` text |
+| `branch` | `tag` @12% bg, `tag` text |
+| `accent` | `accent` @14% bg, `accent-deep` text |
+| `warn` | `warn` @14% bg, `warn` text |
+| `error` | `error` @12% bg, `error` text |
+| `duration` | `surface` bg, `steel` text, Inter font, `tabular-nums` |
+
+**Shape:** `pill` (`rounded-full`, default) or `chip` (`rounded-sm`, alternate). Both: micro text (13px/600), horizontal padding 10px, vertical padding 2px.
+
+### Cards — unified `.tile`
+
+`canvas` background · `{rounded.xl}` · no border · shadow `0 0 30px rgb(0 0 0 / 0.05)`, deepening to `0 0 30px rgb(0 0 0 / 0.12)` with a 4px lift on hover. The hover state is built into `.tile` itself — there is no separate `.tile-hover` modifier class.
+
+> **Note:** `app.css` also defines a bordered `.card` / `.card-hover` pair (`canvas` bg, `hairline` border, `{rounded.xl}`, the `elevation.card` shadow on hover) that matches the documented card elevation token exactly — but it isn't applied anywhere in the current markup. Treat it as reserved for a future bordered-card variant, not the active pattern.
+
+**Featured state** (pricing card): 2px `accent` ring + `accent-glow` shadow, no border change.
+
+### Inputs — specified, not yet built
+
+No Input component exists in the codebase yet (see Known Gaps). Until one is built, any new form field should follow this token spec so it lands consistent with buttons and cards on the first pass:
+
+- **Height:** 48px, 44px from `lg` — matches `button.md`, so an input paired with a `md` button aligns without extra CSS
+- **Radius:** `{rounded.md}` (8px) — one step down from card radius, so an input reads as sitting *inside* a card
+- **Background:** `canvas` · **Border:** 1px `hairline`
+- **Hover:** border → `hairline-strong`
+- **Focus:** border → `accent` + the standard focus ring (`0 0 0 3px rgb(82 95 225 / 0.32)`) — the same ring token used everywhere else, no input-only variant
+- **Error state:** border → `error`, background → `error` @8% (the same muted-red convention used on quiz results — red clarifies, it doesn't scold)
+- **Disabled:** 50% opacity, `surface` background, no hover state
+- **Placeholder text:** `muted` · **Label:** `ui` size (15px), `steel`, positioned above the field
+- **Horizontal padding:** 16px
+
+### Modals / Dialogs — specified, not yet built
+
+No Modal component exists yet either. Spec, ready to implement:
+
+- **Overlay:** `ink` at 45% opacity (`rgb(11 16 74 / 0.45)`) — tinted with the brand ink rather than pure black, consistent with "no pure black in this system"
+- **Panel:** `canvas` background, `{rounded.xl}`, `{elevation.mockup}` — the one deep-elevation shadow in the system, otherwise reserved for the hero mockup; a modal is the only other element that sits high enough above the page to earn it
+- **Width:** 480px for confirm-style dialogs (`ConfirmDialog`), up to 640px for content-bearing modals · full-width bottom sheet below the `sm` breakpoint
+- **Padding:** 32px on desktop, 24px on mobile
+- **Close control:** `ghost`-variant icon button, positioned **top-end** (never top-right — see Direction)
+- **Entry motion:** `{motion.base}` (200ms), opacity + slight scale — a dialog interrupts the student, so it should feel immediate rather than use the slower `{motion.reveal}` timing reserved for scroll content
+- **Behavior:** traps focus while open, closes on <kbd>Escape</kbd> and on overlay click, returns focus to the triggering element on close
+
+### Built components inventory
+
+`button` · `badge` · `icon` (12 inline SVGs) · `section-head` · `rule-label` · `accordion-item` (built on native `<details name>` — zero JS for exclusivity) · `media-slot` (accepts a real `src` or falls back to a designed placeholder) · `branch-card` · `plan-card` · `teacher-card` · `site.header` · `site.footer` · `layouts.public`
+
+### Patterns carried over from Charitize
+
+- **`rule-label`** — two rules crossing the text, top rule +40px / bottom rule +60px overhang, built with `inset-inline` so it mirrors correctly in RTL
+- **Stats grid** — 4 tiles, 48px padding, 48px number, 48px icon, two alternating colors
+- **Teacher card** — square photo + vertical icon rail
+- **"About" photo pair** — two images at 33%×90px in opposite corners
+- **Testimonial carousel** — fixed title panel + slides with photo, quote, and stacked arrows
+
+### Slider
+
+Slides are stacked on `grid-area: 1/1` so the layout never jumps between them · crossfade transition, not a horizontal slide (this sidesteps RTL direction complexity entirely) · `overflow: hidden` on `[data-slider]` is mandatory — rotating slides produce horizontal scroll without it.
+
+---
+
+## Motion
+
+| Token | Value | Use |
+|---|---|---|
+| `fast` | 120ms `cubic-bezier(0.4, 0, 0.2, 1)` | Micro-interactions |
+| `base` | 200ms `cubic-bezier(0.4, 0, 0.2, 1)` | Hover/focus state changes, modal entry |
+| `reveal` | 600ms `cubic-bezier(0.16, 1, 0.3, 1)` | Scroll-triggered reveal, staggered |
+| `slide` | 1000ms | Matches `smartSpeed` in the reference template (slider fold effect) |
+
+> 🔴 **Fail-safe rule:** scroll-reveal hiding is gated on a `.js-reveal` class that JS adds itself. If JS fails to load, the class is never added and content renders normally. **Never hide with CSS what CSS alone can't guarantee to show again.**
+
+All motion is disabled under `prefers-reduced-motion` — content appears, it does not disappear.
+
+---
+
+## Elevation
+
+| Token | Value | Use |
+|---|---|---|
+| `subtle` | `0 1px 2px 0 rgb(0 0 0 / 0.04)` | Minimal lift |
+| `card` | `0 4px 12px 0 rgb(0 0 0 / 0.08)` | Defined; currently only wired to the unused `.card-hover` pair (see Cards) |
+| `mockup` | `0 24px 48px -8px rgb(0 0 0 / 0.12)` | Hero product shot · modal panels |
+| `accent-glow` | `0 8px 24px 0 rgb(82 95 225 / 0.10)` | Featured pricing card only |
+| `focus` | `0 0 0 3px rgb(82 95 225 / 0.32)` | Every interactive element's focus-visible ring |
 
 ---
 
 ## Do's and Don'ts
 
-### ✅ افعل
-- اجعل كل زر أساسي **أسود حبّياً** — هذا توقيع النظام
-- احجز `{colors.brand-green}` للتقدّم والصواب والاشتراك الساري فقط
-- استخدم `{colors.brand-annotate}` للنص الأخضر لا `brand-green` (تباين)
-- ابقَ مسطّحاً: حد 1px بدل الظل
-- صفّر `letter-spacing` على كل عربية
-- ارتفاع سطر ≥1.75 للنص المقروء
-- `<bdi>` حول كل مقطع لاتيني داخل جملة عربية
-- بطاقة برتقالية **واحدة** في الشاشة كلها
-- `EmptyState` لكل قائمة · `ConfirmDialog` لكل حذف
+### ✅ Do
+- Use `accent` for every action · `amber` for the secondary color only
+- **Measure every new color/text pairing before adopting it**
+- Use the `-deep` text shade, not the surface shade, when writing text
+- Use logical properties on every line
+- Zero `letter-spacing` on all Arabic text · line-height ≥1.75
+- Wrap every Latin fragment inside an Arabic sentence in `<bdi>`
+- `EmptyState` for every list · `ConfirmDialog` for every delete
+- `overflow-hidden` on any container holding moving slides
 
-### ❌ لا تفعل
-- لا تليّن الأنصاف الحبّية للأزرار
-- لا تضع نعناعياً على سطح كبير أو نص عادي
-- لا تُدخل لوناً كروماتيكياً رابعاً
-- لا تنسخ `letter-spacing` السالب من Mintlify
-- لا تستخدم Inter للعربية — لا يحتوي محارفها
-- لا تعكس مشغّل الفيديو
-- لا تنزل بالنص المقروء تحت 16px
-- لا تستخدم أرقاماً شرقية (٠-٩)
-- لا تضع أكثر من زر أساسي في شاشة
-- **لا شيء من قائمة «ما نرفضه» أعلاه**
+### ❌ Don't
+- Don't write a hex value in a component — everything comes from `@theme`
+- Don't put white text on `amber` (2.07:1)
+- Don't use `accent` as text on a dark surface — use `accent-on-dark`
+- Don't introduce a third chromatic color
+- No `ml-` / `mr-` / `text-left` / `text-right`
+- No `letter-spacing` on Arabic text · no readable text under 16px
+- No Eastern Arabic-Indic digits (٠-٩)
+- No more than one primary button per screen
+- Never mirror the video player
 
 ---
 
-## Responsive
+## Responsive Breakpoints
 
-| النقطة | العرض | التغيير |
+| Breakpoint | Width | Change |
 |---|---|---|
-| Mobile | <480px | عمود واحد · `hero-display` → 32px · الشريط الجانبي درج · لمس ≥44px |
-| Mobile-lg | 480–767px | بطاقات 2-up · `hero-display` → 40px |
-| Tablet | 768–1023px | شبكة 2-up · الشريط الجانبي أيقونات · التخطيط الثلاثي → عمودان |
-| Desktop | 1024–1279px | التخطيط الثلاثي كامل · بطاقات 3-up |
-| Wide | ≥1280px | الحاوية تتوقف عند 1280px |
+| Mobile | <640px | Single column · nav drawer · touch targets ≥44px · `hero` → 36px |
+| Tablet | 768–1023px | 2-up grid · nav drawer · touch targets ≥44px |
+| Desktop | 1024–1279px | 3–4 grid · horizontal nav · pointer-sized controls |
+| Wide | ≥1280px | Container caps at 1280px |
 
-**الجوال أولاً حرفياً** لشاشات: المحاضرة · الكويز · المادة. غالبية طلبة التوجيهي يفتحون المنصة من الهاتف.
+**Verified:** zero horizontal overflow at 360 · 480 · 753 · 1009 · 1425px — at rest and during both slider animations.
 
 ---
 
-## Accessibility
+## Accessibility & Contrast Standards
 
-- تباين ≥**4.5:1** للنص · ≥3:1 للكبير — لهذا `brand-annotate` للنص لا `brand-green`
-- حلقة تركيز مرئية على كل عنصر تفاعلي (`{elevation.focus}`) — **لا `outline: none`**
-- هدف لمس ≥44×44px
-- التنقّل بلوحة المفاتيح يعمل في الكويز كاملاً
-- لا تنقل معنى باللون وحده — أضف أيقونة أو نصاً
-- احترم `prefers-reduced-motion`
+- **Minimum 4.5:1 contrast** for all text — every pairing measured in the Contrast Rule table above
+- **Visible focus ring on every interactive element** — never `outline: none`
+- **Touch target ≥44×44px** up to the `lg` breakpoint
+- `aria-hidden` + `tabindex="-1"` on inactive slider slides
+- Accordion built on `<details name>` — works with JavaScript fully disabled
+- `alt` text on every image · descriptive `aria-label` on every icon-only control
+- Respects `prefers-reduced-motion`
+
+---
+
+## Performance
+
+- Built assets, never the Vite dev server — **4.7× difference** in load time (dev path recompiles Tailwind's full CSS on every request, measured at 2.02s for one file; production build: ~1.3s total)
+- Fonts self-hosted · images use `loading="lazy"` except above-the-fold
+- Texture and grain are inline SVG — zero network request
+
+> ⚠️ `npm run dev` creates `public/hot` and silently re-enables the slow dev path. For browsing, run `npm run build` and stop the dev server.
 
 ---
 
 ## Known Gaps
 
-| # | الفجوة | الحالة |
+| # | Gap | Status |
 |---|---|---|
-| 1 | الشعار | ⏳ لم يصل |
-| 2 | نطاق الاشتراك — يحدّد `pricing-card` | ⏳ م-1 |
-| 3 | سلوك الكويز — يحدّد `quiz-option` | ⏳ م-2 |
-| 4 | آلية الدفع | ⏳ م-4 |
-| 5 | مزوّد الفيديو — يحدّد `video-shell` | ⏳ م-5 |
-| 6 | الرسوم التوضيحية لنطاقات الهيرو | ⏳ |
+| 1 | Logo | ⏳ Not delivered yet |
+| 2 | Real teacher photos | ⏳ Current set is from the source template |
+| 3 | Subscription scope — determines `plan-card`'s final shape | ⏳ Pending decision M-1 |
+| 4 | Quiz behavior | ⏳ Pending decision M-2 |
+| 5 | Payment mechanism | ⏳ Pending decision M-4 |
+| 6 | Video hosting provider | ⏳ Pending decision M-5 |
+| 7 | Dark mode | ⏳ Not built yet |
+| 8 | Input component | ⏳ Not built yet — spec above, ready to implement |
+| 9 | Modal / Dialog component | ⏳ Not built yet — spec above, ready to implement |

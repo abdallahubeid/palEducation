@@ -1,5 +1,5 @@
 @props([
-    'variant' => 'neutral',   // neutral | branch | mint | warn | error | duration
+    'variant' => 'neutral',   // neutral | branch | accent | warn | error | duration
     'shape'   => 'pill',      // pill | chip
 ])
 
@@ -7,7 +7,7 @@
     $variants = [
         'neutral'  => 'bg-surface text-steel',
         'branch'   => 'bg-tag/12 text-tag',
-        'mint'     => 'bg-mint/14 text-mint-deep',
+        'accent'     => 'bg-accent/14 text-accent-deep',
         'warn'     => 'bg-warn/14 text-warn',
         'error'    => 'bg-error/12 text-error',
         'duration' => 'bg-surface text-steel font-latin tabular-nums',

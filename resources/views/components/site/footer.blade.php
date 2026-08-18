@@ -60,11 +60,11 @@
                            placeholder="name@example.com"
                            class="h-11 flex-1 rounded-md border border-on-dark/15 bg-on-dark/5 px-4
                                   font-latin text-ui text-on-dark transition placeholder:text-on-dark/35
-                                  focus:border-mint focus:bg-on-dark/10 focus:outline-none">
+                                  focus:border-accent focus:bg-on-dark/10 focus:outline-none">
 
                     <button type="submit"
-                            class="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-mint px-6
-                                   text-ui font-semibold text-primary transition hover:brightness-105">
+                            class="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-accent px-6
+                                   text-ui font-semibold text-on-primary transition hover:brightness-105">
                         {{ __('footer.subscribe') }}
                     </button>
                 </form>
@@ -78,7 +78,7 @@
                         @foreach ($column['links'] as $link)
                             <li>
                                 <a href="{{ $link['route'] && Route::has($link['route']) ? route($link['route']) : '#' }}"
-                                   class="text-caption text-on-dark-muted transition hover:text-mint">
+                                   class="text-caption text-on-dark-muted transition hover:text-accent-on-dark">
                                     {{ $link['label'] }}
                                 </a>
                             </li>
@@ -94,7 +94,7 @@
 
             <a href="{{ route('home') }}" class="flex items-center gap-2 text-ui font-bold text-on-dark">
                 <span class="grid size-7 place-items-center rounded-md bg-on-dark text-micro font-bold text-primary">p</span>
-                <span>pal <span class="text-mint">education</span></span>
+                <span>pal <span class="text-accent-on-dark">education</span></span>
             </a>
 
             <div class="flex flex-col items-center gap-1.5 text-caption text-on-dark/45

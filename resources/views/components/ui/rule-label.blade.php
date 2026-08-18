@@ -3,8 +3,8 @@
 ])
 
 @php
-    $ink  = $on === 'dark' ? 'text-mint' : 'text-mint-deep';
-    $line = $on === 'dark' ? 'bg-mint/70' : 'bg-mint';
+    $ink  = $on === 'dark' ? 'text-accent-on-dark' : 'text-accent-deep';
+    $line = $on === 'dark' ? 'bg-accent-on-dark' : 'bg-accent';
     $bg   = $on === 'dark' ? 'bg-deep-from' : 'bg-ground';
 @endphp
 

@@ -16,13 +16,14 @@
     --font-mono: 'Geist Mono', 'Cascadia Mono', Consolas, monospace;
 
     /* ── العلامة ───────────────────────────────────────── */
-    --color-primary: #0a0a0a;
+    --color-primary: #0b104a;       /* edunova — كحلي داكن للأسطح */
     --color-on-primary: #ffffff;
-    --color-mint: #00d4a4;
-    --color-mint-deep: #1ba673;
-    --color-mint-soft: #7cebcb;
-    --color-orange: #f55a3c;
-    --color-orange-deep: #cc3a1f;
+    --color-accent: #525fe1;        /* edunova — الأزرار والروابط */
+    --color-accent-deep: #3f4ab8;   /* أغمق للنص على الفاتح */
+    --color-accent-soft: #ecedff;   /* edunova — خلفية باهتة */
+    --color-accent-on-dark: #bcc2f8; /* accent مقروء على النطاقات الداكنة (6.8:1) */
+    --color-amber: #f0a500;        /* كهرماني — مكمّل البنفسجي (39° مقابل 235°) */
+    --color-amber-deep: #9c6205;   /* نصاً على الفاتح 4.7:1 · أبيض عليه 5.0:1 */
 
     /* ── دلالية ────────────────────────────────────────── */
     --color-tag: #3772cf;
@@ -35,7 +36,7 @@
        والحياد الرمادي يبدو غير مقصود. هذا محايد مُختار. */
     --color-ground: #f5f8f7;
     --color-canvas: #ffffff;
-    --color-canvas-dark: #0a0a0a;
+    --color-canvas-dark: #0b104a;
     --color-surface: #f7f7f7;
     --color-surface-soft: #fafafa;
     --color-surface-code: #1c1c1e;
@@ -45,20 +46,20 @@
     --color-hairline-dark: #1f1f1f;
 
     /* ── النص ──────────────────────────────────────────── */
-    --color-ink: #0a0a0a;
-    --color-charcoal: #1c1c1e;
-    --color-slate: #3a3a3c;
-    --color-steel: #5a5a5c;
-    --color-stone: #888888;
-    --color-muted: #a8a8aa;
+    --color-ink: #0b104a;           /* edunova — العناوين */
+    --color-charcoal: #1a2d62;      /* edunova — كحلي */
+    --color-slate: #3d4a6b;
+    --color-steel: #4a5355;         /* edunova — نص الفقرات */
+    --color-stone: #666e7c;         /* دُكِّن لبلوغ 4.5:1 */
+    --color-muted: #a3aab5;
     --color-on-dark: #ffffff;
     --color-on-dark-muted: #b3b3b3;
 
     /* ── نطاقات الهيرو الجوّية — التدرّج الوحيد المسموح ── */
-    --color-sky-from: #87a8c8;
-    --color-sky-to: #f5e9d8;
-    --color-deep-from: #1a3d4a;
-    --color-deep-to: #2d5a4f;
+    --color-sky-from: #c7cbf5;
+    --color-sky-to: #eef0fb;
+    --color-deep-from: #242e83;     /* نطاق داكن مُفتَّح — أبيض عليه 11.7:1 */
+    --color-deep-to: #3945a3;
 
     /* ── سلّم الطباعة — تباعد حرفي صفر دائماً ─────────── */
     --text-hero: 56px;
@@ -104,7 +105,7 @@
     --shadow-subtle: 0 1px 2px 0 rgb(0 0 0 / 0.04);
     --shadow-card: 0 4px 12px 0 rgb(0 0 0 / 0.08);
     --shadow-mockup: 0 24px 48px -8px rgb(0 0 0 / 0.12);
-    --shadow-mint-glow: 0 8px 24px 0 rgb(0 212 164 / 0.08);
+    --shadow-accent-glow: 0 8px 24px 0 rgb(82 95 225 / 0.10);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -146,12 +147,12 @@
     /* حلقة تركيز مرئية على كل عنصر تفاعلي — لا outline:none أبداً */
     :focus-visible {
         outline: none;
-        box-shadow: 0 0 0 3px rgb(0 212 164 / 0.30);
+        box-shadow: 0 0 0 3px rgb(82 95 225 / 0.32);
         border-radius: var(--radius-sm);
     }
 
     ::selection {
-        background-color: var(--color-mint);
+        background-color: var(--color-accent);
         color: var(--color-primary);
     }
 }
@@ -320,7 +321,7 @@
     place-items: center;
     height: 45px;
     width: 45px;
-    background-color: var(--color-mint);
+    background-color: var(--color-accent);
     color: var(--color-primary);
     transition:
         background-color 200ms ease,
@@ -400,7 +401,7 @@
 
 .slider__dot[aria-selected='true'] > span {
     width: 28px;
-    background-color: var(--color-mint-deep);
+    background-color: var(--color-accent-deep);
 }
 
 /* ── زر العودة لأعلى الصفحة ──────────────────────────── */
@@ -438,7 +439,7 @@
 }
 
 .card-hover:focus-within {
-    border-color: var(--color-mint);
+    border-color: var(--color-accent);
     box-shadow: var(--shadow-card);
 }
 
@@ -515,4 +516,32 @@
         animation: none !important;
         transform: none !important;
     }
+}
+/* ── لوح الهيرو — ملمس القالب الأصلي بلون هويتنا ───────
+   نفس صورة bg.jpg من قالب Charitize، لكنها كريمية دافئة
+   (#f3e9db) تصادم لوحتنا الباردة. الحل: background-blend-mode
+   بوضع luminosity — يأخذ تضاريس الصورة (السطوع) ويلبسها
+   صبغة لوننا (اللون والتشبّع). الملمس يبقى حرفياً، اللون يتبعنا. */
+.hero-canvas {
+    position: relative;
+    isolation: isolate;
+    background-color: #e9ecfb;
+    background-image: url('/images/textures/paper.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-blend-mode: luminosity;
+}
+
+/* توهّج بنفسجي من الزاوية + إذابة الحافّة السفلية في الأرضية */
+.hero-canvas::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(115% 85% at 88% -10%, rgb(82 95 225 / 0.20) 0%, transparent 58%),
+        radial-gradient(85% 65% at 5% 110%, rgb(11 16 74 / 0.08) 0%, transparent 62%),
+        linear-gradient(180deg, transparent calc(100% - 120px), var(--color-ground) 100%);
 }

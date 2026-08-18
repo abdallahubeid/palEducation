@@ -6,17 +6,17 @@
     'photo'    => null,      // صورة الأستاذ عند توفّرها
     'lectures' => 0,
     'students' => 0,
-    'tone'     => 'mint',
+    'tone'     => 'accent',
 ])
 
 @php
     $tones = [
-        'mint'   => ['wash' => 'bg-mint/10',   'strip' => 'bg-mint/8',   'text' => 'text-mint-deep'],
+        'accent'   => ['wash' => 'bg-accent/10',   'strip' => 'bg-accent/8',   'text' => 'text-accent-deep'],
         'tag'    => ['wash' => 'bg-tag/10',    'strip' => 'bg-tag/8',    'text' => 'text-tag'],
-        'orange' => ['wash' => 'bg-orange/10', 'strip' => 'bg-orange/8', 'text' => 'text-orange-deep'],
+        'amber' => ['wash' => 'bg-amber/10', 'strip' => 'bg-amber/8', 'text' => 'text-amber-deep'],
         'warn'   => ['wash' => 'bg-warn/12',   'strip' => 'bg-warn/10',  'text' => 'text-warn'],
     ];
-    $t = $tones[$tone] ?? $tones['mint'];
+    $t = $tones[$tone] ?? $tones['accent'];
 
     // روابط ذات معنى بدل أيقونات تواصل وهمية
     $actions = [
@@ -37,7 +37,7 @@
                      alt="{{ $name }}"
                      loading="lazy"
                      decoding="async"
-                     class="size-full object-cover transition duration-500 group-hover:scale-105">
+                     class="size-full object-cover object-top transition duration-500 group-hover:scale-105">
             @else
                 <span class="grid size-full place-items-center text-h2 font-bold {{ $t['text'] }} opacity-60">
                     {{ $initials }}
@@ -61,7 +61,7 @@
             <a href="#"
                aria-label="{{ $action['label'] }} — {{ $name }}"
                class="grid size-11 place-items-center rounded-md bg-primary text-on-primary
-                      transition hover:bg-mint hover:text-primary lg:size-9">
+                      transition hover:bg-accent hover:text-on-primary lg:size-9">
                 <x-icon :name="$action['icon']" class="size-3.5" />
             </a>
         @endforeach

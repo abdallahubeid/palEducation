@@ -1,5 +1,5 @@
 @props([
-    'variant' => 'primary',   // primary | mint | on-dark | secondary | ghost | danger
+    'variant' => 'primary',   // primary | accent | on-dark | secondary | ghost | danger
     'size'    => 'md',        // sm | md | lg
     'href'    => null,
 ])
@@ -10,9 +10,9 @@
              transition duration-200 disabled:opacity-50 disabled:pointer-events-none';
 
     $variants = [
-        'primary'   => 'bg-primary text-on-primary rounded-full hover:brightness-125',
-        'mint'      => 'bg-mint text-primary rounded-full hover:brightness-105',
-        'on-dark'   => 'bg-on-dark text-primary rounded-full hover:brightness-95',
+        'primary'   => 'bg-accent text-on-primary rounded-full hover:bg-amber-deep',
+        'accent'    => 'bg-amber text-ink rounded-full hover:bg-accent hover:text-on-primary',
+        'on-dark'   => 'bg-on-dark text-accent rounded-full hover:bg-accent hover:text-on-primary',
         'secondary' => 'bg-transparent text-ink border border-hairline rounded-full hover:bg-surface',
         'ghost'     => 'bg-transparent text-steel rounded-md hover:bg-surface hover:text-ink',
         'danger'    => 'bg-error text-on-dark rounded-full hover:brightness-95',
