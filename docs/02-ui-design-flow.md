@@ -84,7 +84,7 @@
 |---|---|---|
 | 1 | **الصفحة الرئيسية** | Nav · Hero · Button (كل الصيغ) · Card · Badge · Footer · إيقاع الأقسام · Logo wall |
 | 2 | **لوحة الطالب** | Sidebar · Topbar · StatCard · ListItem · ProgressBar · EmptyState · Avatar |
-| 3 | **صفحة المادة** | التخطيط ثلاثي الأعمدة · Tabs · LectureItem · FileRow · Breadcrumb · Pagination |
+| 3 | **صفحة المادة** | Hero + عمودان (~70/30، ثابت لا نسبي) · Tabs · LectureItem · FileRow · Breadcrumb · Pagination — راجع `03-screens-detail.md` §3 لتفاصيل التعديل 2026-08-18 |
 
 > **نقطة توقّف إلزامية:** لا ننتقل للموجة 2 قبل اعتماد هذه الثلاث نهائياً. أي تعديل لاحق عليها يتسرّب إلى 45 شاشة.
 

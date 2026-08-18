@@ -404,6 +404,66 @@
     background-color: var(--color-accent-deep);
 }
 
+/* ── درج الطالب الجانبي على الجوال ──────────────────────
+   مغلق افتراضياً خارج الشاشة، صنف .is-open يُضاف بـ JS (app.js).
+   من نقطة lg يبقى ثابتاً بصرف النظر عن الصنف — راجع lg:translate-x-0
+   وlg:transition-none في sidebar.blade.php. */
+/* مقيّد بـ max-width بدل الاعتماد على تجاوز lg لاحقاً — بهذا لا صنف
+   يتنافس مع آخر على النطاق العريض، والعنصر يرث transform:none افتراضياً */
+@media (max-width: 1023.98px) {
+    .student-drawer {
+        transform: translateX(-100%);
+        transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    [dir='rtl'] .student-drawer {
+        transform: translateX(100%);
+    }
+
+    .student-drawer.is-open,
+    [dir='rtl'] .student-drawer.is-open {
+        transform: translateX(0);
+    }
+}
+
+.student-backdrop {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 240ms ease, visibility 0s linear 240ms;
+}
+
+.student-backdrop.is-open {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+/* ── وضع التركيز — شاشة مشاهدة المحاضرة ───────────────────
+   ينطوي الشريط الجانبي الثابت على سطح المكتب أثناء التشغيل.
+   على الجوال الدرج مطويّ افتراضاً أصلاً، فلا حاجة لهذا هناك. */
+@media (min-width: 1024px) {
+    [data-shell].is-focus aside {
+        width: 0;
+        min-width: 0;
+        opacity: 0;
+        border-inline-end-width: 0;
+        overflow: hidden;
+        transition:
+            width 300ms cubic-bezier(0.16, 1, 0.3, 1),
+            opacity 200ms ease,
+            border-color 300ms ease;
+    }
+}
+
+/* ── تبويبات — صفحة المادة وغيرها ────────────────────────
+   JS يبدّل .is-active فقط، الأنماط هنا لا في Tailwind، فلا
+   تتنافس مع أصناف utility على العنصر نفسه. */
+.tab-trigger.is-active {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    box-shadow: var(--shadow-subtle);
+}
+
 /* ── زر العودة لأعلى الصفحة ──────────────────────────── */
 .to-top {
     opacity: 0;

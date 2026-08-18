@@ -355,7 +355,7 @@
 
                     {{-- لوح التشغيل --}}
                     <button type="button"
-                            data-demo-open
+                            data-modal-open="demo-video"
                             class="group relative grid aspect-video w-full cursor-pointer place-items-center
                                    overflow-hidden rounded-lg bg-canvas-dark/60 ring-1 ring-on-dark/10
                                    transition hover:ring-accent/50">
@@ -373,13 +373,13 @@
     </section>
 
     {{-- مودال الفيديو --}}
-    <div data-demo-modal hidden
+    <div id="demo-video" data-modal hidden
          class="fixed inset-0 z-[60] grid place-items-center bg-primary/80 p-6"
          role="dialog" aria-modal="true" aria-label="{{ __('home.demo_title') }}">
 
         <div class="w-full max-w-4xl">
             <div class="flex justify-end pb-3">
-                <button type="button" data-demo-close
+                <button type="button" data-modal-close
                         aria-label="{{ __('home.demo_close') }}"
                         class="grid size-10 cursor-pointer place-items-center rounded-full
                                bg-on-dark/10 text-on-dark transition hover:bg-on-dark/20">

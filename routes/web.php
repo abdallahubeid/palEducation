@@ -10,3 +10,27 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::view('/', 'pages.home')->name('home');
+
+/*
+|--------------------------------------------------------------------------
+| منطقة الطالب — قبل المصادقة والصلاحيات
+|--------------------------------------------------------------------------
+| الموجة 1 · الشاشة 2 من 3 — بيانات عرض ثابتة، بلا نموذج مجال بعد.
+| سيُنقَل لمجموعة محمية بـ middleware('auth', 'role:student', 'subscription.active')
+| عند بناء المصادقة.
+*/
+
+Route::view('/student/dashboard', 'pages.student.dashboard')->name('student.dashboard');
+
+/*
+| الموجة 1 · الشاشة 3 من 3 — صفحة المادة (نقطة توقّف إلزامية بعدها)
+| {subject} غير مستخدم بعد — بيانات عرض ثابتة بلا نموذج مجال.
+*/
+Route::view('/student/subjects/{subject}', 'pages.student.subject')->name('student.subjects.show');
+
+/*
+| الموجة 2 · الشاشة 4 — مشاهدة المحاضرة (الحلقة المغلقة)
+| ⏳ معلّق على م-5 (مزوّد الفيديو) — المشغّل هنا عرض تجريبي بديل،
+| يُستبدل بمُضمَّن SDK حقيقي (Bunny Stream/Vimeo) عند حسم القرار.
+*/
+Route::view('/student/lectures/{lecture}', 'pages.student.lecture')->name('student.lectures.show');

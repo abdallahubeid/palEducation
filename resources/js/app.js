@@ -288,38 +288,51 @@ function initToTop() {
     toggle();
 }
 
-/* ── مودال الفيديو التعريفي ───────────────────────────── */
-function initDemoModal() {
-    const modal = document.querySelector('[data-demo-modal]');
-    const opener = document.querySelector('[data-demo-open]');
-    if (!modal || !opener) return;
+/* ── مودالات — عامة لأي [data-modal] بالصفحة ─────────────
+   الفتح: أي عنصر data-modal-open="id" يفتح #id. الإغلاق: data-modal-close
+   داخله، أو النقر على الخلفية، أو Esc. modals[id].open() متاحة للفتح
+   البرمجي (مثال: مودال "جاهز للاختبار؟" عند انتهاء المحاضرة). */
+const modals = {};
 
-    const closers = modal.querySelectorAll('[data-demo-close]');
-    let lastFocused = null;
+function initModals() {
+    document.querySelectorAll('[data-modal]').forEach((modal) => {
+        const id = modal.id;
+        if (!id) return;
 
-    const open = () => {
-        lastFocused = document.activeElement;
-        modal.hidden = false;
-        document.body.style.overflow = 'hidden';
-        closers[0]?.focus();
-    };
+        const closers = modal.querySelectorAll('[data-modal-close]');
+        let lastFocused = null;
 
-    const close = () => {
-        modal.hidden = true;
-        document.body.style.overflow = '';
-        lastFocused?.focus();
-    };
+        const open = () => {
+            lastFocused = document.activeElement;
+            modal.hidden = false;
+            document.body.style.overflow = 'hidden';
+            closers[0]?.focus();
+        };
 
-    opener.addEventListener('click', open);
-    closers.forEach((c) => c.addEventListener('click', close));
+        const close = () => {
+            modal.hidden = true;
+            document.body.style.overflow = '';
+            lastFocused?.focus();
+        };
 
-    // الإغلاق بالنقر على الخلفية أو بمفتاح Esc
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) close();
-    });
+        document.querySelectorAll(`[data-modal-open="${id}"]`).forEach((o) => o.addEventListener('click', open));
+        closers.forEach((c) => c.addEventListener('click', close));
 
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && !modal.hidden) close();
+        // فتح تلقائي عند حدث مخصّص — مثال: data-modal-open-on="lecture:ended"
+        if (modal.dataset.modalOpenOn) {
+            document.addEventListener(modal.dataset.modalOpenOn, open);
+        }
+
+        // الإغلاق بالنقر على الخلفية أو بمفتاح Esc
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) close();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !modal.hidden) close();
+        });
+
+        modals[id] = { open, close };
     });
 }
 
@@ -328,9 +341,102 @@ document.addEventListener('DOMContentLoaded', () => {
     initReveal();
     initSliders();
     initToTop();
-    initDemoModal();
+    initModals();
     initAccordionFallback();
+    initStudentSidebar();
+    initTabs();
+    initLecturePlayer();
+    initFocusMode();
 });
+
+/* ── مشغّل المحاضرة — عرض تجريبي بانتظار قرار مزوّد الفيديو (م-5) ──
+   لا فيديو حقيقياً هنا. زر [data-video-play] يحاكي التشغيل، وزر
+   [data-simulate-lecture-end] المعزول بوضوح كأداة عرض يحاكي الانتهاء.
+   الحدثان lecture:play / lecture:ended هما ما سيُطلقه المشغّل الحقيقي
+   لاحقاً (حدث ended الأصلي لعنصر <video> أو ما يعادله عند مزوّد SDK) —
+   بقية النظام (وضع التركيز، مودال الكويز) لا يهمّها المصدر. */
+function initLecturePlayer() {
+    const player = document.querySelector('[data-video-player]');
+    if (!player) return;
+
+    const playBtn = player.querySelector('[data-video-play]');
+    const status = player.querySelector('[data-video-status]');
+    const simulateEndBtn = document.querySelector('[data-simulate-lecture-end]');
+
+    playBtn?.addEventListener('click', () => {
+        player.classList.add('is-playing');
+        if (status) status.textContent = status.dataset.playingLabel || status.textContent;
+        document.dispatchEvent(new CustomEvent('lecture:play'));
+    });
+
+    simulateEndBtn?.addEventListener('click', () => {
+        document.dispatchEvent(new CustomEvent('lecture:ended'));
+    });
+}
+
+/* ── وضع التركيز — الشريط الجانبي ينطوي أثناء المشاهدة ────
+   [data-shell].is-focus يُقرأ في app.css. يعود عند الانتهاء. */
+function initFocusMode() {
+    const shell = document.querySelector('[data-shell]');
+    if (!shell) return;
+
+    document.addEventListener('lecture:play', () => shell.classList.add('is-focus'));
+    document.addEventListener('lecture:ended', () => shell.classList.remove('is-focus'));
+}
+
+/* ── التبويبات — عامة لأي [data-tabs] بالصفحة ────────────
+   صنف .is-active يُبدَّل بلا مساس بأصناف Tailwind الثابتة —
+   انظر .tab-trigger.is-active في app.css. */
+function initTabs() {
+    document.querySelectorAll('[data-tabs]').forEach((wrap) => {
+        const triggers = wrap.querySelectorAll('[data-tab-trigger]');
+        const panels = wrap.querySelectorAll('[data-tab-panel]');
+        if (!triggers.length || !panels.length) return;
+
+        const activate = (key) => {
+            triggers.forEach((t) => {
+                const on = t.dataset.tabTrigger === key;
+                t.classList.toggle('is-active', on);
+                t.setAttribute('aria-selected', String(on));
+            });
+            panels.forEach((p) => {
+                p.hidden = p.dataset.tabPanel !== key;
+            });
+        };
+
+        triggers.forEach((t) => t.addEventListener('click', () => activate(t.dataset.tabTrigger)));
+    });
+}
+
+/* ── الشريط الجانبي — قشرة الطالب ─────────────────────────
+   نفس منطق initNav(): درج على الجوال، ثابت من lg. الفتح/الإغلاق
+   عبر صنف .is-open (انظر app.css)، لا عبر Alpine — غير مثبّت بعد. */
+function initStudentSidebar() {
+    const drawer = document.querySelector('[data-sidebar-drawer]');
+    const backdrop = document.querySelector('[data-sidebar-backdrop]');
+    const openers = document.querySelectorAll('[data-sidebar-open]');
+    if (!drawer || !openers.length) return;
+
+    const setOpen = (open) => {
+        drawer.classList.toggle('is-open', open);
+        backdrop?.classList.toggle('is-open', open);
+        document.body.style.overflow = open ? 'hidden' : '';
+    };
+
+    openers.forEach((btn) => btn.addEventListener('click', () => setOpen(true)));
+    drawer.querySelectorAll('[data-sidebar-close]').forEach((btn) => btn.addEventListener('click', () => setOpen(false)));
+    backdrop?.addEventListener('click', () => setOpen(false));
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && drawer.classList.contains('is-open')) setOpen(false);
+    });
+
+    drawer.querySelectorAll('a').forEach((l) => l.addEventListener('click', () => setOpen(false)));
+
+    window.matchMedia('(min-width: 1024px)').addEventListener('change', (e) => {
+        if (e.matches) setOpen(false);
+    });
+}
 
 /* ── الأكورديون الحصري ────────────────────────────────
    خاصية details[name] الأصلية تتكفّل بالحصرية في المتصفحات

@@ -25,6 +25,21 @@
         'check'     => '<path d="m4.5 12.5 5 5 10-11"/>',
         'arrow'     => '<path d="M4 12h15M13 6l6 6-6 6"/>',
         'circle'    => '<circle cx="12" cy="12" r="9"/>',
+
+        // قشرة الطالب
+        'home'        => '<path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9"/>',
+        'chart'       => '<path d="M4 20V4M4 20h16"/><rect x="7" y="12" width="3" height="6" rx=".5"/><rect x="12" y="8" width="3" height="10" rx=".5"/><rect x="17" y="15" width="3" height="3" rx=".5"/>',
+        'card'        => '<rect x="2.5" y="5.5" width="19" height="13" rx="2"/><path d="M2.5 10h19"/><path d="M6 15h4"/>',
+        'user'        => '<circle cx="12" cy="8" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>',
+        'search'      => '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.3-4.3"/>',
+        'bell'        => '<path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 19a2 2 0 0 0 4 0"/>',
+        'menu'        => '<path d="M4 6h16M4 12h16M4 18h16"/>',
+        'close'       => '<path d="M6 6l12 12M18 6 6 18"/>',
+        'clock'       => '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
+        'check-circle' => '<circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.5 2.5L16 9.5"/>',
+        'trending-up' => '<path d="M3 17l6-6 4 4 8-8"/><path d="M15 6h6v6"/>',
+        'chevron-down' => '<path d="m6 9 6 6 6-6"/>',
+        'download'     => '<path d="M12 4v11m0 0 4-4m-4 4-4-4"/><path d="M5 18h14"/>',
     ];
 @endphp
 
