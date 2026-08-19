@@ -347,7 +347,313 @@ document.addEventListener('DOMContentLoaded', () => {
     initTabs();
     initLecturePlayer();
     initFocusMode();
+    initQuizRunner();
+    initLectureViewSwitcher();
+    initStandaloneQuizResult();
+    initSubjectFilter();
 });
+
+/* ── موادي — بحث وفلترة على العميل بلا خادم ─────────────
+   منطق AND بين البحث (اسم المادة أو المعلم) والفلتر النشط. */
+function initSubjectFilter() {
+    const wrap = document.querySelector('[data-subject-filter]');
+    if (!wrap) return;
+
+    const searchInput = wrap.querySelector('[data-subject-search]');
+    const filterBtns = [...wrap.querySelectorAll('[data-subject-filter-btn]')];
+    const cards = [...wrap.querySelectorAll('[data-subject-card]')];
+    const noResults = wrap.querySelector('[data-subject-no-results]');
+
+    let activeFilter = 'all';
+
+    const apply = () => {
+        const query = (searchInput?.value || '').trim().toLowerCase();
+        let visibleCount = 0;
+
+        cards.forEach((card) => {
+            const matchesFilter = activeFilter === 'all' || card.dataset.subjectStatus === activeFilter;
+            const matchesSearch = !query || (card.dataset.subjectName || '').toLowerCase().includes(query);
+            const show = matchesFilter && matchesSearch;
+            card.hidden = !show;
+            if (show) visibleCount += 1;
+        });
+
+        if (noResults) noResults.hidden = visibleCount > 0;
+    };
+
+    filterBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            activeFilter = btn.dataset.subjectFilterBtn;
+            filterBtns.forEach((b) => b.classList.toggle('is-active', b === btn));
+            apply();
+        });
+    });
+
+    searchInput?.addEventListener('input', apply);
+}
+
+/* ── صفحة نتيجة الكويز المستقلة — تُحسب فور التحميل ─────────
+   الوحيدة التي تصل إليها فعلياً: إنهاء الكويز من student/quiz.blade.php
+   (لا نتيجة مضمّنة هناك) يحفظ في نفس مفتاح localStorage ثم يتنقّل هنا. */
+function initStandaloneQuizResult() {
+    const resultView = document.querySelector('[data-quiz-result-standalone]');
+    if (!resultView) return;
+
+    const quizId = resultView.dataset.quizId || 'default';
+    const storageKey = `quiz-demo-${quizId}`;
+    const attemptsKey = `quiz-attempts-${quizId}`;
+
+    let answers = {};
+    try {
+        answers = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    } catch {
+        answers = {};
+    }
+    const attempts = parseInt(localStorage.getItem(attemptsKey) || '1', 10) || 1;
+
+    renderQuizResult(resultView, answers, attempts);
+
+    resultView.querySelector('[data-quiz-retry]')?.addEventListener('click', () => {
+        try {
+            localStorage.removeItem(storageKey);
+        } catch {
+            /* تجاهل */
+        }
+        window.location.href = resultView.dataset.retakeHref || '#';
+    });
+}
+
+/* ── الكويز — سؤال واحد بالشاشة، بلا مؤقّت ─────────────────
+   حفظ تلقائي في localStorage لكل إجابة — انقطاع الاتصال أو إغلاق
+   التبويب لا يضيّع المحاولة (يُستبدل بحفظ عبر الشبكة عند وجود Livewire). */
+function initQuizRunner() {
+    const runner = document.querySelector('[data-quiz-runner]');
+    if (!runner) return;
+
+    const questions = [...runner.querySelectorAll('[data-quiz-question]')];
+    const total = questions.length;
+    if (!total) return;
+
+    const quizId = runner.dataset.quizId || 'default';
+    const storageKey = `quiz-demo-${quizId}`;
+    const attemptsKey = `quiz-attempts-${quizId}`;
+    const currentLabel = runner.querySelector('[data-quiz-current]');
+    const progressFill = runner.querySelector('[data-quiz-progress] .bar-fill');
+    const progressTrack = runner.querySelector('[data-quiz-progress] [role="progressbar"]');
+    const prevBtn = runner.querySelector('[data-quiz-prev]');
+    const nextBtn = runner.querySelector('[data-quiz-next]');
+    const finishBtn = runner.querySelector('[data-quiz-finish]');
+    const finishConfirm = document.getElementById('quiz-unanswered-confirm');
+    const resultView = document.querySelector('[data-lecture-view="result"]');
+
+    let current = 0;
+
+    const loadSaved = () => {
+        try {
+            return JSON.parse(localStorage.getItem(storageKey) || '{}');
+        } catch {
+            return {};
+        }
+    };
+
+    const saveAnswer = (index, value) => {
+        const saved = loadSaved();
+        saved[index] = value;
+        try {
+            localStorage.setItem(storageKey, JSON.stringify(saved));
+        } catch {
+            /* التخزين المحلي غير متاح — لا نكسر التجربة، فقط بلا استرجاع لاحق */
+        }
+    };
+
+    // استرجاع أي إجابات محفوظة من محاولة سابقة (تحديث الصفحة، انقطاع نت)
+    const saved = loadSaved();
+    questions.forEach((q, i) => {
+        if (saved[i] === undefined) return;
+        const input = q.querySelector(`[data-quiz-option][value="${CSS.escape(String(saved[i]))}"]`);
+        if (input) input.checked = true;
+    });
+
+    runner.addEventListener('change', (e) => {
+        if (!e.target.matches('[data-quiz-option]')) return;
+        const q = e.target.closest('[data-quiz-question]');
+        saveAnswer(q.dataset.index, e.target.value);
+    });
+
+    const isAnswered = (q) => !!q.querySelector('[data-quiz-option]:checked');
+
+    const render = () => {
+        questions.forEach((q, i) => {
+            q.hidden = i !== current;
+        });
+
+        if (currentLabel) currentLabel.textContent = String(current + 1);
+
+        const percent = Math.round(((current + 1) / total) * 100);
+        if (progressFill) progressFill.style.width = percent + '%';
+        if (progressTrack) progressTrack.setAttribute('aria-valuenow', String(percent));
+
+        prevBtn.disabled = current === 0;
+        const isLast = current === total - 1;
+        nextBtn.hidden = isLast;
+        finishBtn.hidden = !isLast;
+    };
+
+    prevBtn.addEventListener('click', () => {
+        if (current > 0) {
+            current -= 1;
+            render();
+        }
+    });
+
+    nextBtn.addEventListener('click', () => {
+        if (current < total - 1) {
+            current += 1;
+            render();
+        }
+    });
+
+    // ── إنهاء الكويز — نتيجة محسوبة فعلياً من الإجابات المحفوظة، لا وهمية ──
+    const getAttempts = () => {
+        const n = parseInt(localStorage.getItem(attemptsKey) || '0', 10);
+        return Number.isFinite(n) ? n : 0;
+    };
+
+    const completeQuiz = () => {
+        const attempts = getAttempts() + 1;
+        try {
+            localStorage.setItem(attemptsKey, String(attempts));
+        } catch {
+            /* بلا تخزين محلي: عدّاد المحاولات لا يُحفظ، لكن العرض يستمر */
+        }
+
+        if (resultView) {
+            renderQuizResult(resultView, loadSaved(), attempts);
+            showLectureView('result');
+        } else {
+            window.location.href = finishBtn.href;
+        }
+    };
+
+    finishBtn.addEventListener('click', (e) => {
+        const unanswered = questions.filter((q) => !isAnswered(q)).length;
+        if (unanswered > 0 && finishConfirm) {
+            e.preventDefault();
+            const answeredCount = total - unanswered;
+            finishConfirm.querySelectorAll('[data-answered-count]').forEach((el) => {
+                el.textContent = String(answeredCount);
+            });
+            modals[finishConfirm.id]?.open();
+        } else if (resultView) {
+            e.preventDefault();
+            completeQuiz();
+        }
+        // لا نتيجة مضمّنة ولا أسئلة ناقصة: href الحقيقي يعمل طبيعياً (احتياط بلا JS)
+    });
+
+    // زر «إنهاء رغم ذلك» داخل مودال التأكيد — نفس معالجة الإنهاء عند التضمين
+    if (finishConfirm && resultView) {
+        finishConfirm.querySelector('[data-confirm-accept]')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            modals[finishConfirm.id]?.close();
+            completeQuiz();
+        });
+    }
+
+    // إعادة المحاولة — يمسح الإجابات المحفوظة ويعيد الكويز لأوّله
+    document.querySelectorAll('[data-quiz-retry]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            try {
+                localStorage.removeItem(storageKey);
+            } catch {
+                /* تجاهل */
+            }
+            questions.forEach((q) => {
+                q.querySelectorAll('[data-quiz-option]').forEach((i) => {
+                    i.checked = false;
+                });
+            });
+            current = 0;
+            render();
+            showLectureView('quiz');
+        });
+    });
+
+    render();
+}
+
+/* ── عرض نتيجة الكويز — تُحسب من الإجابات المحفوظة فعلياً ────
+   لا درجة ثابتة: لو أجاب الطالب كل شيء خطأ ستظهر 0/كذا فعلاً. */
+function renderQuizResult(resultView, answers, attempts) {
+    const reviewRows = [...resultView.querySelectorAll('[data-review-row]')];
+    const yourAnswerLabel = resultView.dataset.yourAnswerLabel || '';
+    const correctAnswerLabel = resultView.dataset.correctAnswerLabel || '';
+    let correct = 0;
+
+    reviewRows.forEach((row) => {
+        const index = row.dataset.index;
+        const correctIndex = row.dataset.correctIndex;
+        const options = JSON.parse(row.dataset.options || '[]');
+        const userIndex = answers[index];
+        const isCorrect = userIndex !== undefined && String(userIndex) === String(correctIndex);
+        if (isCorrect) correct += 1;
+
+        const box = row.querySelector('[data-review-answers]');
+        if (!box) return;
+
+        let html = '';
+        if (userIndex === undefined) {
+            html += `<p class="text-stone">${yourAnswerLabel}: —</p>`;
+        } else {
+            html += `<p class="font-medium ${isCorrect ? 'text-accent-deep' : 'text-error-deep'}">${yourAnswerLabel}: ${options[userIndex] ?? ''}</p>`;
+        }
+        if (!isCorrect) {
+            html += `<p class="font-medium text-accent-deep">${correctAnswerLabel}: ${options[correctIndex] ?? ''}</p>`;
+        }
+        box.innerHTML = html;
+    });
+
+    const total = reviewRows.length;
+    const percent = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+    const summary = resultView.querySelector('[data-quiz-result-summary]');
+    if (summary) {
+        const ringFill = summary.querySelector('[data-score-ring-fill]');
+        if (ringFill) {
+            const circumference = 2 * Math.PI * 52;
+            ringFill.style.strokeDasharray = `${circumference}px`;
+            ringFill.style.strokeDashoffset = `${circumference * (1 - percent / 100)}px`;
+        }
+
+        const set = (selector, text) => {
+            const el = summary.querySelector(selector);
+            if (el) el.textContent = text;
+        };
+
+        set('[data-score-percent-label]', `${percent}%`);
+        set('[data-score-fraction]', `${correct} / ${total}`);
+        set('[data-score-correct]', String(correct));
+        set('[data-score-incorrect]', String(total - correct));
+        set('[data-score-percent-mini]', `${percent}%`);
+
+        const message = summary.querySelector('[data-score-message]');
+        if (message) {
+            message.textContent =
+                percent >= 80 ? summary.dataset.msgExcellent
+                : percent >= 50 ? summary.dataset.msgGood
+                : summary.dataset.msgPractice;
+        }
+    }
+
+    // توصية م-2: محاولتان — الزر يختفي بعدها (القرار الفعلي لم يُحسم بعد)
+    const retryBtn = resultView.querySelector('[data-quiz-retry]');
+    const retryUnavailable = resultView.querySelector('[data-quiz-retry-unavailable]');
+    if (retryBtn && retryUnavailable) {
+        const canRetry = attempts < 2;
+        retryBtn.hidden = !canRetry;
+        retryUnavailable.hidden = canRetry;
+    }
+}
 
 /* ── مشغّل المحاضرة — عرض تجريبي بانتظار قرار مزوّد الفيديو (م-5) ──
    لا فيديو حقيقياً هنا. زر [data-video-play] يحاكي التشغيل، وزر
@@ -380,8 +686,48 @@ function initFocusMode() {
     const shell = document.querySelector('[data-shell]');
     if (!shell) return;
 
-    document.addEventListener('lecture:play', () => shell.classList.add('is-focus'));
-    document.addEventListener('lecture:ended', () => shell.classList.remove('is-focus'));
+    // lecture:play/ended = تشغيل الفيديو الفعلي. focus-mode:enter/exit = عام،
+    // يشمل أيضاً التبديل لعرض الكويز المضمّن (initLectureViewSwitcher).
+    ['lecture:play', 'focus-mode:enter'].forEach((evt) =>
+        document.addEventListener(evt, () => shell.classList.add('is-focus')));
+    ['lecture:ended', 'focus-mode:exit'].forEach((evt) =>
+        document.addEventListener(evt, () => shell.classList.remove('is-focus')));
+}
+
+/* ── التبديل بين عرض الفيديو وعرض الكويز — بلا انتقال صفحة ──
+   [data-embed-target="video|quiz"] يعترض النقر (نمط Sprints.ai): يُظهر
+   [data-lecture-view="..."] المطابق ويُخفي الآخر، بدل الانتقال لمسار
+   الكويز المستقل. ذلك المسار يبقى موجوداً كرابط حقيقي احتياطي — لو
+   تعطّل JS أو فُتح في تبويب جديد، التنقّل العادي يعمل كما هو. */
+/* ── إدارة عروض صفحة المحاضرة الثلاثة: فيديو/كويز/نتيجة ──────
+   دالة واحدة مشتركة يستدعيها initLectureViewSwitcher() (نقر الشريط
+   الجانبي) و initQuizRunner() (الإنهاء وإعادة المحاولة) — تضمن ظهور
+   عرض واحد فقط دائماً بصرف النظر عن نقطة الاستدعاء. */
+function showLectureView(mode) {
+    const views = {
+        video: document.querySelector('[data-lecture-view="video"]'),
+        quiz: document.querySelector('[data-lecture-view="quiz"]'),
+        result: document.querySelector('[data-lecture-view="result"]'),
+    };
+    if (!views.video && !views.quiz && !views.result) return;
+
+    Object.entries(views).forEach(([key, el]) => {
+        if (el) el.hidden = key !== mode;
+    });
+
+    // وضع التركيز أثناء الكويز فقط — النتيجة والفيديو شاشتان عاديتان
+    document.dispatchEvent(new CustomEvent(mode === 'quiz' ? 'focus-mode:enter' : 'focus-mode:exit'));
+}
+
+function initLectureViewSwitcher() {
+    if (!document.querySelector('[data-lecture-view]')) return;
+
+    document.querySelectorAll('[data-embed-target]').forEach((trigger) => {
+        trigger.addEventListener('click', (e) => {
+            e.preventDefault();
+            showLectureView(trigger.dataset.embedTarget);
+        });
+    });
 }
 
 /* ── التبويبات — عامة لأي [data-tabs] بالصفحة ────────────

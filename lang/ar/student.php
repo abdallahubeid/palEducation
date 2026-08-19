@@ -46,6 +46,7 @@ return [
     'subjects_view_all' => 'عرض كل المواد',
     'subject_progress_label' => 'نسبة الإنجاز',
     'lectures_unit' => 'محاضرة',
+    'files_unit' => 'ملف',
 
     // آخر النتائج
     'results_eyebrow' => 'آخر النتائج',
@@ -63,6 +64,11 @@ return [
     'breadcrumb_subjects' => 'موادي',
     'tab_lectures' => 'محاضرات',
     'tab_files' => 'ملفات',
+    'module_completed_suffix' => 'مكتملة',
+    'course_outline_title' => 'محتوى المادة',
+    'topic_text_label' => 'الملف النصي',
+    'topic_video_label' => 'فيديو المحاضرة',
+    'topic_quiz_label' => 'كويز المحاضرة',
     'lecture_status_completed' => 'مكتملة',
     'lecture_status_in_progress' => 'جارية',
     'lecture_status_new' => 'جديدة',
@@ -76,14 +82,22 @@ return [
     'files_empty_title' => 'لا ملفات بعد',
     'files_empty_body' => 'ملفات هذه المادة تظهر هنا فور رفعها من المعلم.',
 
+    // موادي — القائمة الرئيسية
+    'my_subjects_title' => 'موادي',
+    'my_subjects_search_placeholder' => 'ابحث باسم المادة أو المعلم...',
+    'my_subjects_filter_all' => 'الكل',
+    'my_subjects_filter_current' => 'المواد الحالية',
+    'my_subjects_filter_completed' => 'مواد مكتملة',
+    'my_subjects_empty_title' => 'لم تُضف مواد لفرعك بعد',
+    'my_subjects_no_results_title' => 'لا نتائج مطابقة',
+    'my_subjects_no_results_body' => 'جرّب كلمة بحث مختلفة أو بدّل الفلتر.',
+
     // مشاهدة المحاضرة
     'breadcrumb_lecture_prefix' => 'المحاضرة',
     'play_lecture' => 'تشغيل المحاضرة',
     'video_pending' => 'الفيديو بانتظار اعتماد مزوّد الاستضافة — هذا عرض تجريبي للتفاعل',
     'video_playing_demo' => 'قيد المشاهدة (عرض تجريبي)',
     'lecture_description_title' => 'وصف المحاضرة',
-    'lecture_files_title' => 'ملفات مرفقة',
-    'lecture_files_empty' => 'لا ملفات مرفقة بهذه المحاضرة',
     'lecture_prev' => 'المحاضرة السابقة',
     'lecture_next' => 'المحاضرة التالية',
     'demo_tools_label' => 'أدوات عرض تجريبية — تُستبدل بمشغّل حقيقي عند حسم م-5',
@@ -92,4 +106,30 @@ return [
     'quiz_ready_body' => 'أنهيت مشاهدة هذه المحاضرة. اختبر فهمك الآن بكويز من 10 أسئلة — يفتح تلقائياً كل مرة تنهي فيها محاضرة.',
     'quiz_ready_cta' => 'ابدأ الكويز',
     'quiz_ready_later' => 'لاحقاً',
+
+    // الكويز
+    'quiz_exit' => 'خروج',
+    'quiz_question_label' => 'السؤال :current من :total',
+    'quiz_prev' => 'السابق',
+    'quiz_next' => 'التالي',
+    'quiz_finish' => 'إنهاء',
+    'quiz_unanswered_title' => 'لسه في أسئلة بلا إجابة',
+    'quiz_unanswered_body' => 'أجبت على :answered من :total أسئلة. تقدر تكمل الباقي أو تنهي الكويز الآن بإجاباتك الحالية.',
+    'quiz_unanswered_confirm' => 'إنهاء رغم ذلك',
+    'quiz_unanswered_cancel' => 'أكمل الإجابة',
+
+    // نتيجة الكويز
+    'quiz_result_title' => 'نتيجتك',
+    'quiz_result_excellent' => 'ممتاز! فهمك للمحاضرة قوي جداً.',
+    'quiz_result_good' => 'جيد! راجع الأسئلة اللي أخطأت فيها وستتقن المادة.',
+    'quiz_result_practice_more' => 'تحتاج مراجعة أكثر — أعد مشاهدة المحاضرة وجرّب مرة ثانية.',
+    'quiz_result_correct_label' => 'صحيحة',
+    'quiz_result_incorrect_label' => 'خاطئة',
+    'quiz_result_percent_label' => 'النسبة',
+    'quiz_result_review_title' => 'مراجعة الأسئلة',
+    'quiz_result_your_answer' => 'إجابتك',
+    'quiz_result_correct_answer' => 'الإجابة الصحيحة',
+    'quiz_result_retry' => 'إعادة المحاولة',
+    'quiz_result_retry_unavailable' => 'استخدمت محاولتيك المتاحتين لهذا الكويز',
+    'quiz_result_back_to_subject' => 'عودة للمادة',
 ];

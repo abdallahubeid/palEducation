@@ -26,6 +26,13 @@ Route::view('/student/dashboard', 'pages.student.dashboard')->name('student.dash
 | الموجة 1 · الشاشة 3 من 3 — صفحة المادة (نقطة توقّف إلزامية بعدها)
 | {subject} غير مستخدم بعد — بيانات عرض ثابتة بلا نموذج مجال.
 */
+/*
+| الموجة 5 · الشاشة 18 — موادي (القائمة الرئيسية)
+| بُنيت هنا خارج الترتيب لأن روابط لها موجودة أصلاً (الشريط الجانبي،
+| اللوحة، صفحة المادة) وكانت تتساقط جميعها إلى '#' حتى الآن.
+*/
+Route::view('/student/subjects', 'pages.student.subjects')->name('student.subjects.index');
+
 Route::view('/student/subjects/{subject}', 'pages.student.subject')->name('student.subjects.show');
 
 /*
@@ -34,3 +41,17 @@ Route::view('/student/subjects/{subject}', 'pages.student.subject')->name('stude
 | يُستبدل بمُضمَّن SDK حقيقي (Bunny Stream/Vimeo) عند حسم القرار.
 */
 Route::view('/student/lectures/{lecture}', 'pages.student.lecture')->name('student.lectures.show');
+
+/*
+| الموجة 2 · الشاشة 5 — الكويز
+| ⏳ معلّق على م-2 — القواعد هنا توصية docs/01 §7 (محاولتان، لا قفل)
+| بانتظار قرار فعلي. بلا شريط جانبي عمداً — layouts.focus.
+*/
+Route::view('/student/lectures/{lecture}/quiz', 'pages.student.quiz')->name('student.lectures.quiz');
+
+/*
+| الموجة 2 · الشاشة 6 — نتيجة الكويز (تُغلق الحلقة)
+| مضمّنة أصلاً داخل student.lectures.show (نمط Sprints.ai من الشاشة
+| السابقة) — هذا المسار احتياطي فقط لإنهاء الكويز من صفحته المستقلة.
+*/
+Route::view('/student/lectures/{lecture}/quiz/result', 'pages.student.quiz-result')->name('student.lectures.quiz-result');

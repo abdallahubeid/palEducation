@@ -11,14 +11,33 @@
 
     $currentLectureNumber = 4;
 
-    $lectures = [
-        ['number' => 1, 'title' => 'مقدمة في التفاضل',      'duration' => '12:30', 'status' => 'completed',   'score' => '9 / 10'],
-        ['number' => 2, 'title' => 'نهايات الدوال',          'duration' => '15:10', 'status' => 'completed',   'score' => '10 / 10'],
-        ['number' => 3, 'title' => 'المشتقة الأولى',          'duration' => '18:45', 'status' => 'completed',   'score' => '7 / 10'],
-        ['number' => 4, 'title' => 'قواعد الاشتقاق',          'duration' => '20:00', 'status' => 'in_progress', 'score' => null],
-        ['number' => 5, 'title' => 'تطبيقات المشتقة',        'duration' => '16:20', 'status' => 'new',         'score' => null],
-        ['number' => 6, 'title' => 'التكامل غير المحدد',     'duration' => '22:15', 'status' => 'new',         'score' => null],
+    // نمط Sprints.ai — محاضرات المادة مجمّعة في وحدات، لا قائمة مسطّحة
+    $modules = [
+        [
+            'number' => 1,
+            'title' => 'أساسيات التفاضل',
+            'totalDuration' => 'ساعة و7 د',
+            'lectures' => [
+                ['number' => 1, 'title' => 'مقدمة في التفاضل',  'duration' => '12:30', 'status' => 'completed',   'textDone' => true,  'videoDone' => true,  'quizScore' => '9 / 10'],
+                ['number' => 2, 'title' => 'نهايات الدوال',      'duration' => '15:10', 'status' => 'completed',   'textDone' => true,  'videoDone' => true,  'quizScore' => '10 / 10'],
+                ['number' => 3, 'title' => 'المشتقة الأولى',      'duration' => '18:45', 'status' => 'completed',   'textDone' => true,  'videoDone' => true,  'quizScore' => '7 / 10'],
+                ['number' => 4, 'title' => 'قواعد الاشتقاق',      'duration' => '20:00', 'status' => 'in_progress', 'textDone' => true,  'videoDone' => false, 'quizScore' => null],
+            ],
+        ],
+        [
+            'number' => 2,
+            'title' => 'التطبيقات والتكامل',
+            'totalDuration' => '38 د',
+            'lectures' => [
+                ['number' => 5, 'title' => 'تطبيقات المشتقة',    'duration' => '16:20', 'status' => 'new', 'textDone' => false, 'videoDone' => false, 'quizScore' => null],
+                ['number' => 6, 'title' => 'التكامل غير المحدد', 'duration' => '22:15', 'status' => 'new', 'textDone' => false, 'videoDone' => false, 'quizScore' => null],
+            ],
+        ],
     ];
+
+    // المحاضرة الحالية تحدد أي وحدة تُفتح افتراضياً
+    $currentModuleNumber = collect($modules)
+        ->first(fn ($m) => collect($m['lectures'])->contains('number', $currentLectureNumber))['number'] ?? 1;
 
     $files = [
         ['name' => 'ورقة عمل — المشتقات', 'size' => '2.4MB', 'date' => '2026-08-10'],
@@ -54,15 +73,34 @@
             <div class="flex min-w-0 flex-col gap-5">
                 <x-ui.tabs :items="['lectures' => __('student.tab_lectures'), 'files' => __('student.tab_files')]" active="lectures">
                     <div data-tab-panel="lectures" class="mt-5 flex flex-col gap-3">
-                        @foreach ($lectures as $lecture)
-                            <x-domain.lecture-list-item
-                                :number="$lecture['number']"
-                                :title="$lecture['title']"
-                                :duration="$lecture['duration']"
-                                :status="$lecture['status']"
-                                :score="$lecture['score']"
-                                :current="$lecture['number'] === $currentLectureNumber"
-                                :href="route('student.lectures.show', $lecture['number'])" />
+                        @foreach ($modules as $module)
+                            <x-domain.module-accordion
+                                :number="$module['number']"
+                                :title="$module['title']"
+                                :lecture-count="count($module['lectures'])"
+                                :total-duration="$module['totalDuration']"
+                                :completed-count="collect($module['lectures'])->where('status', 'completed')->count()"
+                                :open="$module['number'] === $currentModuleNumber">
+                                @foreach ($module['lectures'] as $lecture)
+                                    <x-domain.topic-accordion
+                                        :number="$lecture['number']"
+                                        :title="$lecture['title']"
+                                        :duration="$lecture['duration']"
+                                        :status="$lecture['status']"
+                                        :current="$lecture['number'] === $currentLectureNumber"
+                                        :open="$lecture['number'] === $currentLectureNumber">
+                                        <x-domain.topic-item type="text" :label="__('student.topic_text_label')"
+                                            :done="$lecture['textDone']"
+                                            :href="route('student.lectures.show', $lecture['number']) . '#lecture-description'" />
+                                        <x-domain.topic-item type="video" :label="__('student.topic_video_label')"
+                                            :meta="$lecture['duration']" :done="$lecture['videoDone']"
+                                            :href="route('student.lectures.show', $lecture['number'])" />
+                                        <x-domain.topic-item type="quiz" :label="__('student.topic_quiz_label')"
+                                            :meta="$lecture['quizScore']" :done="$lecture['quizScore'] !== null"
+                                            :href="route('student.lectures.quiz', $lecture['number'])" />
+                                    </x-domain.topic-accordion>
+                                @endforeach
+                            </x-domain.module-accordion>
                         @endforeach
                     </div>
 

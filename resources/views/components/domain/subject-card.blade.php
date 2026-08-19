@@ -4,6 +4,7 @@
     'icon'          => 'book',
     'percent'       => 0,
     'lecturesCount' => 0,
+    'filesCount'    => null,       // اختياري — يظهر بجانب عدد المحاضرات إن مُرِّر
     'tone'          => 'accent',   // accent | tag | amber | warn
     'href'          => '#',
 ])
@@ -13,7 +14,7 @@
         'accent' => 'bg-accent/14 text-accent-deep',
         'tag'    => 'bg-tag/12 text-tag',
         'amber'  => 'bg-amber/12 text-amber-deep',
-        'warn'   => 'bg-warn/14 text-warn',
+        'warn'   => 'bg-warn/14 text-warn-deep',
     ];
 @endphp
 
@@ -37,5 +38,10 @@
         <x-ui.progress-bar :percent="$percent" size="sm" class="mt-2" />
     </div>
 
-    <p class="text-caption text-stone">{{ $lecturesCount }} {{ __('student.lectures_unit') }}</p>
+    <p class="num text-caption text-stone">
+        {{ $lecturesCount }} {{ __('student.lectures_unit') }}
+        @if ($filesCount !== null)
+            · {{ $filesCount }} {{ __('student.files_unit') }}
+        @endif
+    </p>
 </a>

@@ -8,8 +8,8 @@
         'neutral'  => 'bg-surface text-steel',
         'branch'   => 'bg-tag/12 text-tag',
         'accent'     => 'bg-accent/14 text-accent-deep',
-        'warn'     => 'bg-warn/14 text-warn',
-        'error'    => 'bg-error/12 text-error',
+        'warn'     => 'bg-warn/14 text-warn-deep',
+        'error'    => 'bg-error/12 text-error-deep',
         'duration' => 'bg-surface text-steel font-latin tabular-nums',
     ];
 
