@@ -14,7 +14,7 @@
         'accent'   => ['chip' => 'bg-accent/14 text-accent-deep',     'line' => 'bg-accent',   'hover' => 'group-hover:bg-accent group-hover:text-on-primary'],
         'tag'    => ['chip' => 'bg-tag/12 text-tag',            'line' => 'bg-tag',    'hover' => 'group-hover:bg-tag group-hover:text-on-dark'],
         'amber' => ['chip' => 'bg-amber/12 text-amber-deep', 'line' => 'bg-amber', 'hover' => 'group-hover:bg-amber group-hover:text-ink'],
-        'warn'   => ['chip' => 'bg-warn/14 text-warn',          'line' => 'bg-warn',   'hover' => 'group-hover:bg-warn group-hover:text-on-dark'],
+        'warn'   => ['chip' => 'bg-warn/14 text-warn-deep',     'line' => 'bg-warn',   'hover' => 'group-hover:bg-warn group-hover:text-on-dark'],
     ];
     $t = $tones[$tone] ?? $tones['accent'];
 @endphp

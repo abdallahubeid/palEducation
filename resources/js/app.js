@@ -356,7 +356,182 @@ document.addEventListener('DOMContentLoaded', () => {
     initProfileForm();
     initNotificationDropdown();
     initSidebarCollapse();
+    initPasswordToggle();
+    initDirectionToggle();
+    initDemoForms();
+    initRegisterWizard();
+    initForgotPassword();
+    initBranchPicker();
 });
+
+/* ── نماذج تجريبية — بلا خادم بعد ─────────────────────────
+   تمنع الإرسال الفعلي وتنتقل للوجهة. عمداً بدل method="GET":
+   إرسال GET كان سيضع كلمة المرور في شريط العنوان. */
+function initDemoForms() {
+    document.querySelectorAll('[data-demo-submit]').forEach((form) => {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!form.reportValidity()) return;
+            window.location.href = form.dataset.demoSubmit;
+        });
+    });
+}
+
+/* ── معالج إنشاء الحساب — خطوتان ──────────────────────────
+   9 حقول في شاشة واحدة = إرهاق نموذج. الانتقال للخطوة 2 لا يتم
+   إلا بعد اجتياز حقول الخطوة 1 للتحقق الأصلي في المتصفّح. */
+function initRegisterWizard() {
+    const wizard = document.querySelector('[data-wizard]');
+    if (!wizard) return;
+
+    const steps = wizard.querySelectorAll('[data-wizard-step]');
+    const bars = wizard.querySelectorAll('[data-wizard-bar]');
+    const status = wizard.querySelector('[data-wizard-status]');
+    const titleEl = wizard.querySelector('[data-wizard-title]');
+    if (!steps.length) return;
+
+    const titles = [wizard.dataset.step1Title, wizard.dataset.step2Title];
+
+    const show = (index) => {
+        steps.forEach((step) => {
+            step.hidden = Number(step.dataset.wizardStep) !== index;
+        });
+
+        bars.forEach((bar) => {
+            const active = Number(bar.dataset.wizardBar) <= index;
+            bar.classList.toggle('bg-accent', active);
+            bar.classList.toggle('bg-hairline', !active);
+        });
+
+        if (status) status.textContent = status.dataset.template.replace(':current', index);
+        if (titleEl && titles[index - 1]) titleEl.textContent = titles[index - 1];
+
+        // أول حقل في الخطوة الجديدة يستقبل التركيز — لا يبدأ المستخدم ضائعاً
+        steps[index - 1]?.querySelector('input, select')?.focus();
+        wizard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    wizard.querySelector('[data-wizard-next]')?.addEventListener('click', () => {
+        const current = wizard.querySelector('[data-wizard-step="1"]');
+        const fields = current.querySelectorAll('input[required], select[required]');
+
+        for (const field of fields) {
+            if (!field.checkValidity()) {
+                field.reportValidity();
+                return;
+            }
+        }
+        show(2);
+    });
+
+    wizard.querySelector('[data-wizard-prev]')?.addEventListener('click', () => show(1));
+}
+
+/* ── نسيت كلمة المرور — حالة النجاح تحلّ محلّ النموذج ────── */
+function initForgotPassword() {
+    const root = document.querySelector('[data-forgot]');
+    if (!root) return;
+
+    const formWrap = root.querySelector('[data-forgot-form]');
+    const sentWrap = root.querySelector('[data-forgot-sent]');
+    const form = root.querySelector('[data-forgot-submit]');
+
+    form?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!form.reportValidity()) return;
+
+        formWrap.hidden = true;
+        sentWrap.hidden = false;
+        sentWrap.querySelector('[data-forgot-resend]')?.focus();
+    });
+
+    root.querySelector('[data-forgot-resend]')?.addEventListener('click', (e) => {
+        e.currentTarget.disabled = true;
+        e.currentTarget.classList.add('opacity-50', 'pointer-events-none');
+    });
+}
+
+/* ── اختيار الفرع — قرار شبه دائم ─────────────────────────
+   زر التأكيد معطّل حتى يقع اختيار فعلي، ومودال التأكيد يذكر اسم
+   الفرع المختار حرفياً — «هل أنت متأكد؟» عامة لا تحقّق الغرض. */
+function initBranchPicker() {
+    const picker = document.querySelector('[data-branch-picker]');
+    if (!picker) return;
+
+    const confirmBtn = picker.querySelector('[data-branch-confirm]');
+    const nameSlot = document.querySelector('[data-branch-confirm-name]');
+    if (!confirmBtn) return;
+
+    picker.addEventListener('change', (e) => {
+        if (e.target.name !== 'branch') return;
+
+        confirmBtn.disabled = false;
+
+        const label = e.target.closest('[data-branch-name]');
+        if (nameSlot && label) nameSlot.textContent = label.dataset.branchName;
+    });
+
+    confirmBtn.addEventListener('click', () => {
+        if (confirmBtn.disabled) return;
+        modals['branch-confirm']?.open();
+    });
+}
+
+/* ── كشف/إخفاء كلمة المرور ────────────────────────────────
+   يعمل لأي [data-password-field] بالصفحة. الزر type=button فلا
+   يُرسل النموذج، وaria-pressed يعكس الحالة لقارئ الشاشة. */
+function initPasswordToggle() {
+    document.querySelectorAll('[data-password-field]').forEach((field) => {
+        const input = field.querySelector('[data-password-input]');
+        const toggle = field.querySelector('[data-password-toggle]');
+        if (!input || !toggle) return;
+
+        toggle.addEventListener('click', () => {
+            const revealed = input.type === 'text';
+            input.type = revealed ? 'password' : 'text';
+
+            const label = revealed ? toggle.dataset.showLabel : toggle.dataset.hideLabel;
+            toggle.setAttribute('aria-label', label || '');
+            toggle.setAttribute('aria-pressed', String(!revealed));
+
+            // تبديل الأيقونة بتبديل مسارها — لا إعادة بناء للعنصر
+            const svg = toggle.querySelector('svg');
+            if (svg) {
+                svg.innerHTML = revealed ? PASSWORD_ICONS.eye : PASSWORD_ICONS.eyeOff;
+            }
+        });
+    });
+}
+
+/* مسارات الأيقونتين — مطابقة حرفياً لما في components/icon.blade.php */
+const PASSWORD_ICONS = {
+    eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.75"/>',
+    eyeOff:
+        '<path d="M10.6 6.7A8 8 0 0 1 12 6.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-2.7 3.6"/>' +
+        '<path d="M6.2 8.4A16.6 16.6 0 0 0 2.5 12s3.5 6.5 9.5 6.5a9 9 0 0 0 3.4-.7"/>' +
+        '<path d="M10.1 10.1a2.75 2.75 0 0 0 3.8 3.8"/><path d="m3.5 3.5 17 17"/>',
+};
+
+/* ── مبدّل الاتجاه — صفحة دليل النظام فقط ──────────────────
+   يقلب dir على <html> مباشرة كي تُختبر القواعد المنطقية فعلياً
+   لا محاكاةً. ملاحظة: قاعدة [dir='ltr'] في app.css تُبدّل الخط إلى
+   Inter أيضاً — سلوك مقصود (الواجهة الإنجليزية بـInter) لا عطل. */
+function initDirectionToggle() {
+    const toggle = document.querySelector('[data-dir-toggle]');
+    if (!toggle) return;
+
+    const label = toggle.querySelector('[data-dir-label]');
+    const root = document.documentElement;
+
+    toggle.addEventListener('click', () => {
+        const next = root.getAttribute('dir') === 'rtl' ? 'ltr' : 'rtl';
+        root.setAttribute('dir', next);
+
+        if (label) {
+            label.textContent = next === 'rtl' ? toggle.dataset.labelRtl : toggle.dataset.labelLtr;
+        }
+    });
+}
 
 /* ── قائمة الإشعارات المنسدلة في الشريط العلوي ────────────
    يفتح/يغلق بالنقر على الجرس، يُغلق بالنقر خارجه أو بمفتاح Esc —

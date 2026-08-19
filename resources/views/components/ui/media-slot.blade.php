@@ -10,7 +10,7 @@
         'accent'   => 'from-accent/16 to-accent/4 text-accent-deep',
         'tag'    => 'from-tag/14 to-tag/4 text-tag',
         'amber' => 'from-amber/14 to-amber/4 text-amber-deep',
-        'warn'   => 'from-warn/16 to-warn/4 text-warn',
+        'warn'   => 'from-warn/16 to-warn/4 text-warn-deep',
     ];
     $t = $tones[$tone] ?? $tones['accent'];
 @endphp

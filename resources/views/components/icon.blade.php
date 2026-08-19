@@ -3,7 +3,18 @@
 {{--
     أيقونات خطية موحّدة السماكة (1.75) — لا emoji إطلاقاً.
     الأيقونات الاتجاهية تنعكس مع RTL عبر rtl:-scale-x-100 عند الاستدعاء.
+
+    🔴 المقاس الافتراضي يُضاف فقط إن لم يمرّر المستدعي مقاساً.
+    السبب: merge يدمج الصنفين معاً، وTailwind يرتّب size-5 بعد size-3/size-4
+    في ملف الأنماط — فيفوز الافتراضي بترتيب المصدر عند تساوي الخصوصية،
+    وتُعرض كل أيقونة أصغر من 5 بمقاس 20px خطأً. (نفس درس ترتيب المصدر
+    المسجّل في doctrine.md — تكرّر هنا بصمت عبر 12 شاشة.)
 --}}
+@php
+    $incomingClass = $attributes->get('class', '');
+    $callerSetSize = (bool) preg_match('/(^|\s)(size|[hw])-/', $incomingClass);
+    $defaultClass  = trim(($callerSetSize ? '' : 'size-5 ') . 'shrink-0');
+@endphp
 
 @php
     $paths = [
@@ -40,10 +51,18 @@
         'trending-up' => '<path d="M3 17l6-6 4 4 8-8"/><path d="M15 6h6v6"/>',
         'chevron-down' => '<path d="m6 9 6 6 6-6"/>',
         'download'     => '<path d="M12 4v11m0 0 4-4m-4 4-4-4"/><path d="M5 18h14"/>',
+
+        // النماذج وحالات النظام
+        'eye'       => '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.75"/>',
+        'eye-off'   => '<path d="M10.6 6.7A8 8 0 0 1 12 6.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-2.7 3.6"/><path d="M6.2 8.4A16.6 16.6 0 0 0 2.5 12s3.5 6.5 9.5 6.5a9 9 0 0 0 3.4-.7"/><path d="M10.1 10.1a2.75 2.75 0 0 0 3.8 3.8"/><path d="m3.5 3.5 17 17"/>',
+        'lock'      => '<rect x="4.5" y="10" width="15" height="10.5" rx="2"/><path d="M8 10V7.5a4 4 0 0 1 8 0V10"/>',
+        'mail'      => '<rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="m3.5 6.5 8.5 6 8.5-6"/>',
+        'alert'     => '<path d="M12 3.5 2.8 19.5h18.4z"/><path d="M12 9.5v4M12 16.8v.01"/>',
+        'sparkle'   => '<path d="M12 3.5 13.9 9l5.6 1.9-5.6 1.9L12 18.5l-1.9-5.7L4.5 11 10.1 9z"/><path d="M18.5 4v3M20 5.5h-3"/>',
     ];
 @endphp
 
-<svg {{ $attributes->merge(['class' => 'size-5 shrink-0']) }}
+<svg {{ $attributes->merge(['class' => $defaultClass]) }}
      viewBox="0 0 24 24"
      fill="none"
      stroke="currentColor"

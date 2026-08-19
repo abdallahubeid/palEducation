@@ -14,7 +14,7 @@
         'accent'   => ['wash' => 'bg-accent/10',   'strip' => 'bg-accent/8',   'text' => 'text-accent-deep'],
         'tag'    => ['wash' => 'bg-tag/10',    'strip' => 'bg-tag/8',    'text' => 'text-tag'],
         'amber' => ['wash' => 'bg-amber/10', 'strip' => 'bg-amber/8', 'text' => 'text-amber-deep'],
-        'warn'   => ['wash' => 'bg-warn/12',   'strip' => 'bg-warn/10',  'text' => 'text-warn'],
+        'warn'   => ['wash' => 'bg-warn/12',   'strip' => 'bg-warn/10',  'text' => 'text-warn-deep'],
     ];
     $t = $tones[$tone] ?? $tones['accent'];
 

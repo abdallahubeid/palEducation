@@ -8,7 +8,8 @@
     عمداً بلا صنف .tile/مخصّص — Tailwind وحده هنا كي يعمل has-checked:
     بلا تنازع طبقات (نفس درس quiz-option.blade.php).
 --}}
-<label class="flex cursor-pointer items-center justify-between gap-4 py-2">
+{{-- py-2.5 حتى نقطة lg — مساحة اللمس ≥44px، مطابقةً لـcheckbox/radio --}}
+<label class="flex cursor-pointer items-center justify-between gap-4 py-2.5 lg:py-2">
     <span class="text-ui text-ink">{{ $label }}</span>
 
     {{--

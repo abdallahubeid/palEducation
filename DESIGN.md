@@ -1,7 +1,7 @@
 ---
-version: 2.2
+version: 2.3
 name: palEducation-design-system
-status: ADOPTED — implemented and verified in code (~45 components across Wave 1, 2 and 5 screens)
+status: ADOPTED — implemented and verified in code (~52 components across 19 built screens, exercised on /styleguide)
 description: "Design system for a Palestinian Tawjihi (high-school exit exam) study platform. Indigo-purple #525fe1 carries every action (buttons, links); amber #f0a500 is the sole secondary color, reserved for specific moments; both sit on one background, #f5f8f7, never stark white. Headings run in navy #0b104a. The system is bidirectional by design (Arabic RTL primary, English LTR secondary), with letter-spacing hard-zeroed and line-heights raised to suit connected Arabic glyphs. Every color/text pairing in this file is measured and confirmed to clear WCAG AA."
 
 # ═══════════════════════════════════════════════════
@@ -367,9 +367,13 @@ Built and in use across the Profile and Subject-search screens. Token spec, as i
 
 Grown well past the Wave-1 homepage set — now ~45 Blade component files across four layers:
 
-**Shells & layout** (`layouts/`, `layout/`): `layouts.public` (PublicShell) · `layouts.student` (StudentShell, holds the `[data-shell]` focus/collapse state target) · `layouts.focus` (used by the standalone quiz/quiz-result fallback pages) · `layout.sidebar` (collapsible, icon-only when collapsed, mobile drawer) · `layout.topbar` (notification-bell flyout, subscription badge, search)
+**Shells & layout** (`layouts/`, `layout/`): `layouts.public` (PublicShell) · `layouts.student` (StudentShell, holds the `[data-shell]` focus/collapse state target) · `layouts.focus` (standalone quiz/quiz-result fallback pages) · **`layouts.centered`** (CenteredShell — one shell serving all 7 auth and system-boundary screens; width via `narrow` 440px / `wide` 560px / `full` 1024px) · **`layouts.styleguide`** (internal dev surface) · `layout.sidebar` (collapsible, icon-only when collapsed, mobile drawer) · `layout.topbar` (notification-bell flyout, subscription badge, search)
 
-**UI primitives** (`ui/`): `button` · `badge` · `input` · `modal` · `confirm-dialog` · `alert` · `avatar` · `breadcrumb` · `tabs` · `pagination` · `progress-bar` · `empty-state` · `toggle` · `score-ring` · `accordion-item` (native `<details name>`, zero JS) · `media-slot` · `section-head` · `rule-label`
+**UI primitives** (`ui/`): `button` · `badge` · `input` · **`select`** · **`checkbox`** · **`radio`** · **`password-input`** · **`form-errors`** · **`selectable-card`** · `modal` · `confirm-dialog` · `alert` · `avatar` · `breadcrumb` · `tabs` · `pagination` · `progress-bar` · `empty-state` · `toggle` · `score-ring` · `accordion-item` (native `<details name>`, zero JS) · `media-slot` · `section-head` · `rule-label`
+
+> **The six new form primitives were designed on `/styleguide` before being used in any screen** — deliberately, because stateful components are exactly what has broken repeatedly in this project. All of them are built from plain Tailwind utilities with **no custom class on the element carrying the state**, so `peer-checked:` and `has-checked:` stay inside one cascade layer. Two mechanics worth knowing:
+> - `peer-checked:` matches **siblings only** (`~`). To style a descendant of the sibling, reach through it: `peer-checked:[&>svg]:opacity-100`, not `peer-checked:opacity-100` on the descendant itself.
+> - In Tailwind 4, `scale-*` writes the standalone `scale` property, **not** `transform`. Verify with `getComputedStyle(el).scale`.
 
 **Domain components** (`domain/`): `branch-card` · `plan-card` · `teacher-card` · `subject-card` · `subject-hero` · `stat-card` · `continue-card` · `lecture-list-item` · `module-accordion` · `topic-accordion` · `topic-item` (the text/video/quiz 3-part row) · `video-player` · `quiz-option` · `quiz-result-card` · `answer-review-row` · `file-row` · `notification-item` · `plan-summary-card` · `streak-tracker` · `study-bar-chart`
 
@@ -460,7 +464,7 @@ All motion is disabled under `prefers-reduced-motion` — content appears, it do
 
 - **Minimum 4.5:1 contrast** for all text — every pairing measured in the Contrast Rule table above
 - **Visible focus ring on every interactive element** — never `outline: none`
-- **Touch target ≥44×44px** up to the `lg` breakpoint
+- **Touch target ≥44×44px** up to the `lg` breakpoint — `checkbox`, `radio` and `toggle` use `py-2.5 lg:py-1.5` to hit 46px on touch and relax on pointer (measured; they were 38–42px before the fix)
 - `aria-hidden` + `tabindex="-1"` on inactive slider slides
 - Accordion built on `<details name>` — works with JavaScript fully disabled
 - `alt` text on every image · descriptive `aria-label` on every icon-only control
@@ -491,5 +495,7 @@ All motion is disabled under `prefers-reduced-motion` — content appears, it do
 | 7 | Dark mode | ⏳ Not built yet |
 | 8 | Input component | ✅ Built — `ui/input.blade.php` |
 | 9 | Modal / Dialog component | ✅ Built — `ui/modal.blade.php`, `ui/confirm-dialog.blade.php` |
-| 10 | `text-error` / `text-warn` bare-color usage outside `badge.blade.php` | ⏳ Several files still set text color directly from the surface token (3.14:1 / 3.73:1, fails AA) instead of `-deep`. Flagged, not yet swept. |
+| 10 | `text-error` / `text-warn` bare-color usage | ✅ **Closed 2026-08-20** — swept across all views (`alert`, `branch-card`, `stat-card`, `teacher-card`, `media-slot`, `home`). Every occurrence is now `-deep`; verified by grep: 11 × `text-error-deep`, 11 × `text-warn-deep`, zero bare. |
 | 11 | No backend | ⏳ Every screen built this far is Blade + static PHP `@php` mock arrays. No Eloquent models, migrations, seeders, auth, or Livewire — see `docs/01-project-understanding.md` §9 for the full current technical status. |
+| 12 | `/styleguide` is publicly routable | ⏳ Carries `noindex` only. **Must be gated or excluded before any production deploy** — `noindex` is not access control. |
+| 13 | Teacher & Admin shells | ⏳ Not built. `PublicShell`, `StudentShell`, `FocusShell` and `CenteredShell` exist; the remaining two arrive with Waves 7–8. |

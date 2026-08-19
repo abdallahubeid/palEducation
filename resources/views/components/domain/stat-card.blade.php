@@ -10,7 +10,7 @@
         'accent' => 'bg-accent/14 text-accent-deep',
         'tag'    => 'bg-tag/12 text-tag',
         'amber'  => 'bg-amber/12 text-amber-deep',
-        'warn'   => 'bg-warn/14 text-warn',
+        'warn'   => 'bg-warn/14 text-warn-deep',
     ];
 @endphp
 

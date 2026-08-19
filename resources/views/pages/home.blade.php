@@ -419,7 +419,7 @@
                             'bg-accent/14 text-accent-deep group-hover:bg-accent group-hover:text-on-primary'          => $feature['tone'] === 'accent',
                             'bg-tag/12 text-tag group-hover:bg-tag group-hover:text-on-dark'                  => $feature['tone'] === 'tag',
                             'bg-amber/12 text-amber-deep group-hover:bg-amber group-hover:text-ink'    => $feature['tone'] === 'amber',
-                            'bg-warn/14 text-warn group-hover:bg-warn group-hover:text-on-dark'               => $feature['tone'] === 'warn',
+                            'bg-warn/14 text-warn-deep group-hover:bg-warn group-hover:text-on-dark'          => $feature['tone'] === 'warn',
                         ])>
                             <x-icon :name="$feature['icon']" class="size-6" />
                         </span>

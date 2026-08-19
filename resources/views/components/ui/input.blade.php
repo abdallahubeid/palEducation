@@ -6,6 +6,7 @@
     'placeholder' => null,
     'error'       => null,
     'required'    => false,
+    'dir'         => null,   // يُطبَّق على الحقل وحده لا على الغلاف
 ])
 
 @php
@@ -16,6 +17,10 @@
     ينفّذ سلّم الحقول من DESIGN.md — "Inputs" كان موصوفاً هناك بلا بناء.
     class المُمرَّرة من المستدعي تتحكّم بعرض الحقل كاملاً (تسمية+حقل)،
     مطابقةً لنمط ui/tabs.blade.php الحالي — لا تمرير فرعي للـinput.
+
+    🔴 dir استثناء مقصود: يُطبَّق على <input> وحده. لو وُضع على الغلاف
+    (كبقية الأصناف) لورثته التسمية العربية أيضاً، فيصير محاذاتها start=يسار
+    بينما كل تسميات النموذج يمين — حقل الجوال LTR، لا تسميته.
 --}}
 <div {{ $attributes->except('id')->merge(['class' => 'flex flex-col gap-1.5']) }}>
     @if ($label)
@@ -31,6 +36,7 @@
         name="{{ $name }}"
         @if ($value !== null) value="{{ $value }}" @endif
         @if ($placeholder) placeholder="{{ $placeholder }}" @endif
+        @if ($dir) dir="{{ $dir }}" @endif
         @if ($required) required @endif
         @class([
             'h-12 w-full rounded-md border bg-canvas px-4 text-ui text-ink transition
