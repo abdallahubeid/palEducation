@@ -351,7 +351,189 @@ document.addEventListener('DOMContentLoaded', () => {
     initLectureViewSwitcher();
     initStandaloneQuizResult();
     initSubjectFilter();
+    initLibrary();
+    initNotifications();
+    initProfileForm();
+    initNotificationDropdown();
+    initSidebarCollapse();
 });
+
+/* ── قائمة الإشعارات المنسدلة في الشريط العلوي ────────────
+   يفتح/يغلق بالنقر على الجرس، يُغلق بالنقر خارجه أو بمفتاح Esc —
+   بلا Alpine (غير مثبّت)، نفس نمط initModals(). */
+function initNotificationDropdown() {
+    const wrap = document.querySelector('[data-notif-dropdown]');
+    if (!wrap) return;
+
+    const toggle = wrap.querySelector('[data-notif-toggle]');
+    const panel = wrap.querySelector('[data-notif-panel]');
+    const markAllBtn = wrap.querySelector('[data-notif-mark-all]');
+    const dot = toggle.querySelector('[data-notif-dot]');
+
+    const close = () => {
+        panel.hidden = true;
+        toggle.setAttribute('aria-expanded', 'false');
+    };
+
+    const open = () => {
+        panel.hidden = false;
+        toggle.setAttribute('aria-expanded', 'true');
+    };
+
+    toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (panel.hidden) open(); else close();
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!panel.hidden && !wrap.contains(e.target)) close();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !panel.hidden) {
+            close();
+            toggle.focus();
+        }
+    });
+
+    markAllBtn?.addEventListener('click', () => {
+        panel.querySelectorAll('[data-notification-item]').forEach((item) => {
+            item.classList.remove('bg-accent-soft/50');
+            item.querySelector('[data-unread-dot]')?.remove();
+        });
+        dot?.remove();
+        markAllBtn.hidden = true;
+    });
+}
+
+/* ── طي الشريط الجانبي إلى أيقونات فقط — تفضيل محفوظ محلياً ── */
+function initSidebarCollapse() {
+    const shell = document.querySelector('[data-shell]');
+    const toggle = document.querySelector('[data-sidebar-collapse-toggle]');
+    if (!shell || !toggle) return;
+
+    const STORAGE_KEY = 'sidebar-collapsed';
+    const collapseLabel = toggle.dataset.collapseLabel || toggle.getAttribute('aria-label');
+    const expandLabel = toggle.dataset.expandLabel || collapseLabel;
+
+    const setCollapsed = (collapsed) => {
+        shell.classList.toggle('is-collapsed', collapsed);
+        toggle.setAttribute('aria-expanded', String(!collapsed));
+        toggle.setAttribute('aria-label', collapsed ? expandLabel : collapseLabel);
+        toggle.setAttribute('title', collapsed ? expandLabel : collapseLabel);
+        try {
+            localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0');
+        } catch {
+            /* تجاهل */
+        }
+    };
+
+    let saved = null;
+    try {
+        saved = localStorage.getItem(STORAGE_KEY);
+    } catch {
+        saved = null;
+    }
+    if (saved === '1') setCollapsed(true);
+
+    toggle.addEventListener('click', () => {
+        setCollapsed(!shell.classList.contains('is-collapsed'));
+    });
+}
+
+/* ── المكتبة — بحث + فلترين (مادة/نوع) + معاينة عامة ─────
+   منطق AND بين الثلاثة، على العميل بلا خادم — نفس نمط موادي. */
+function initLibrary() {
+    const wrap = document.querySelector('[data-library]');
+    if (!wrap) return;
+
+    const searchInput = wrap.querySelector('[data-library-search]');
+    const subjectSelect = wrap.querySelector('[data-library-filter-subject]');
+    const typeSelect = wrap.querySelector('[data-library-filter-type]');
+    const rows = [...wrap.querySelectorAll('[data-library-row]')];
+    const noResults = wrap.querySelector('[data-library-no-results]');
+
+    const apply = () => {
+        const query = (searchInput?.value || '').trim().toLowerCase();
+        const subject = subjectSelect?.value || 'all';
+        const type = typeSelect?.value || 'all';
+        let visible = 0;
+
+        rows.forEach((row) => {
+            const matchesSubject = subject === 'all' || row.dataset.fileSubject === subject;
+            const matchesType = type === 'all' || row.dataset.fileType === type;
+            const matchesSearch = !query || (row.dataset.fileSearch || '').toLowerCase().includes(query);
+            const show = matchesSubject && matchesType && matchesSearch;
+            row.hidden = !show;
+            if (show) visible += 1;
+        });
+
+        if (noResults) noResults.hidden = visible > 0;
+    };
+
+    searchInput?.addEventListener('input', apply);
+    subjectSelect?.addEventListener('change', apply);
+    typeSelect?.addEventListener('change', apply);
+
+    // معاينة عامة — مودال واحد يُملأ بمحتوى الصف المنقور عليه
+    const previewModal = document.getElementById('file-preview-modal');
+    if (previewModal) {
+        wrap.querySelectorAll('[data-file-preview-trigger]').forEach((trigger) => {
+            const open = () => {
+                previewModal.querySelector('[data-preview-name]').textContent = trigger.dataset.fileName || '';
+                const subjectPart = trigger.dataset.fileSubject ? `${trigger.dataset.fileSubject} · ` : '';
+                previewModal.querySelector('[data-preview-meta]').textContent =
+                    `${subjectPart}${trigger.dataset.fileSize || ''} · ${trigger.dataset.fileDate || ''}`;
+                previewModal.querySelector('[data-preview-download]').setAttribute('href', trigger.dataset.fileHref || '#');
+                modals[previewModal.id]?.open();
+            };
+
+            trigger.addEventListener('click', (e) => {
+                if (e.target.closest('[data-file-download]')) return; // زر التنزيل يعمل طبيعياً بلا معاينة
+                open();
+            });
+            trigger.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    open();
+                }
+            });
+        });
+    }
+}
+
+/* ── التنبيهات — تعليم الكل كمقروء (محلي لهذه الصفحة) ──── */
+function initNotifications() {
+    const wrap = document.querySelector('[data-notifications]');
+    if (!wrap) return;
+
+    wrap.querySelector('[data-mark-all-read]')?.addEventListener('click', () => {
+        wrap.querySelectorAll('[data-notification-item]').forEach((item) => {
+            item.classList.remove('bg-accent-soft/50');
+            item.querySelector('[data-unread-dot]')?.remove();
+            const title = item.querySelector('p');
+            if (title) {
+                title.classList.remove('font-semibold');
+                title.classList.add('font-medium');
+            }
+        });
+    });
+}
+
+/* ── ملفي — تأكيد حفظ واجهي فقط (لا خادم بعد) ───────────── */
+function initProfileForm() {
+    const saveBtn = document.querySelector('[data-profile-save]');
+    const toast = document.querySelector('[data-profile-saved-toast]');
+    if (!saveBtn || !toast) return;
+
+    saveBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        toast.hidden = false;
+        setTimeout(() => {
+            toast.hidden = true;
+        }, 2500);
+    });
+}
 
 /* ── موادي — بحث وفلترة على العميل بلا خادم ─────────────
    منطق AND بين البحث (اسم المادة أو المعلم) والفلتر النشط. */

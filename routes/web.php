@@ -55,3 +55,13 @@ Route::view('/student/lectures/{lecture}/quiz', 'pages.student.quiz')->name('stu
 | السابقة) — هذا المسار احتياطي فقط لإنهاء الكويز من صفحته المستقلة.
 */
 Route::view('/student/lectures/{lecture}/quiz/result', 'pages.student.quiz-result')->name('student.lectures.quiz-result');
+
+/*
+| الموجة 5 — بقية منطقة الطالب (٥ شاشات مبنية دفعة واحدة)
+| بيانات عرض ثابتة، بلا نموذج مجال ولا مصادقة بعد — نفس نمط بقية المشروع.
+*/
+Route::view('/student/library', 'pages.student.library')->name('student.library');
+Route::view('/student/progress', 'pages.student.progress')->name('student.progress');
+Route::view('/student/subscription', 'pages.student.subscription')->name('student.subscription');
+Route::view('/student/profile', 'pages.student.profile')->name('student.profile');
+Route::view('/student/notifications', 'pages.student.notifications')->name('student.notifications');

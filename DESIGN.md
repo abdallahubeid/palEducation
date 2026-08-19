@@ -1,7 +1,7 @@
 ---
-version: 2.1
+version: 2.2
 name: palEducation-design-system
-status: ADOPTED — implemented and verified in code
+status: ADOPTED — implemented and verified in code (~45 components across Wave 1, 2 and 5 screens)
 description: "Design system for a Palestinian Tawjihi (high-school exit exam) study platform. Indigo-purple #525fe1 carries every action (buttons, links); amber #f0a500 is the sole secondary color, reserved for specific moments; both sit on one background, #f5f8f7, never stark white. Headings run in navy #0b104a. The system is bidirectional by design (Arabic RTL primary, English LTR secondary), with letter-spacing hard-zeroed and line-heights raised to suit connected Arabic glyphs. Every color/text pairing in this file is measured and confirmed to clear WCAG AA."
 
 # ═══════════════════════════════════════════════════
@@ -53,7 +53,9 @@ colors:
   # ── Feedback / status ──
   tag: "#3772cf"
   warn: "#c37d0d"
+  warn-deep: "#8a5a09"
   error: "#d45656"
+  error-deep: "#b23b3b"
 
 typography:
   hero:    { fontFamily: IBM Plex Sans Arabic, fontSize: 56px, fontWeight: 700, lineHeight: 1.35, letterSpacing: 0 }
@@ -180,8 +182,10 @@ palEducation is a **study tool** a Palestinian teenager opens in the evening and
 | Token | Value | Meaning |
 |---|---|---|
 | `tag` | `#3772cf` | Branch / track badges |
-| `warn` | `#c37d0d` | Subscription expiring soon |
-| `error` | `#d45656` | Subscription expired · wrong answer |
+| `warn` | `#c37d0d` | Subscription expiring soon — **surface only, fails as text (3.14:1)** |
+| `warn-deep` | `#8a5a09` | `warn` text on light surfaces (5.54:1) |
+| `error` | `#d45656` | Subscription expired · wrong answer — **surface only, fails as text (3.73:1)** |
+| `error-deep` | `#b23b3b` | `error` text on light surfaces (5.49:1) |
 
 **Domain semantics:**
 
@@ -203,7 +207,7 @@ palEducation is a **study tool** a Palestinian teenager opens in the evening and
 | Surface | Permitted text | Ratio |
 |---|---|---|
 | `{colors.ground}` | `ink` · `charcoal` · `slate` · `steel` · `stone` | 4.8 – 16.6:1 |
-| `{colors.ground}` | `accent` · `accent-deep` · `amber-deep` | 4.7 – 6.8:1 |
+| `{colors.ground}` | `accent` · `accent-deep` · `amber-deep` · `error-deep` · `warn-deep` | 4.7 – 6.8:1 |
 | `{colors.accent}` `#525fe1` | **white only** | 5.14:1 |
 | `{colors.amber}` `#f0a500` | **navy (`ink`) only** — white gives 2.07:1 | 8.50:1 |
 | `{colors.amber-deep}` `#9c6205` | **white only** | 5.04:1 |
@@ -213,7 +217,7 @@ palEducation is a **study tool** a Palestinian teenager opens in the evening and
 ### Three traps this project actually hit
 
 **1. One shade of a color is never enough — each color needs two.**
-`amber` `#f0a500` is an excellent surface color (8.5:1 against navy) but only **2.07:1 as text** — unreadable. Hence `amber-deep` for text. Same logic applies to `accent` / `accent-deep`.
+`amber` `#f0a500` is an excellent surface color (8.5:1 against navy) but only **2.07:1 as text** — unreadable. Hence `amber-deep` for text. Same logic applies to `accent` / `accent-deep`. The same trap resurfaced with the two semantic status colors: `warn` measured **3.14:1** and `error` **3.73:1** as text — both fail AA — while working fine as 12–14%-opacity tinted backgrounds. `warn-deep` (5.54:1) and `error-deep` (5.49:1) were added as the text-only shades; `badge.blade.php` was updated to use them. **Known gap:** several other files still reference bare `text-error` / `text-warn` for text and haven't been swept yet (see Known Gaps).
 
 **2. Lightening a dark surface silently breaks whatever sits on top of it.**
 When the dark band was lightened from `#0b104a` to `#242e83`, `accent` on top of it dropped from 3.44:1 to **2.28:1**. `accent-on-dark` `#bcc2f8` (6.8:1) was added to fix it. **Lightening any surface requires re-measuring everything on top of it.**
@@ -331,9 +335,9 @@ Tablets are touch input too, so the size reduction happens at the `lg` breakpoin
 
 **Featured state** (pricing card): 2px `accent` ring + `accent-glow` shadow, no border change.
 
-### Inputs — specified, not yet built
+### Inputs — built (`components/ui/input.blade.php`)
 
-No Input component exists in the codebase yet (see Known Gaps). Until one is built, any new form field should follow this token spec so it lands consistent with buttons and cards on the first pass:
+Built and in use across the Profile and Subject-search screens. Token spec, as implemented:
 
 - **Height:** 48px, 44px from `lg` — matches `button.md`, so an input paired with a `md` button aligns without extra CSS
 - **Radius:** `{rounded.md}` (8px) — one step down from card radius, so an input reads as sitting *inside* a card
@@ -345,9 +349,11 @@ No Input component exists in the codebase yet (see Known Gaps). Until one is bui
 - **Placeholder text:** `muted` · **Label:** `ui` size (15px), `steel`, positioned above the field
 - **Horizontal padding:** 16px
 
-### Modals / Dialogs — specified, not yet built
+> **Implementation note:** the outer wrapper applies `$attributes->except('id')->merge([...])` so a caller's `class` (e.g. `max-w-40`) survives — an early version used `except(['id','class'])` and silently dropped it. Fixed to match the pattern already established in `ui/tabs.blade.php`.
 
-No Modal component exists yet either. Spec, ready to implement:
+### Modals / Dialogs — built (`components/ui/modal.blade.php`, `components/ui/confirm-dialog.blade.php`)
+
+`ConfirmDialog` wraps `Modal` for the delete/destructive-action case. As implemented:
 
 - **Overlay:** `ink` at 45% opacity (`rgb(11 16 74 / 0.45)`) — tinted with the brand ink rather than pure black, consistent with "no pure black in this system"
 - **Panel:** `canvas` background, `{rounded.xl}`, `{elevation.mockup}` — the one deep-elevation shadow in the system, otherwise reserved for the hero mockup; a modal is the only other element that sits high enough above the page to earn it
@@ -359,7 +365,17 @@ No Modal component exists yet either. Spec, ready to implement:
 
 ### Built components inventory
 
-`button` · `badge` · `icon` (12 inline SVGs) · `section-head` · `rule-label` · `accordion-item` (built on native `<details name>` — zero JS for exclusivity) · `media-slot` (accepts a real `src` or falls back to a designed placeholder) · `branch-card` · `plan-card` · `teacher-card` · `site.header` · `site.footer` · `layouts.public`
+Grown well past the Wave-1 homepage set — now ~45 Blade component files across four layers:
+
+**Shells & layout** (`layouts/`, `layout/`): `layouts.public` (PublicShell) · `layouts.student` (StudentShell, holds the `[data-shell]` focus/collapse state target) · `layouts.focus` (used by the standalone quiz/quiz-result fallback pages) · `layout.sidebar` (collapsible, icon-only when collapsed, mobile drawer) · `layout.topbar` (notification-bell flyout, subscription badge, search)
+
+**UI primitives** (`ui/`): `button` · `badge` · `input` · `modal` · `confirm-dialog` · `alert` · `avatar` · `breadcrumb` · `tabs` · `pagination` · `progress-bar` · `empty-state` · `toggle` · `score-ring` · `accordion-item` (native `<details name>`, zero JS) · `media-slot` · `section-head` · `rule-label`
+
+**Domain components** (`domain/`): `branch-card` · `plan-card` · `teacher-card` · `subject-card` · `subject-hero` · `stat-card` · `continue-card` · `lecture-list-item` · `module-accordion` · `topic-accordion` · `topic-item` (the text/video/quiz 3-part row) · `video-player` · `quiz-option` · `quiz-result-card` · `answer-review-row` · `file-row` · `notification-item` · `plan-summary-card` · `streak-tracker` · `study-bar-chart`
+
+**Site chrome** (`site/`): `header` · `footer` · `icon` (grown past 12 inline SVGs as new screens needed new glyphs)
+
+Every list-bearing component above ships an `EmptyState` state where the design calls for one; every destructive action routes through `ConfirmDialog`. None of this is wired to real data yet — every page still supplies its own `@php` mock array (see Known Gaps).
 
 ### Patterns carried over from Charitize
 
@@ -469,9 +485,11 @@ All motion is disabled under `prefers-reduced-motion` — content appears, it do
 | 1 | Logo | ⏳ Not delivered yet |
 | 2 | Real teacher photos | ⏳ Current set is from the source template |
 | 3 | Subscription scope — determines `plan-card`'s final shape | ⏳ Pending decision M-1 |
-| 4 | Quiz behavior | ⏳ Pending decision M-2 |
-| 5 | Payment mechanism | ⏳ Pending decision M-4 |
-| 6 | Video hosting provider | ⏳ Pending decision M-5 |
+| 4 | Quiz behavior | ⏳ Pending decision M-2 — the built quiz/result screens implement docs/01 §7's *recommended default* (2 attempts, highest score kept, no lecture lock) as demo/localStorage logic. This is a mock standing in for a decision, not the decision itself. |
+| 5 | Payment mechanism | ⏳ Pending decision M-4 — no checkout/payment screens built yet |
+| 6 | Video hosting provider | ⏳ Pending decision M-5 — `video-player` is a demo shell (play/pause + a "simulate lecture end" trigger), not a real player integration |
 | 7 | Dark mode | ⏳ Not built yet |
-| 8 | Input component | ⏳ Not built yet — spec above, ready to implement |
-| 9 | Modal / Dialog component | ⏳ Not built yet — spec above, ready to implement |
+| 8 | Input component | ✅ Built — `ui/input.blade.php` |
+| 9 | Modal / Dialog component | ✅ Built — `ui/modal.blade.php`, `ui/confirm-dialog.blade.php` |
+| 10 | `text-error` / `text-warn` bare-color usage outside `badge.blade.php` | ⏳ Several files still set text color directly from the surface token (3.14:1 / 3.73:1, fails AA) instead of `-deep`. Flagged, not yet swept. |
+| 11 | No backend | ⏳ Every screen built this far is Blade + static PHP `@php` mock arrays. No Eloquent models, migrations, seeders, auth, or Livewire — see `docs/01-project-understanding.md` §9 for the full current technical status. |

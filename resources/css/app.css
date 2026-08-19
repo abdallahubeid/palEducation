@@ -440,6 +440,30 @@
     transition-delay: 0s;
 }
 
+/* ── طي الشريط الجانبي إلى أيقونات فقط — تفضيل يدوي محفوظ ──
+   .is-collapsed على [data-shell]. تُكتب قبل قاعدة .is-focus عمداً:
+   عند التعادل في الخصوصية تفوز القاعدة اللاحقة في الملف، فيبقى وضع
+   التركيز (إخفاء كامل أثناء الفيديو) أولوية دائماً على تفضيل الطي. */
+@media (min-width: 1024px) {
+    [data-shell].is-collapsed aside {
+        width: 5rem;
+    }
+
+    [data-shell].is-collapsed [data-sidebar-label] {
+        opacity: 0;
+        width: 0;
+        overflow: hidden;
+    }
+
+    [data-shell].is-collapsed [data-sidebar-collapse-toggle] svg {
+        transform: rotate(-90deg);
+    }
+
+    [data-shell].is-collapsed nav a {
+        justify-content: center;
+    }
+}
+
 /* ── وضع التركيز — شاشة مشاهدة المحاضرة ───────────────────
    ينطوي الشريط الجانبي الثابت على سطح المكتب أثناء التشغيل.
    على الجوال الدرج مطويّ افتراضاً أصلاً، فلا حاجة لهذا هناك. */
