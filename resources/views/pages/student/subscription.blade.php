@@ -3,7 +3,7 @@
     $plan = [
         'name'      => 'خطة الفصل الدراسي — الفرع العلمي',
         'status'    => 'expiring',   // active | expiring | expired
-        'price'     => '١٢٠ ₪',
+        'price'     => '120 ₪',
         'period'    => '/ فصل دراسي',
         'renewDate' => '2026-09-15',
         'daysLeft'  => 28,
@@ -17,9 +17,9 @@
     ];
 
     $history = [
-        ['date' => '2026-06-15', 'amount' => '١٢٠ ₪', 'method' => 'تحويل بنكي', 'status' => 'paid'],
-        ['date' => '2026-03-15', 'amount' => '١٢٠ ₪', 'method' => 'محفظة جوّال', 'status' => 'paid'],
-        ['date' => '2025-12-15', 'amount' => '١٢٠ ₪', 'method' => 'تحويل بنكي', 'status' => 'paid'],
+        ['date' => '2026-06-15', 'amount' => '120 ₪', 'method' => 'تحويل بنكي', 'status' => 'paid'],
+        ['date' => '2026-03-15', 'amount' => '120 ₪', 'method' => 'محفظة جوّال', 'status' => 'paid'],
+        ['date' => '2025-12-15', 'amount' => '120 ₪', 'method' => 'تحويل بنكي', 'status' => 'paid'],
     ];
 @endphp
 

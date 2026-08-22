@@ -1,7 +1,7 @@
 ---
 version: 2.4
 name: palEducation-design-system
-status: ADOPTED — implemented and verified in code (64 Blade components across 32 built screens, exercised live on /styleguide)
+status: ADOPTED — implemented and verified in code (66 Blade components across 36 built screens, exercised live on /styleguide)
 description: "Design system for a Palestinian Tawjihi (high-school exit exam) study platform. Indigo-purple #525fe1 carries every action (buttons, links); amber #f0a500 is the sole secondary color, reserved for specific moments; both sit on one background, #f5f8f7, never stark white. Headings run in navy #0b104a. The system is bidirectional by design (Arabic RTL primary, English LTR secondary), with letter-spacing hard-zeroed and line-heights raised to suit connected Arabic glyphs. Every color/text pairing in this file is measured and confirmed to clear WCAG AA."
 
 # ═══════════════════════════════════════════════════
@@ -367,7 +367,7 @@ Built and in use across the Profile and Subject-search screens. Token spec, as i
 
 ### Built components inventory
 
-Grown well past the Wave-1 homepage set — now **64** Blade component files across four layers:
+Grown well past the Wave-1 homepage set — now **66** Blade component files across four layers:
 
 **Shells & layout** (`layouts/`, `layout/`): `layouts.public` (PublicShell) · `layouts.student` (StudentShell, holds the `[data-shell]` focus/collapse state target) · `layouts.focus` (standalone quiz/quiz-result fallback pages) · **`layouts.centered`** (CenteredShell — one shell serving all 7 auth and system-boundary screens; width via `narrow` 440px / `wide` 560px / `full` 1024px) · **`layouts.styleguide`** (internal dev surface) · `layout.sidebar` (collapsible, icon-only when collapsed, mobile drawer) · `layout.topbar` (notification-bell flyout, subscription badge, search)
 
@@ -377,11 +377,31 @@ Grown well past the Wave-1 homepage set — now **64** Blade component files acr
 > - `peer-checked:` matches **siblings only** (`~`). To style a descendant of the sibling, reach through it: `peer-checked:[&>svg]:opacity-100`, not `peer-checked:opacity-100` on the descendant itself.
 > - In Tailwind 4, `scale-*` writes the standalone `scale` property, **not** `transform`. Verify with `getComputedStyle(el).scale`.
 
-**Domain components** (`domain/`): `branch-card` · `plan-card` · `teacher-card` · `subject-card` · `subject-hero` · `stat-card` · `continue-card` · `lecture-list-item` · `module-accordion` · `topic-accordion` · `topic-item` (the text/video/quiz 3-part row) · `video-player` · `quiz-option` · `quiz-result-card` · `answer-review-row` · `file-row` · `notification-item` · `plan-summary-card` · `streak-tracker` · `study-bar-chart` · `news-card` (three layouts — `stacked` / `split` / `compact`) · **`key-points`**
+**Domain components** (`domain/`): `branch-card` · `plan-card` · `teacher-card` · `subject-card` · `subject-hero` · `stat-card` · `continue-card` · `lecture-list-item` · `module-accordion` · `topic-accordion` · `topic-item` (the text/video/quiz 3-part row) · `video-player` · `quiz-option` · `quiz-result-card` · `answer-review-row` · `file-row` · `notification-item` · `plan-summary-card` · `streak-tracker` · `study-bar-chart` · `news-card` (three layouts — `stacked` / `split` / `compact`) · **`key-points`** · **`plan-calculator`** · **`order-summary`**
 
 **Site chrome** (`site/`): `header` · `footer` · `icon` (grown past 12 inline SVGs as new screens needed new glyphs)
 
 Every list-bearing component above ships an `EmptyState` state where the design calls for one; every destructive action routes through `ConfirmDialog`. None of this is wired to real data yet — every page still supplies its own `@php` mock array (see Known Gaps).
+
+### Conversion surface — Pricing (7) & checkout (8–10)
+
+Built 2026-08-22, unblocked by **decision M-1** (two subscription models: per-subject, and a discounted full-branch pass) and **M-4** (manual payment: bank transfer / e-wallet / local agent / cash).
+
+**Pricing model as implemented:** 35 ₪ per subject per term · 120 ₪ full-branch pass. The numbers are chosen so the **break-even lands at 4 subjects** (4 × 35 = 140 > 120). That is what makes the calculator's "switch to the branch pass" nudge a real product mechanic rather than decoration — the page tells a student when they are about to overpay instead of quietly taking the larger sum.
+
+| Piece | Notes |
+|---|---|
+| `plan-calculator` | Per-subject picker with live total. State lives in the **DOM** (checked boxes), not a parallel JS object, so the markup moves to Livewire untouched. All three branches' subject lists render server-side and toggle with `hidden` — no markup or class names built from variables at runtime. |
+| `order-summary` | Shared by screens 8 and 10 so the figures a student approves are rendered by exactly one piece of markup. |
+| `plan-card` | Extended with `oldPrice` (strikethrough), `badge`, `note`, `href`. |
+
+**Three rules this surface exercised hard:**
+
+1. **Western numerals, always.** Every price, total, reference number and account number runs through `.num` (Inter + `tabular-nums`). This also flushed out a pre-existing violation: the homepage and subscription screens were rendering prices as `١٢٠` / `٢٠٠` / `٠` in Eastern Arabic-Indic digits, against the documented rule. Converted.
+2. **`<bdi dir="ltr">` on every Latin/numeric string in Arabic prose.** On screen 9 this is not cosmetic — an un-isolated IBAN visually reorders, and a student copying a reordered IBAN sends money nowhere. Verified: all three account values compute `unicode-bidi: isolate`.
+3. **Tone on screen 10 is `accent`, never `warn`.** "Pending review" is a *success* state — the student did everything asked. A yellow bar would read as a problem they still have to solve. Same principle as the 402 paywall being a sales page, not a rejection.
+
+> ⚠️ **One deliberate deviation from "one primary button per screen".** `/pricing` carries two: one per subscription model. The rule exists to stop competing calls to action, but on a pricing page the two plan CTAs *are* the choice the screen exists to present — suppressing one would hide half the offer. The break-even nudge button was demoted to `secondary` precisely because it sits directly above the calculator's own CTA, where two adjacent primaries genuinely do destroy the hierarchy. Screens 8, 9 and 10 each carry exactly one primary.
 
 ### Editorial surface — News index (24) & News detail (25)
 
@@ -582,9 +602,9 @@ All motion is disabled under `prefers-reduced-motion` — content appears, it do
 |---|---|---|
 | 1 | Logo | ⏳ Not delivered yet |
 | 2 | Real teacher photos | ⏳ Current set is from the source template |
-| 3 | Subscription scope — determines `plan-card`'s final shape | ⏳ Pending decision M-1 |
+| 3 | Subscription scope — determines `plan-card`'s final shape | ✅ **Closed 2026-08-22** — M-1 resolved: two models coexist (per-subject · discounted full-branch pass). `plan-card` extended with `oldPrice`/`badge`/`note`; `plan-calculator` added for the per-subject path. |
 | 4 | Quiz behavior | ⏳ Pending decision M-2 — the built quiz/result screens implement docs/01 §7's *recommended default* (2 attempts, highest score kept, no lecture lock) as demo/localStorage logic. This is a mock standing in for a decision, not the decision itself. |
-| 5 | Payment mechanism | ⏳ Pending decision M-4 — no checkout/payment screens built yet |
+| 5 | Payment mechanism | ✅ **Closed 2026-08-22** — M-4 resolved as manual payment (bank transfer · e-wallet · local agent · cash). Screens 8–10 built: checkout, payment-proof upload, pending review. No card data is ever collected or stored. |
 | 6 | Video hosting provider | ⏳ Pending decision M-5 — `video-player` is a demo shell (play/pause + a "simulate lecture end" trigger), not a real player integration |
 | 7 | Dark mode | ⏳ Not built yet |
 | 8 | Input component | ✅ Built — `ui/input.blade.php` |
@@ -592,4 +612,4 @@ All motion is disabled under `prefers-reduced-motion` — content appears, it do
 | 10 | `text-error` / `text-warn` bare-color usage | ✅ **Closed 2026-08-20** — swept across all views (`alert`, `branch-card`, `stat-card`, `teacher-card`, `media-slot`, `home`). Every occurrence is now `-deep`; verified by grep: 11 × `text-error-deep`, 11 × `text-warn-deep`, zero bare. |
 | 11 | No backend | ⏳ Every screen built this far is Blade + static PHP `@php` mock arrays. No Eloquent models, migrations, seeders, auth, or Livewire — see `docs/01-project-understanding.md` §9 for the full current technical status. |
 | 12 | `/styleguide` is publicly routable | ⏳ Carries `noindex` only. **Must be gated or excluded before any production deploy** — `noindex` is not access control. |
-| 13 | Teacher & Admin shells | ⏳ Not built. `PublicShell`, `StudentShell`, `FocusShell` and `CenteredShell` exist; the remaining two arrive with Waves 7–8. |
+| 13 | Admin shell | ⏳ Not built. Six shells exist (`PublicShell` · `StudentShell` · `FocusShell` · `CenteredShell` · `TeacherShell` · `StyleguideShell`); `AdminShell` is the last one, arriving with Wave 8. |

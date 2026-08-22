@@ -153,3 +153,19 @@ Route::view('/student/progress', 'pages.student.progress')->name('student.progre
 Route::view('/student/subscription', 'pages.student.subscription')->name('student.subscription');
 Route::view('/student/profile', 'pages.student.profile')->name('student.profile');
 Route::view('/student/notifications', 'pages.student.notifications')->name('student.notifications');
+
+/*
+|--------------------------------------------------------------------------
+| مسار التحويل — الموجة 3 (الشاشات 7–10)
+|--------------------------------------------------------------------------
+| فُتحت بحسم القرار م-1 (نموذجا اشتراك: بالمادة · شامل للفرع) وم-4
+| (دفع يدوي: تحويل بنكي · محفظة · وكيل · نقداً).
+|
+| صفحة الأسعار عامة — الزائر يجب أن يرى السعر قبل التسجيل.
+| شاشات الدفع الثلاث داخل منطقة الطالب، وستنتقل لاحقاً إلى مجموعة
+| محمية بـ middleware('auth', 'role:student').
+*/
+Route::view('/pricing', 'pages.pricing')->name('pricing');
+Route::view('/student/checkout', 'pages.student.checkout')->name('student.checkout');
+Route::view('/student/checkout/proof', 'pages.student.checkout-proof')->name('student.checkout.proof');
+Route::view('/student/checkout/pending', 'pages.student.checkout-pending')->name('student.checkout.pending');

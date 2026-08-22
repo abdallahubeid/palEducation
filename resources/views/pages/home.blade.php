@@ -462,7 +462,7 @@
                     <x-domain.plan-card
                         :name="__('home.plan_free_name')"
                         :summary="__('home.plan_free_summary')"
-                        price="٠"
+                        price="0"
                         :period="__('home.plan_free_period')"
                         :cta="__('home.plan_free_cta')"
                         :features="[__('home.plan_free_f1'), __('home.plan_free_f2'), __('home.plan_free_f3')]" />
@@ -473,7 +473,7 @@
                         featured
                         :name="__('home.plan_term_name')"
                         :summary="__('home.plan_term_summary')"
-                        price="١٢٠"
+                        price="120"
                         :period="__('home.plan_term_period')"
                         :cta="__('home.plan_term_cta')"
                         :features="[__('home.plan_term_f1'), __('home.plan_term_f2'), __('home.plan_term_f3'), __('home.plan_term_f4')]" />
@@ -483,14 +483,27 @@
                     <x-domain.plan-card
                         :name="__('home.plan_year_name')"
                         :summary="__('home.plan_year_summary')"
-                        price="٢٠٠"
+                        price="200"
                         :period="__('home.plan_year_period')"
                         :cta="__('home.plan_year_cta')"
                         :features="[__('home.plan_year_f1'), __('home.plan_year_f2'), __('home.plan_year_f3'), __('home.plan_year_f4')]" />
                 </div>
             </div>
 
-            <p class="reveal mt-8 text-center text-caption text-stone">{{ __('home.pricing_note') }}</p>
+            {{--
+                Link through to the full pricing screen (7), which carries the
+                per-subject calculator and the comparison table. The homepage keeps
+                a three-tier teaser; the real two-model choice from decision M-1
+                lives on /pricing.
+            --}}
+            <div class="reveal mt-8 flex flex-col items-center gap-3">
+                <x-ui.button variant="secondary" size="md" :href="route('pricing')">
+                    {{ __('home.pricing_all_plans') }}
+                    <x-icon name="arrow" class="size-4 rtl:-scale-x-100" />
+                </x-ui.button>
+
+                <p class="text-center text-caption text-stone">{{ __('home.pricing_note') }}</p>
+            </div>
         </div>
     </section>
 

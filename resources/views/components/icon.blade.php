@@ -67,6 +67,10 @@
         'filter'    => '<path d="M3.5 6h17l-6.5 7.5V20l-4-2v-4.5z"/>',
         'more'      => '<circle cx="12" cy="5.5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="18.5" r="1.4"/>',
         'eye-open'  => '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.75"/>',
+        // الدفع — الموجة 3
+        'bank'      => '<path d="M3 9.5 12 4l9 5.5"/><path d="M5.5 10v8M10 10v8M14 10v8M18.5 10v8"/><path d="M3 21h18"/>',
+        'wallet'    => '<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18"/><circle cx="17" cy="14.75" r="1.15"/>',
+
         // اتجاهية — تُعكس مع RTL عبر rtl:-scale-x-100 عند الاستدعاء
         'undo'      => '<path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',
 

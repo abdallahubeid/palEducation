@@ -369,6 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initNewsFilter();
     initReadingProgress();
     initShare();
+    initPlanCalculator();
     initHashScroll();
 });
 
@@ -1751,6 +1752,92 @@ function initReadingProgress() {
 
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
+    update();
+}
+
+/* ── Pricing calculator (screen 7) ────────────────────────
+   Per-subject subscription pricing, the interactive half of decision M-1.
+
+   State lives in the DOM (which checkboxes are checked), not in a parallel JS
+   object, so the same markup can move to Livewire later untouched.
+
+   All user-facing wording comes from data-* attributes fed by the lang file -
+   no Arabic string is ever written in JavaScript. */
+function initPlanCalculator() {
+    const root = document.querySelector('[data-calc]');
+    if (!root) return;
+
+    const unit = Number(root.dataset.calcUnit) || 0;
+    const branchPrice = Number(root.dataset.calcBranchPrice) || 0;
+
+    // ui/select and ui/checkbox merge attributes onto their WRAPPER, so reach
+    // through to the real controls rather than querying the hook directly.
+    const branchSelect = root.querySelector('[data-calc-branch] select');
+    const groups = Array.from(root.querySelectorAll('[data-calc-group]'));
+    const countEl = root.querySelector('[data-calc-count]');
+    const totalEl = root.querySelector('[data-calc-total]');
+    const emptyEl = root.querySelector('[data-calc-empty]');
+    const nudge = root.querySelector('[data-calc-nudge]');
+    const nudgeText = root.querySelector('[data-calc-nudge-text]');
+    const switchBtn = root.querySelector('[data-calc-switch]');
+    const cta = root.querySelector('[data-calc-cta]');
+
+    const activeGroup = () => groups.find((g) => !g.hidden);
+
+    function update() {
+        const group = activeGroup();
+        if (!group) return;
+
+        const checked = Array.from(group.querySelectorAll('input[type="checkbox"]')).filter((i) => i.checked);
+        const count = checked.length;
+        const total = count * unit;
+
+        if (countEl) countEl.textContent = String(count);
+        if (totalEl) totalEl.textContent = String(total);
+        if (emptyEl) emptyEl.hidden = count > 0;
+
+        // A disabled anchor cannot be expressed with the disabled attribute, so
+        // the CTA is muted with aria-disabled + pointer-events while empty.
+        if (cta) {
+            const off = count === 0;
+            cta.classList.toggle('pointer-events-none', off);
+            cta.classList.toggle('opacity-50', off);
+            cta.setAttribute('aria-disabled', String(off));
+        }
+
+        // Break-even nudge: past this point the branch pass is simply cheaper.
+        if (nudge && nudgeText) {
+            const worthSwitching = total > branchPrice;
+            nudge.hidden = !worthSwitching;
+            if (worthSwitching) {
+                nudgeText.textContent = (nudge.dataset.template || '')
+                    .replace('%count%', String(count))
+                    .replace('%total%', String(total));
+            }
+        }
+    }
+
+    branchSelect?.addEventListener('change', () => {
+        groups.forEach((g) => {
+            g.hidden = g.dataset.calcGroup !== branchSelect.value;
+            // Switching branch clears the previous branch's picks, so the total
+            // never reflects subjects the student can no longer see.
+            g.querySelectorAll('input[type="checkbox"]').forEach((i) => { i.checked = false; });
+        });
+        update();
+    });
+
+    root.addEventListener('change', (e) => {
+        if (e.target.matches('input[type="checkbox"]')) update();
+    });
+
+    switchBtn?.addEventListener('click', () => {
+        const target = document.querySelector('[data-branch-plan]');
+        target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        target?.classList.add('ring-4');
+        window.setTimeout(() => target?.classList.remove('ring-4'), 1600);
+    });
+
     update();
 }
 
