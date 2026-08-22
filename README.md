@@ -1,58 +1,86 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# pal education
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+منصة تعليمية إلكترونية لطلبة **الثانوية العامة (التوجيهي) في فلسطين**.
 
-## About Laravel
+> منصة تُقصي عن الطالب كل ما لا يخص فرعه، وتغلق حلقة التعلّم (شرح ← تقييم) داخل الشاشة نفسها.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## المبدآن الحاكمان
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| المبدأ | ماذا يعني عملياً |
+|---|---|
+| **الإقصاء المخصص** | الطالب لا يرى محتوى خارج فرعه إطلاقاً — لا في القوائم ولا البحث ولا المكتبة. الفرع فلتر جذري على كل استعلام. |
+| **الحلقة المغلقة** | انتهاء المحاضرة **حدث** يفتح الكويز تلقائياً — لا زر «ابدأ الاختبار». |
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## الحالة الحالية
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+> **واجهة أمامية فقط — لا خادم بعد.** آخر تحديث: 2026-08-20
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+| البند | الحالة |
+|---|---|
+| الشاشات | **32 من 48** مبنية · [تفاصيل الموجات](docs/02-ui-design-flow.md) |
+| المكوّنات | **61 مكوّن Blade** · معروضة حيّة على `/styleguide` |
+| نظام التصميم | ✅ معتمد v2.3 — [DESIGN.md](DESIGN.md) |
+| قاعدة البيانات | ❌ لا Models ولا migrations ولا seeders — كل شاشة تحمل بيانات وهمية في `@php` |
+| المصادقة | ❌ غير موجودة — شاشات الدخول مبنية بصرياً فقط |
+| Livewire 3 | ❌ غير مثبّت (وبالتالي **Alpine.js غير متوفّر**) |
+| الاختبارات | ❌ لا اختبارات خاصة بالمشروع بعد |
 
-## Agentic Development
+---
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## الستاك
 
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```
+Laravel 13.17 · PHP 8.3 · Tailwind CSS 4 · Vite 8 · Pest 5 · MySQL (XAMPP)
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+- Tailwind 4 عبر `@theme` في `resources/css/app.css` — **لا `tailwind.config.js`**
+- Blade فقط حالياً. لا React ولا Vue ولا Inertia.
+- ثنائي الاتجاه: عربي RTL أساسي / إنجليزي LTR — **logical properties حصراً، لا `left`/`right`**
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## التشغيل
 
-## Code of Conduct
+```bash
+composer install && npm install
+```
+```bash
+npm run build
+```
+```bash
+php artisan serve
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+> ⚠️ `npm run dev` يُنشئ `public/hot` ويُفعّل المسار البطيء (إعادة توليد Tailwind عند كل طلب — فرق ×4.7 في زمن التحميل). للتصفّح العادي استخدم `npm run build` وأوقف خادم التطوير.
 
-## Security Vulnerabilities
+**الجودة قبل أي commit:**
+```bash
+./vendor/bin/pint --test
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## الوثائق
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+| الملف | المحتوى |
+|---|---|
+| [CLAUDE.md](CLAUDE.md) | قواعد العمل في المشروع — تُقرأ أولاً |
+| [DESIGN.md](DESIGN.md) | نظام التصميم الكامل والـ tokens · **مصدر الحقيقة البصري** |
+| [PROJECT_CONCEPT.md](PROJECT_CONCEPT.md) | الفكرة والجمهور والقيمة المقترحة — «لماذا ولمن» |
+| [docs/01](docs/01-project-understanding.md) | الأدوار والصلاحيات والرحلات والقرارات المعلّقة |
+| [docs/02](docs/02-ui-design-flow.md) | خطة الموجات التسع وحالة كل واحدة |
+| [docs/03](docs/03-screens-detail.md) | تفصيل الـ48 شاشة |
+| [.claude/rules/](.claude/rules/) | قواعد RTL · Laravel · Livewire · **doctrine** (فخاخ وقعت فعلاً) |
+| ~~[docs/04](docs/04-stitch-prompts-wave1.md)~~ | ⛔ تاريخي ومتجاوَز — لوحة ألوان قديمة، لا تُستعمل |
+
+---
+
+## تنبيهات
+
+- **`/styleguide` مكشوف** — يحمل `noindex` فقط، وهذا ليس تحكّماً بالوصول. يجب حجبه قبل أي نشر إنتاجي.
+- **قرارات معلّقة تحجب موجات كاملة:** نطاق الاشتراك (م-1) · سلوك الكويز (م-2) · آلية الدفع (م-4) · استضافة الفيديو (م-5). الشاشات التي تلامسها بُنيت على التوصية المسجّلة كمحاكاة عرض، **لا كحسم** — راجع [docs/01](docs/01-project-understanding.md) §7.
+- **الملفات المدفوعة لا تُخدَّم من `public/`** — قرص `private` + controller يفحص الصلاحية. رابط مباشر = تسريب يهدم نموذج العمل.

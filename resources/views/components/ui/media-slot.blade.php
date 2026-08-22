@@ -3,6 +3,7 @@
     'alt'   => '',
     'ratio' => '4/3',
     'tone'  => 'accent',    // accent | tag | amber | warn
+    'icon'  => 'play',      // أيقونة البديل المصمّم — 'play' افتراضياً لأصله في معاينة المحاضرة
 ])
 
 @php
@@ -31,7 +32,7 @@
         <div class="grid size-full place-items-center bg-linear-to-bl {{ $t }}">
             <div class="flex flex-col items-center gap-3 px-6 text-center">
                 <span class="grid size-14 place-items-center rounded-full bg-canvas/70">
-                    <x-icon name="play" class="size-6" />
+                    <x-icon :name="$icon" class="size-6" />
                 </span>
                 <span class="text-caption font-medium opacity-70">{{ $alt ?: __('home.image_placeholder') }}</span>
             </div>

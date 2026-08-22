@@ -46,8 +46,9 @@
                 data-hide-label="{{ __('auth.password_hide') }}"
                 aria-label="{{ __('auth.password_show') }}"
                 aria-pressed="false"
-                class="absolute end-1.5 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full
-                       text-stone transition hover:bg-surface hover:text-ink">
+                {{-- size-11 على اللمس (≥44px) داخل حقل ارتفاعه 48px، وتتقلّص على المؤشّر --}}
+                class="absolute end-1 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full
+                       text-stone transition hover:bg-surface hover:text-ink lg:end-1.5 lg:size-9">
             <x-icon name="eye" class="size-4.5" />
         </button>
     </div>

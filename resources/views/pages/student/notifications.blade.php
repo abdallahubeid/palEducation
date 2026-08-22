@@ -34,7 +34,7 @@
         <div class="flex flex-wrap items-center justify-between gap-3">
             <h1 class="text-h2 font-bold text-ink">{{ __('student.notifications_title') }}</h1>
             <button type="button" data-mark-all-read
-                    class="text-caption font-semibold text-accent-deep transition hover:underline">
+                    class="inline-flex min-h-11 items-center rounded-md px-2 text-caption font-semibold text-accent-deep transition hover:underline lg:min-h-0 lg:px-0">
                 {{ __('student.notifications_mark_all_read') }}
             </button>
         </div>

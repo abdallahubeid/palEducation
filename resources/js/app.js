@@ -362,7 +362,484 @@ document.addEventListener('DOMContentLoaded', () => {
     initRegisterWizard();
     initForgotPassword();
     initBranchPicker();
+    initDataTables();
+    initDropzones();
+    initQuizBuilder();
+    initBranchFilter();
+    initNewsFilter();
+    initHashScroll();
 });
+
+/* ── الوصول لمرساة عبر الصفحات (#about · #pricing) ────────
+   الشريط العام يربط «من نحن» و«الأسعار» بقسمين على الرئيسية.
+
+   احتياطي دفاعي لا إصلاح لعطل مؤكَّد: الكشف عند التمرير (.js-reveal)
+   يُخفي المحتوى ويزيح مواضع العناصر أثناء التحميل، وهو سبب معروف
+   لضياع تمرير المرساة التلقائي. لم يُتحقَّق منه في بيئة المعاينة
+   لأن التمرير البرمجي لا يعمل فيها أصلاً (حتى behavior:'auto').
+   الاستدعاء عديم الأثر لو كان المتصفّح قد مرّر فعلاً. */
+function initHashScroll() {
+    const hash = window.location.hash;
+    if (!hash || hash.length < 2) return;
+
+    let target;
+    try {
+        target = document.querySelector(hash);
+    } catch {
+        return; // hash غير صالح كمحدِّد CSS
+    }
+    if (!target) return;
+
+    const jump = () => {
+        target.scrollIntoView({
+            behavior: reduceMotion ? 'auto' : 'smooth',
+            block: 'start',
+        });
+    };
+
+    // إطارَان: الأول بعد التخطيط، والثاني بعد أن يستقرّ الكشف عند التمرير
+    requestAnimationFrame(() => requestAnimationFrame(jump));
+}
+
+/* ── فهرس الفروع — بحث على العميل ─────────────────────────
+   أربعة فروع فقط، فالبحث هنا كماليّ لا ضروري — لكنه يمنع
+   شعور «لا يوجد ما أفعله» على صفحة قصيرة. */
+function initBranchFilter() {
+    const root = document.querySelector('[data-branch-filter]');
+    const grid = document.querySelector('[data-branch-grid]');
+    if (!root || !grid) return;
+
+    const search = root.querySelector('[data-branch-search]');
+    const items = Array.from(grid.querySelectorAll('[data-branch-item]'));
+    const empty = document.querySelector('[data-branch-empty]');
+
+    search?.addEventListener('input', () => {
+        const term = search.value.trim().toLowerCase();
+
+        items.forEach((item) => {
+            item.hidden = term !== '' && !(item.dataset.search || '').toLowerCase().includes(term);
+        });
+
+        const anyVisible = items.some((i) => !i.hidden);
+        grid.hidden = !anyVisible;
+        if (empty) empty.hidden = anyVisible;
+    });
+}
+
+/* ── فهرس الأخبار — بحث + تصنيف، بمنطق AND بينهما ───────── */
+function initNewsFilter() {
+    const root = document.querySelector('[data-news-filter]');
+    if (!root) return;
+
+    const search = root.querySelector('[data-news-search]');
+    const chips = Array.from(root.querySelectorAll('[data-news-cat]'));
+    const items = Array.from(root.querySelectorAll('[data-news-item]'));
+    const empty = root.querySelector('[data-news-empty]');
+    let activeCat = '';
+
+    function apply() {
+        const term = (search?.value || '').trim().toLowerCase();
+
+        items.forEach((item) => {
+            const matchesTerm = !term || (item.dataset.search || '').toLowerCase().includes(term);
+            const matchesCat = !activeCat || item.dataset.cat === activeCat;
+            item.hidden = !(matchesTerm && matchesCat);
+        });
+
+        const anyVisible = items.some((i) => !i.hidden);
+        if (empty) empty.hidden = anyVisible;
+
+        // عناوين الأقسام تختفي مع اختفاء محتواها — لا ترويسة فوق فراغ
+        root.querySelectorAll('[data-news-heading]').forEach((h) => {
+            const scope = h.nextElementSibling;
+            if (!scope) return;
+            h.hidden = !Array.from(scope.querySelectorAll('[data-news-item]')).some((i) => !i.hidden);
+        });
+    }
+
+    search?.addEventListener('input', apply);
+
+    chips.forEach((chip) => {
+        chip.addEventListener('click', () => {
+            activeCat = chip.dataset.newsCat;
+            chips.forEach((c) => {
+                const on = c === chip;
+                c.classList.toggle('is-active', on);
+                c.setAttribute('aria-selected', String(on));
+            });
+            apply();
+        });
+    });
+
+    apply();
+}
+
+/* ── منطقة الرفع بالسحب والإفلات ──────────────────────────
+   ⚠️ بلا خادم: شريط التقدّم محاكاة صريحة (data-dropzone-simulate).
+   يُستبدل بتقدّم رفع حقيقي عند حسم م-5. */
+function initDropzones() {
+    document.querySelectorAll('[data-dropzone]').forEach((zone) => {
+        const input = zone.querySelector('[data-dropzone-input]');
+        const target = zone.querySelector('[data-dropzone-target]');
+        const list = zone.querySelector('[data-dropzone-files]');
+        const tpl = zone.querySelector('[data-dropzone-file-template]');
+        if (!input || !target || !list || !tpl) return;
+
+        const simulate = zone.hasAttribute('data-dropzone-simulate');
+        const multiple = input.hasAttribute('multiple');
+
+        const fmtSize = (bytes) => {
+            if (bytes < 1024) return `${bytes} B`;
+            if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
+            if (bytes < 1073741824) return `${(bytes / 1048576).toFixed(1)} MB`;
+            return `${(bytes / 1073741824).toFixed(2)} GB`;
+        };
+
+        function addFile(file) {
+            if (!multiple) list.innerHTML = '';
+
+            const node = tpl.content.firstElementChild.cloneNode(true);
+            node.querySelector('[data-file-name]').textContent = file.name;
+            node.querySelector('[data-file-size]').textContent = fmtSize(file.size);
+
+            node.querySelector('[data-file-remove]').addEventListener('click', () => {
+                node.remove();
+                if (!list.children.length) input.value = '';
+            });
+
+            list.appendChild(node);
+
+            if (simulate) {
+                const wrap = node.querySelector('[data-file-progress]');
+                const bar = node.querySelector('[data-file-bar]');
+                const done = node.querySelector('[data-file-done]');
+                wrap.hidden = false;
+
+                let pct = 0;
+                const tick = setInterval(() => {
+                    pct = Math.min(100, pct + Math.random() * 18 + 6);
+                    bar.style.width = `${pct}%`;
+                    if (pct >= 100) {
+                        clearInterval(tick);
+                        wrap.hidden = true;
+                        done.hidden = false;
+                        // حفظ مسودّة تلقائي — يظهر بعد اكتمال الرفع
+                        document.querySelector('[data-draft-saved]')?.removeAttribute('hidden');
+                    }
+                }, 260);
+            }
+        }
+
+        input.addEventListener('change', () => {
+            Array.from(input.files || []).forEach(addFile);
+        });
+
+        // السحب والإفلات
+        ['dragenter', 'dragover'].forEach((ev) =>
+            target.addEventListener(ev, (e) => {
+                e.preventDefault();
+                target.classList.add('border-accent', 'bg-accent-soft/40');
+            }));
+
+        ['dragleave', 'drop'].forEach((ev) =>
+            target.addEventListener(ev, (e) => {
+                e.preventDefault();
+                target.classList.remove('border-accent', 'bg-accent-soft/40');
+            }));
+
+        target.addEventListener('drop', (e) => {
+            const files = Array.from(e.dataTransfer?.files || []);
+            (multiple ? files : files.slice(0, 1)).forEach(addFile);
+        });
+    });
+}
+
+/* ── بناء الكويز — أعقد نموذج في المشروع ──────────────────
+   الحالة تعيش في الـDOM (استنساخ <template>) لا في كائن JS موازٍ،
+   فينتقل نفس الـmarkup إلى Livewire لاحقاً بلا إعادة تصميم. */
+function initQuizBuilder() {
+    const root = document.querySelector('[data-quiz-builder]');
+    if (!root) return;
+
+    const list = root.querySelector('[data-questions]');
+    const emptyEl = root.querySelector('[data-questions-empty]');
+    const addBtn = root.querySelector('[data-add-question]');
+    const countEl = root.querySelector('[data-question-count]');
+    const pointsEl = root.querySelector('[data-total-points]');
+    const publishBtn = root.querySelector('[data-publish]');
+    const publishHint = root.querySelector('[data-publish-hint]');
+
+    const qTpl = document.querySelector('[data-question-template]');
+    const optTpl = document.querySelector('[data-option-template]');
+    const tfTpl = document.querySelector('[data-truefalse-template]');
+    if (!list || !qTpl) return;
+
+    let seq = 0;
+    let pendingDelete = null;
+
+    function refresh() {
+        const questions = Array.from(list.querySelectorAll('[data-question]'));
+
+        questions.forEach((q, i) => {
+            q.querySelector('[data-question-number]').textContent = i + 1;
+            q.querySelector('[data-move-up]').disabled = i === 0;
+            q.querySelector('[data-move-down]').disabled = i === questions.length - 1;
+            [q.querySelector('[data-move-up]'), q.querySelector('[data-move-down]')].forEach((b) => {
+                b.classList.toggle('opacity-30', b.disabled);
+                b.classList.toggle('pointer-events-none', b.disabled);
+            });
+        });
+
+        const total = questions.reduce((sum, q) => {
+            const v = parseInt(q.querySelector('[data-question-points] input')?.value, 10);
+            return sum + (Number.isNaN(v) ? 0 : v);
+        }, 0);
+
+        if (countEl) countEl.textContent = questions.length;
+        if (pointsEl) pointsEl.textContent = total;
+        if (emptyEl) emptyEl.hidden = questions.length > 0;
+
+        // م-3: لا نشر بلا سؤال واحد على الأقل
+        if (publishBtn) publishBtn.disabled = questions.length === 0;
+        if (publishHint) publishHint.hidden = questions.length > 0;
+    }
+
+    function addOption(question, checked = false) {
+        const optWrap = question.querySelector('[data-options]');
+        const node = optTpl.content.firstElementChild.cloneNode(true);
+        const radio = node.querySelector('[data-correct-radio]');
+
+        radio.name = `correct_${question.dataset.qid}`;
+        radio.checked = checked;
+
+        node.querySelector('[data-remove-option]').addEventListener('click', () => {
+            if (optWrap.querySelectorAll('[data-option]').length <= 2) return; // خياران حدّ أدنى
+            node.remove();
+        });
+
+        optWrap.appendChild(node);
+    }
+
+    function addQuestion() {
+        const node = qTpl.content.firstElementChild.cloneNode(true);
+        node.dataset.qid = ++seq;
+
+        // MCQ: أربعة خيارات افتراضية، الأول صحيح
+        for (let i = 0; i < 4; i++) addOption(node, i === 0);
+
+        // صح/خطأ
+        const tfWrap = node.querySelector('[data-truefalse]');
+        [['true', 'صح'], ['false', 'خطأ']].forEach(([val, label]) => {
+            const tf = tfTpl.content.firstElementChild.cloneNode(true);
+            const r = tf.querySelector('[data-tf-radio]');
+            r.name = `tf_${node.dataset.qid}`;
+            r.value = val;
+            if (val === 'true') r.checked = true;
+            tf.querySelector('[data-tf-label]').textContent = label;
+            tfWrap.appendChild(tf);
+        });
+
+        // تبديل نوع السؤال يبدّل كتلة الخيارات المعروضة
+        const typeSelect = node.querySelector('[data-question-type] select');
+        typeSelect.addEventListener('change', () => {
+            node.querySelectorAll('[data-qtype-block]').forEach((block) => {
+                block.hidden = block.dataset.qtypeBlock !== typeSelect.value;
+            });
+        });
+
+        node.querySelector('[data-add-option]').addEventListener('click', () => addOption(node));
+        node.querySelector('[data-question-points] input').addEventListener('input', refresh);
+
+        node.querySelector('[data-move-up]').addEventListener('click', () => {
+            const prev = node.previousElementSibling;
+            if (prev) { list.insertBefore(node, prev); refresh(); }
+        });
+
+        node.querySelector('[data-move-down]').addEventListener('click', () => {
+            const next = node.nextElementSibling;
+            if (next) { list.insertBefore(next, node); refresh(); }
+        });
+
+        node.querySelector('[data-remove-question]').addEventListener('click', () => {
+            pendingDelete = node;
+            modals['question-delete']?.open();
+        });
+
+        list.appendChild(node);
+        refresh();
+        node.querySelector('textarea')?.focus();
+    }
+
+    // تأكيد الحذف — كل حذف يمرّ عبر ConfirmDialog
+    document.querySelector('#question-delete [data-confirm-accept]')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        pendingDelete?.remove();
+        pendingDelete = null;
+        modals['question-delete']?.close();
+        refresh();
+    });
+
+    addBtn?.addEventListener('click', addQuestion);
+    refresh();
+}
+
+
+/* ── جدول البيانات — بحث + فرز + فلاتر + ترقيم، كله على العميل ──────
+   يخدم أي [data-table] بالصفحة. الصفوف تُقرأ من الـDOM لا من مصفوفة JS،
+   فالترتيب يبقى في المصدر ويسهل نقله لـLivewire لاحقاً بلا إعادة تصميم.
+
+   عقد الصف: data-row · data-search · data-sort-{key} · data-filter-{name}
+   حالتان فارغتان مختلفتان عمداً: «لا بيانات» ≠ «لا نتائج للبحث». */
+function initDataTables() {
+    document.querySelectorAll('[data-table]').forEach((table) => {
+        const body = table.querySelector('[data-table-body]');
+        if (!body) return;
+
+        const allRows = Array.from(body.querySelectorAll('[data-row]'));
+        const searchInput = table.querySelector('[data-table-search]');
+        const filters = Array.from(table.querySelectorAll('[data-table-filter]'));
+        const emptyEl = table.querySelector('[data-table-empty]');
+        const noResultsEl = table.querySelector('[data-table-no-results]');
+        const countEl = table.querySelector('[data-table-count]');
+        const pagerEl = table.querySelector('[data-table-pagination]');
+        const footerEl = table.querySelector('[data-table-footer]');
+        const tableEl = table.querySelector('table');
+
+        const perPage = parseInt(table.dataset.perPage, 10) || 8;
+        let currentPage = 1;
+        let sortKey = null;
+        let sortDir = 'asc';
+
+        const getFilterName = (el) => el.dataset.tableFilter
+            || el.querySelector('[data-table-filter]')?.dataset.tableFilter;
+
+        // الفلاتر مبنية على x-ui.select: العنصر الخارجي يحمل السمة، والقيمة في <select> بداخله
+        const filterControls = filters.map((el) => ({
+            name: getFilterName(el),
+            input: el.matches('select') ? el : el.querySelector('select'),
+        })).filter((f) => f.name && f.input);
+
+        function matches(row) {
+            const term = (searchInput?.value || '').trim().toLowerCase();
+            if (term && !(row.dataset.search || '').toLowerCase().includes(term)) return false;
+
+            for (const f of filterControls) {
+                const val = f.input.value;
+                if (val && row.dataset[`filter${f.name.charAt(0).toUpperCase()}${f.name.slice(1)}`] !== val) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function sortRows(rows) {
+            if (!sortKey) return rows;
+
+            const btn = table.querySelector(`[data-sort-key="${sortKey}"]`);
+            const numeric = btn?.dataset.sortType === 'number';
+
+            return rows.slice().sort((a, b) => {
+                const av = a.dataset[`sort${sortKey.charAt(0).toUpperCase()}${sortKey.slice(1)}`] ?? '';
+                const bv = b.dataset[`sort${sortKey.charAt(0).toUpperCase()}${sortKey.slice(1)}`] ?? '';
+
+                const cmp = numeric
+                    ? (parseFloat(av) || 0) - (parseFloat(bv) || 0)
+                    // مقارنة عربية صحيحة — localeCompare بلغة ar لا ترتيب بايتات
+                    : String(av).localeCompare(String(bv), 'ar');
+
+                return sortDir === 'asc' ? cmp : -cmp;
+            });
+        }
+
+        function render() {
+            const visible = sortRows(allRows.filter(matches));
+            const total = visible.length;
+            const pages = Math.max(1, Math.ceil(total / perPage));
+            if (currentPage > pages) currentPage = pages;
+
+            const start = (currentPage - 1) * perPage;
+            const pageRows = visible.slice(start, start + perPage);
+
+            // إعادة الترتيب في الـDOM لتطبيق الفرز فعلياً
+            allRows.forEach((r) => { r.hidden = true; });
+            pageRows.forEach((r) => { r.hidden = false; body.appendChild(r); });
+
+            const hasAnyData = allRows.length > 0;
+            const hasResults = total > 0;
+
+            if (emptyEl) emptyEl.hidden = hasAnyData;
+            if (noResultsEl) noResultsEl.hidden = !hasAnyData || hasResults;
+            if (tableEl) tableEl.parentElement.hidden = !hasResults;
+            if (footerEl) footerEl.hidden = !hasResults;
+
+            if (countEl && hasResults) {
+                countEl.textContent = (countEl.dataset.countTemplate || ':from–:to / :total')
+                    .replace(':from', start + 1)
+                    .replace(':to', start + pageRows.length)
+                    .replace(':total', total);
+            }
+
+            renderPager(pages);
+        }
+
+        function renderPager(pages) {
+            if (!pagerEl) return;
+            pagerEl.innerHTML = '';
+            if (pages <= 1) return;
+
+            const mkBtn = (label, page, opts = {}) => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = opts.active
+                    ? 'num grid size-11 lg:size-9 shrink-0 place-items-center rounded-md bg-accent text-ui font-medium text-on-primary'
+                    : 'num grid size-11 lg:size-9 shrink-0 place-items-center rounded-md text-ui font-medium text-steel transition hover:bg-surface disabled:pointer-events-none disabled:opacity-40';
+                b.textContent = label;
+                b.disabled = !!opts.disabled;
+                if (opts.active) b.setAttribute('aria-current', 'page');
+                b.addEventListener('click', () => { currentPage = page; render(); });
+                return b;
+            };
+
+            pagerEl.appendChild(mkBtn('‹', currentPage - 1, { disabled: currentPage === 1 }));
+            for (let p = 1; p <= pages; p++) {
+                pagerEl.appendChild(mkBtn(String(p), p, { active: p === currentPage }));
+            }
+            pagerEl.appendChild(mkBtn('›', currentPage + 1, { disabled: currentPage === pages }));
+        }
+
+        // الفرز — نقرة تبدّل الاتجاه، وaria-sort يعكس الحالة لقارئ الشاشة
+        table.querySelectorAll('[data-sort-key]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const key = btn.dataset.sortKey;
+                if (sortKey === key) {
+                    sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+                } else {
+                    sortKey = key;
+                    sortDir = 'asc';
+                }
+
+                table.querySelectorAll('[data-sort-col]').forEach((th) => {
+                    const isActive = th.dataset.sortCol === sortKey;
+                    th.setAttribute('aria-sort', isActive ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none');
+                    const icon = th.querySelector('[data-sort-icon]');
+                    if (icon) {
+                        icon.classList.toggle('rotate-180', isActive && sortDir === 'desc');
+                        icon.classList.toggle('text-accent', isActive);
+                        icon.classList.toggle('text-muted', !isActive);
+                    }
+                });
+
+                currentPage = 1;
+                render();
+            });
+        });
+
+        searchInput?.addEventListener('input', () => { currentPage = 1; render(); });
+        filterControls.forEach((f) => f.input.addEventListener('change', () => { currentPage = 1; render(); }));
+
+        render();
+    });
+}
 
 /* ── نماذج تجريبية — بلا خادم بعد ─────────────────────────
    تمنع الإرسال الفعلي وتنتقل للوجهة. عمداً بدل method="GET":
@@ -682,17 +1159,87 @@ function initNotifications() {
     const wrap = document.querySelector('[data-notifications]');
     if (!wrap) return;
 
-    wrap.querySelector('[data-mark-all-read]')?.addEventListener('click', () => {
-        wrap.querySelectorAll('[data-notification-item]').forEach((item) => {
-            item.classList.remove('bg-accent-soft/50');
-            item.querySelector('[data-unread-dot]')?.remove();
-            const title = item.querySelector('p');
-            if (title) {
-                title.classList.remove('font-semibold');
-                title.classList.add('font-medium');
-            }
+    const markAllBtn = wrap.querySelector('[data-mark-all-read]');
+    const countEl = wrap.querySelector('[data-unread-count]');
+    const tabs = wrap.querySelectorAll('[data-notif-tab]');
+    const groups = wrap.querySelectorAll('[data-notif-group]');
+    const noneUnread = wrap.querySelector('[data-notif-none-unread]');
+
+    const rows = () => Array.from(wrap.querySelectorAll('[data-notif-row]'));
+    const activeTab = () =>
+        wrap.querySelector('[data-notif-tab][aria-selected="true"]')?.dataset.notifTab || 'all';
+
+    /* يحوّل عنصراً واحداً إلى «مقروء» — بصرياً وفي بياناته معاً، وإلا
+       بقي فلتر «غير المقروءة» يراه غير مقروء. */
+    function markRead(item) {
+        item.classList.remove('bg-accent-soft/50');
+        item.querySelector('[data-unread-dot]')?.remove();
+
+        const title = item.querySelector('p');
+        if (title) {
+            title.classList.remove('font-semibold');
+            title.classList.add('font-medium');
+        }
+
+        const row = item.closest('[data-notif-row]');
+        if (row) row.dataset.unread = '0';
+    }
+
+    function refresh() {
+        // العدّ من نقاط «غير المقروء» نفسها لا من data-notif-row:
+        // صفحة الطالب لا تلفّ عناصرها بصفوف، فالعدّ منها كان سيُصفّر
+        // العدّاد هناك ويخفي زر «تعليم الكل» فور التحميل.
+        const unread = wrap.querySelectorAll('[data-notification-item] [data-unread-dot]').length;
+
+        if (countEl) countEl.textContent = unread;
+        if (markAllBtn) markAllBtn.hidden = unread === 0;
+
+        // شارة الجرس في الشريط العلوي تتبع نفس العدّاد
+        if (unread === 0) document.querySelector('[data-notif-dot]')?.remove();
+
+        applyFilter(activeTab());
+    }
+
+    function applyFilter(mode) {
+        if (!tabs.length) return;
+
+        rows().forEach((row) => {
+            row.hidden = mode === 'unread' && row.dataset.unread !== '1';
+        });
+
+        // أخفِ أي مجموعة زمنية لم يبقَ فيها صف ظاهر
+        groups.forEach((g) => {
+            g.hidden = !Array.from(g.querySelectorAll('[data-notif-row]')).some((r) => !r.hidden);
+        });
+
+        if (noneUnread) noneUnread.hidden = rows().some((r) => !r.hidden);
+    }
+
+    // النقر على إشعار يعلّمه مقروءاً قبل الانتقال لمصدره
+    wrap.querySelectorAll('[data-notification-item]').forEach((item) => {
+        item.addEventListener('click', () => {
+            markRead(item);
+            refresh();
         });
     });
+
+    markAllBtn?.addEventListener('click', () => {
+        wrap.querySelectorAll('[data-notification-item]').forEach(markRead);
+        refresh();
+    });
+
+    tabs.forEach((tab) => {
+        tab.addEventListener('click', () => {
+            tabs.forEach((t) => {
+                const active = t === tab;
+                t.classList.toggle('is-active', active);
+                t.setAttribute('aria-selected', String(active));
+            });
+            applyFilter(tab.dataset.notifTab);
+        });
+    });
+
+    refresh();
 }
 
 /* ── ملفي — تأكيد حفظ واجهي فقط (لا خادم بعد) ───────────── */

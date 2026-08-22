@@ -13,6 +13,21 @@ Route::view('/', 'pages.home')->name('home');
 
 /*
 |--------------------------------------------------------------------------
+| المنطقة العامة — الموجة 6
+|--------------------------------------------------------------------------
+| سطح الاكتساب: زائر يتعرّف على الفروع والأخبار قبل التسجيل.
+| البحث والفلترة على العميل (بلا خادم بعد) — نفس نمط بقية المشروع.
+|
+| ملاحظة: «من نحن» و«الأسعار» ليسا مسارين — لهما قسمان على الصفحة
+| الرئيسية (#about و#pricing) ويربط الشريط العلوي بهما مباشرة.
+*/
+Route::view('/branches', 'pages.branches')->name('branches.index');
+Route::view('/branches/{branch}', 'pages.branch')->name('branches.show');
+Route::view('/news', 'pages.news')->name('news.index');
+Route::view('/news/{slug}', 'pages.news-detail')->name('news.show');
+
+/*
+|--------------------------------------------------------------------------
 | دليل النظام — سطح تطوير داخلي لا واجهة منتج
 |--------------------------------------------------------------------------
 | الموجة 0 · كان مخطَّطاً منذ البداية ولم يُبنَ حتى الآن.
@@ -52,6 +67,34 @@ Route::view('/select-branch', 'pages.auth.select-branch')->name('auth.branch');
 | القوالب تعيش في resources/views/errors/ فتلتقطها Laravel تلقائياً عند
 | رمي الاستثناء المقابل. المسارات أدناه للمعاينة أثناء التطوير فقط.
 */
+/*
+|--------------------------------------------------------------------------
+| منطقة المعلم — الموجة 7 (الدفعة الأولى)
+|--------------------------------------------------------------------------
+| واجهات فقط ببيانات وهمية. 🔴 نطاق المعلم (مواده المسندة فقط) مُحاكى في
+| البيانات لا مفروضاً بعد — يُفرَض عبر Policy وGlobal Scope عند بناء الخادم.
+|
+| الدفعة الثانية (رفع محاضرة · بناء الكويز · رفع ملف · ملفي · السلة)
+| تُبنى لاحقاً؛ روابطها هنا تتساقط إلى '#' عبر حرس Route::has.
+*/
+Route::view('/teacher/dashboard', 'pages.teacher.dashboard')->name('teacher.dashboard');
+Route::view('/teacher/subjects', 'pages.teacher.subjects')->name('teacher.subjects');
+Route::view('/teacher/lectures', 'pages.teacher.lectures')->name('teacher.lectures');
+Route::view('/teacher/performance', 'pages.teacher.performance')->name('teacher.performance');
+
+/*
+| الدفعة الثانية — الرفع والبناء والملف والسلة والإشعارات
+| ⏳ شاشة رفع المحاضرة تلامس م-5: منطقة الرفع وشريط التقدّم محاكاة صريحة،
+| تُستبدل بتكامل حقيقي (Bunny/Vimeo) عند حسم القرار.
+| ⏳ بناء الكويز يطبّق توصية م-3 (لا نشر بلا سؤال واحد) كسلوك واجهة فقط.
+*/
+Route::view('/teacher/files/create', 'pages.teacher.file-create')->name('teacher.files.create');
+Route::view('/teacher/lectures/create', 'pages.teacher.lecture-create')->name('teacher.lectures.create');
+Route::view('/teacher/lectures/{lecture}/quiz', 'pages.teacher.quiz-builder')->name('teacher.lectures.quiz');
+Route::view('/teacher/profile', 'pages.teacher.profile')->name('teacher.profile');
+Route::view('/teacher/trash', 'pages.teacher.trash')->name('teacher.trash');
+Route::view('/teacher/notifications', 'pages.teacher.notifications')->name('teacher.notifications');
+
 Route::view('/preview/402', 'errors.402')->name('preview.402');
 Route::view('/preview/403', 'errors.403')->name('preview.403');
 Route::view('/preview/404', 'errors.404')->name('preview.404');

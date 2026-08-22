@@ -23,7 +23,7 @@
             <button type="button"
                     data-modal-close
                     aria-label="{{ __('common.close') }}"
-                    class="-m-2 grid size-9 shrink-0 place-items-center rounded-full text-steel transition hover:bg-surface hover:text-ink">
+                    class="-m-2 grid size-11 shrink-0 place-items-center rounded-full text-steel transition hover:bg-surface hover:text-ink lg:size-9">
                 <x-icon name="close" class="size-5" />
             </button>
         </div>

@@ -1,9 +1,9 @@
 # الشاشات بالتفصيل — 48 شاشة
 
 > **الاتجاه:** عربي RTL افتراضي · كل الواجهات تُبنى عربية
-> **النظام:** DESIGN.md v2.2 (لوحة edunova) مكيّف للعربية
+> **النظام:** DESIGN.md v2.3 (لوحة edunova) مكيّف للعربية
 > **الترتيب:** حسب موجات [02-ui-design-flow.md](02-ui-design-flow.md)
-> **آخر تحديث:** 2026-08-20 — **19 شاشة** مبنية فعلياً، مُعلَّمة ✅ أدناه. الباقي تصميم مُقترَح لم يُبنَ بعد.
+> **آخر تحديث:** 2026-08-20 — **32 شاشة** مبنية فعلياً، مُعلَّمة ✅ أدناه. الباقي تصميم مُقترَح لم يُبنَ بعد.
 > **إضافة خارج الـ48:** صفحة `/styleguide` (مخرَج الموجة 0) — سطح تطوير داخلي يعرض كل مكوّن في كل حالاته وفي الاتجاهين.
 
 **اصطلاح القراءة:** البنية مكتوبة **من أعلى الصفحة لأسفلها**. «يمين» و«يسار» لا تُستخدمان — في RTL البداية يمين.
@@ -382,17 +382,47 @@
 
 ---
 
-## 22 · الفروع
-`/branches` — عنوان + شبكة بطاقات كل الفروع (أيقونة · اسم · نبذة · عدد المواد · عدد الأساتذة)
+> **سطح الاكتساب.** هذه الأربع هي كل ما يراه زائر غير مسجّل بعد الصفحة الرئيسية. بُنيت بعد الموجة 7 عمداً: صارت وجهة التسجيل (الموجة 4) حقيقية أولاً، فصار للقُمع نهاية فعلية.
 
-## 23 · صفحة فرع واحد
-`/branches/{slug}` — هيرو الفرع · نبذة · شبكة مواده · شبكة أساتذته · CTA «سجّل الآن»
+## 22 · الفروع — ✅ مبنية
+`/branches` · `PublicShell`
 
-## 24 · الأخبار
-`/news` — شبكة بطاقات أخبار (صورة · عنوان · مقتطف · تاريخ) · ترقيم
+**البنية:** رأس (عنوان + نبذة) · بحث على العميل باسم الفرع أو مادة من مواده · شبكة `BranchCard` الأربع (مُعاد استخدامها **بلا تعديل** من الصفحة الرئيسية) · شريط دعوة تسجيل داكن.
 
-## 25 · تفاصيل الخبر
-`/news/{slug}` — صورة غلاف · عنوان · تاريخ · نص بعرض ≤68 حرفاً · أخبار ذات صلة
+**حالة فارغة:** «لا فرع مطابق» عند بحث بلا نتيجة.
+
+**المكوّنات:** `BranchCard` (بلا تغيير) · `RuleLabel` · `EmptyState` · `Button`
+
+## 23 · صفحة فرع واحد — ✅ مبنية
+`/branches/{slug}` · `PublicShell`
+
+**البنية:** مسار تنقّل · هيرو (أيقونة الفرع بلونه + عنوان + نبذة بعرض قراءة + زر تسجيل) · شريط أربع قيم رقمية **محسوبة من البيانات** (مواد · أساتذة · محاضرات · ملفات) · شبكة المواد · شبكة الأساتذة · دعوة تسجيل.
+
+> 🔴 **سياق الزائر — لا شريط تقدّم.** هذه الشاشة هي سبب جعل `percent` اختيارياً في `SubjectCard`: الزائر لا يملك تقدّماً، وعرض «0٪» له يُقرأ **إخفاقاً لا حياداً**. تمرير `percent=null` (الافتراضي الجديد) يُسقط كتلة التقدّم كاملة. الشاشتان الطالبيتان تمرّران `percent` صراحةً فلم تتأثّرا.
+
+**المكوّنات:** `SubjectCard` (**نسخة الزائر**) · `TeacherCard` (بلا تغيير — أول استعمال له خارج الرئيسية) · `Breadcrumb` · `Button`
+
+## 24 · الأخبار — ✅ مبنية
+`/news` · `PublicShell`
+
+**البنية:** رأس · بحث + شرائح تصنيف (امتحانات · المنهاج · المنصة · إرشادات) بمنطق **AND** بينهما · **خبر أبرز** ببطاقة أعرض (`featured`) · شبكة بقية الأخبار · ترقيم.
+
+**تفصيل:** شرائح التصنيف تُمرَّر أفقياً داخل حاويتها على الجوال (`overflow-x-auto`) بدل أن تلتفّ أو تفيض — والصفحة نفسها لا تُمرَّر أفقياً أبداً. عنوان «أحدث الأخبار» يختفي مع اختفاء شبكته — لا ترويسة فوق فراغ.
+
+**حالة فارغة:** «لا نتائج مطابقة» (بحث/تصنيف بلا نتيجة) · «لا أخبار بعد» (لا محتوى إطلاقاً).
+
+**المكوّنات:** `NewsCard` (**جديد**) · `Pagination` · `EmptyState`
+
+## 25 · تفاصيل الخبر — ✅ مبنية
+`/news/{slug}` · `PublicShell`
+
+**البنية:** مسار تنقّل · شارة تصنيف · عنوان **بعرض القراءة لا بعرض الصفحة** · سطر نَسب (صورة الكاتب + اسمه + تاريخ النشر + مدة القراءة) · صورة غلاف · متن · اقتباس · تذييل (رجوع + دعوة تسجيل) · ثلاث أخبار ذات صلة.
+
+> 🔴 **الشاشة الوحيدة في المشروع بنص عربي طويل** — معيار القراءة يُطبَّق هنا حرفياً ومُتحقَّق منه: **16px · ارتفاع سطر 1.75 · عرض 68ch** (قِيس فعلياً: 586.5px). العنوان نفسه مقيَّد بالعرض ذاته — سطر عنوان بعرض 1280px يُفقد العين مكانها.
+>
+> **النص المختلط:** كل مقطع لاتيني أو رقمي في المتن ملفوف بـ`<bdi dir="ltr">` (التواريخ `2026-06-06` · الأوقات `9:00` · النِسب `30%`) — بدونها ينقلب ترتيبها بصرياً داخل الجملة العربية.
+
+**المكوّنات:** `NewsCard` · `Breadcrumb` · `Badge` · `Avatar` · `MediaSlot`
 
 ---
 
@@ -400,15 +430,15 @@
 
 ---
 
-## 26 · لوحة المعلم
+## 26 · لوحة المعلم — ✅ مبنية
 `/teacher/dashboard` · `TeacherShell`
 
 بطاقات إحصاء (مواده · محاضراته · طلابه · متوسط نتائجهم) · **[+ رفع محاضرة] أبرز عنصر في الشاشة** · آخر محاضراته · آخر نتائج طلابه
 
-## 27 · موادي — المعلم
+## 27 · موادي — المعلم — ✅ مبنية
 `/teacher/subjects` — بطاقات المواد المسندة له **فقط** · كل بطاقة: اسم · الفرع · عدد المحاضرات · عدد الطلاب
 
-## 28 · رفع محاضرة ⭐
+## 28 · رفع محاضرة ⭐ — ✅ مبنية
 `/teacher/lectures/create` · **معالج خطوتين**
 
 **خطوة 1 — المحاضرة:** اختيار المادة (من مواده فقط) · عنوان · وصف · **منطقة رفع الفيديو مع شريط تقدّم** · ترتيب المحاضرة
@@ -416,7 +446,7 @@
 
 > **حفظ مسودة تلقائي إلزامي.** فيديو ثقيل + انقطاع نت = ضياع عمل المعلم = فقدان معلم.
 
-## 29 · بناء الكويز ⭐
+## 29 · بناء الكويز ⭐ — ✅ مبنية
 `/teacher/lectures/{id}/quiz` · **أعقد نموذج في المشروع**
 
 **البنية:** رأس (اسم المحاضرة + عدد الأسئلة) · قائمة أسئلة قابلة للطي والسحب
@@ -425,17 +455,39 @@
 
 ⏳ معلّق على **م-3** (هل الكويز إجباري للنشر) — توصيتي: نعم
 
-## 30 · محاضراتي
+## 30 · محاضراتي — ✅ مبنية
 `/teacher/lectures` — جدول: عنوان · المادة · الحالة (منشورة/مسودة) · المشاهدات · التاريخ · إجراءات (تعديل · حذف)
 **كل حذف يمرّ عبر `ConfirmDialog`**
 
-## 31 · رفع ملف مكتبة
+## 31 · رفع ملف مكتبة — ✅ مبنية
 `/teacher/files/create` — اختيار المادة · عنوان · وصف · منطقة رفع · [رفع]
 
-## 32 · أداء طلابي
+## 32 · أداء طلابي — ✅ مبنية
 `/teacher/performance` — فلاتر (المادة · المحاضرة) · جدول: الطالب · المحاضرة · الدرجة · المحاولات · التاريخ · تصدير
 
-## 33 · ملفي الشخصي — المعلم
+## 33أ · إشعارات المعلم — ✅ مبنية
+`/teacher/notifications` · `TeacherShell`
+
+> شاشة خارج تعداد الـ48 الأصلي — أُضيفت لتماثل شاشة إشعارات الطالب (21) على سطح المعلم. القرار م-8 نصّ على أن مركز الإشعارات «محرّك العودة لا ترف»، وهذا ينطبق على المعلم كما الطالب.
+
+**سطحان لا واحد — نفس نمط الطالب حرفياً:**
+
+| السطح | المكان | المحتوى |
+|---|---|---|
+| **قائمة منسدلة** | جرس `TeacherShell` العلوي | نقطة غير مقروء على الجرس · رأس «التنبيهات» + «تعليم الكل كمقروء» · آخر 3 إشعارات · تذييل «رؤية الكل» → الصفحة الكاملة |
+| **صفحة كاملة** | `/teacher/notifications` | عنوان + «تعليم الكل كمقروء» · تبويبا فلترة (الكل / غير المقروءة بعدّاد) · مجموعات زمنية (اليوم · أمس · أقدم) |
+
+**بيانات المعلم تختلف عن الطالب جذرياً:** محورها نشاط الطلاب على محتواه لا اشتراكه — انضمام طالب جديد · تسليم كويز · استفسار في مناقشة المادة · تنبيه انخفاض نتائج · محاضرة مسودّة بلا كويز.
+
+**التفاعل:** النقر على إشعار يعلّمه مقروءاً **قبل** الانتقال لمصدره · «تعليم الكل» يمسح النقاط ويصفّر العدّاد ويخفي نفسه ويزيل نقطة الجرس · تبويب «غير المقروءة» يُخفي المجموعات الزمنية الفارغة ويعرض حالة «أنت على اطّلاع بكل شيء» عند الصفر.
+
+**المكوّنات:** `NotificationItem` (مُعاد استخدامه كما هو) · `EmptyState` · `Badge`
+
+> ⚙️ **مشترك مع الطالب:** المنسدلة تعمل عبر `initNotificationDropdown()` الموجودة أصلاً بلا سطر JS جديد (نفس عقد `data-notif-*`). ومنطق التعليم/الفلترة وُحِّد في `initNotifications()` واحدة تخدم السطحين — وأكسبت صفحة الطالب «النقر للتعليم كمقروء» مجاناً.
+
+---
+
+## 33 · ملفي الشخصي — المعلم — ✅ مبنية
 `/teacher/profile` — صورة · اسم · نبذة (**تظهر في صفحة الفرع العامة**) · تخصص · روابط تواصل
 
 ---
@@ -491,27 +543,71 @@
 ## 47 · سلة محذوفات الأدمن
 `/admin/trash` — تبويبات حسب النوع (محاضرات · ملفات · أخبار · مستخدمون · مواد) · جدول: العنصر · النوع · **حُذف بواسطة** · تاريخ الحذف · **أيام متبقية قبل الحذف النهائي** · [استرجاع] [حذف نهائي]
 
-## 48 · سلة محذوفات المعلم
+## 48 · سلة محذوفات المعلم — ✅ مبنية
 `/teacher/trash` — **محتواه هو فقط** · [استرجاع] · **بلا حذف نهائي** (م-9)
 
 ---
 
 # ملخّص المسارات
 
+## ✅ المسارات المسجّلة فعلياً (محقَّقة بـ`php artisan route:list` — 2026-08-20)
+
+| المسار | اسم المسار | القالب |
+|---|---|---|
+| `/` | `home` | `pages/home` |
+| `/styleguide` | `styleguide` | `pages/styleguide` |
+| `/branches` | `branches.index` | `pages/branches` |
+| `/branches/{branch}` | `branches.show` | `pages/branch` |
+| `/news` | `news.index` | `pages/news` |
+| `/news/{slug}` | `news.show` | `pages/news-detail` |
+| `/login` | `auth.login` | `pages/auth/login` |
+| `/register` | `auth.register` | `pages/auth/register` |
+| `/forgot-password` | `auth.forgot` | `pages/auth/forgot-password` |
+| `/select-branch` | `auth.branch` | `pages/auth/select-branch` |
+| `/student/dashboard` | `student.dashboard` | `pages/student/dashboard` |
+| `/student/subjects` | `student.subjects.index` | `pages/student/subjects` |
+| `/student/subjects/{subject}` | `student.subjects.show` | `pages/student/subject` |
+| `/student/lectures/{lecture}` | `student.lectures.show` | `pages/student/lecture` |
+| `/student/lectures/{lecture}/quiz` | `student.lectures.quiz` | `pages/student/quiz` |
+| `/student/lectures/{lecture}/quiz/result` | `student.lectures.quiz-result` | `pages/student/quiz-result` |
+| `/student/library` | `student.library` | `pages/student/library` |
+| `/student/progress` | `student.progress` | `pages/student/progress` |
+| `/student/subscription` | `student.subscription` | `pages/student/subscription` |
+| `/student/profile` | `student.profile` | `pages/student/profile` |
+| `/student/notifications` | `student.notifications` | `pages/student/notifications` |
+| `/teacher/dashboard` | `teacher.dashboard` | `pages/teacher/dashboard` |
+| `/teacher/subjects` | `teacher.subjects` | `pages/teacher/subjects` |
+| `/teacher/lectures` | `teacher.lectures` | `pages/teacher/lectures` |
+| `/teacher/lectures/create` | `teacher.lectures.create` | `pages/teacher/lecture-create` |
+| `/teacher/lectures/{lecture}/quiz` | `teacher.lectures.quiz` | `pages/teacher/quiz-builder` |
+| `/teacher/files/create` | `teacher.files.create` | `pages/teacher/file-create` |
+| `/teacher/performance` | `teacher.performance` | `pages/teacher/performance` |
+| `/teacher/profile` | `teacher.profile` | `pages/teacher/profile` |
+| `/teacher/trash` | `teacher.trash` | `pages/teacher/trash` |
+| `/teacher/notifications` | `teacher.notifications` | `pages/teacher/notifications` |
+| `/preview/402` · `/preview/403` · `/preview/404` | `preview.402/403/404` | `errors/402` · `errors/403` · `errors/404` |
+
+> **حالات النظام لا تحتاج مساراً لتعمل:** قوالبها في `resources/views/errors/` فتلتقطها Laravel تلقائياً عند رمي الاستثناء المقابل (`abort(403)` مثلاً). مسارات `/preview/*` للمعاينة أثناء التطوير فقط، وتُحذف عند النشر.
+>
+> **`/styleguide` خارج تعداد الـ48** — سطح تطوير داخلي لا شاشة منتج. يحمل `noindex` فقط، **وهذا ليس تحكّماً بالوصول** — يجب حجبه قبل أي نشر إنتاجي.
+
+## ⏳ المسارات المخطَّطة ولم تُبنَ بعد
+
 ```
-عامة        /  ·  /branches  ·  /branches/{slug}  ·  /news  ·  /news/{slug}
-            /pricing  ·  /login  ·  /register  ·  /forgot-password
+عامة        /pricing (شاشة 7 — محجوبة بم-1)
+            ملاحظة: «من نحن» و«الأسعار» في الشريط العام ليسا مسارين —
+            يشيران لقسمَي #about و#pricing على الصفحة الرئيسية.
 
-طالب        /student/dashboard · /select-branch · /subjects · /subjects/{id}
-            /lectures/{id} · /lectures/{id}/quiz · /quiz/result
-            /library · /progress · /subscription · /checkout · /notifications · /profile
+طالب        /student/checkout · /student/checkout/proof · /student/checkout/pending
 
-معلم        /teacher/dashboard · /subjects · /lectures · /lectures/create
-            /lectures/{id}/quiz · /files/create · /performance · /trash · /profile
+معلم        — لا شيء. الموجة 7 مبنية بالكامل (10 مسارات في الجدول أعلاه)
 
-أدمن        /admin · /users · /branches · /subjects · /lectures · /files
-            /news · /subscriptions · /payments · /reports · /settings · /trash
+أدمن        /admin · /admin/users · /admin/branches · /admin/subjects · /admin/lectures
+            /admin/files · /admin/news · /admin/subscriptions · /admin/payments
+            /admin/reports · /admin/settings · /admin/trash
 ```
+
+> ⚠️ كل مسارات الطالب أعلاه **بلا `middleware('auth')`** حتى الآن — `Route::view()` مباشرة، لأن المصادقة لم تُبنَ. عند بنائها تُنقل كلها إلى مجموعة محمية بـ`['auth', 'role:student', 'subscription.active']`.
 
 ---
 

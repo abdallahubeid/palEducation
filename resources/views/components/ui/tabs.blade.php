@@ -15,7 +15,7 @@
                     role="tab"
                     aria-selected="{{ $key === $active ? 'true' : 'false' }}"
                     @class([
-                        'tab-trigger rounded-md px-4 py-2 text-ui font-semibold text-stone transition hover:text-ink cursor-pointer',
+                        'tab-trigger cursor-pointer rounded-md px-4 py-2.5 text-ui font-semibold text-stone transition hover:text-ink lg:py-2',
                         'is-active' => $key === $active,
                     ])>
                 {{ $label }}

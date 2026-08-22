@@ -1,11 +1,26 @@
 @php
+    /*
+     | 'route' → مسار مسجّل · 'anchor' → قسم على الصفحة الرئيسية.
+     | «من نحن» و«الأسعار» ليسا شاشتين مستقلتين في خطة الـ48 (والأسعار
+     | شاشة 7 محجوبة بم-1)، لكن للاثنين قسمان فعليان على الرئيسية —
+     | فالربط بالمرساة أصدق من رابط ميّت يتساقط إلى '#'.
+     */
     $links = [
         ['label' => __('nav.home'),     'route' => 'home'],
         ['label' => __('nav.branches'), 'route' => 'branches.index'],
-        ['label' => __('nav.about'),    'route' => 'about'],
-        ['label' => __('nav.pricing'),  'route' => 'pricing'],
+        ['label' => __('nav.about'),    'anchor' => 'about'],
+        ['label' => __('nav.pricing'),  'anchor' => 'pricing'],
         ['label' => __('nav.news'),     'route' => 'news.index'],
     ];
+
+    // يبني وجهة الرابط: مرساة على الرئيسية، أو مسار مسجّل، أو '#'
+    $linkHref = function (array $link) {
+        if (isset($link['anchor'])) {
+            return route('home') . '#' . $link['anchor'];
+        }
+
+        return Route::has($link['route']) ? route($link['route']) : '#';
+    };
 
     $socials = [
         ['label' => 'Facebook',  'path' => 'M14 8.5h2V5.8h-2.3c-2.3 0-3.5 1.4-3.5 3.6v1.4H8v2.8h2.2V21h3v-7.4h2.2l.4-2.8h-2.6V9.7c0-.8.3-1.2 1.1-1.2z'],
@@ -29,9 +44,9 @@
             {{-- الروابط — وسط الشريط --}}
             <ul class="hidden flex-1 items-center justify-center gap-1 lg:flex">
                 @foreach ($links as $link)
-                    @php $active = Route::has($link['route']) && request()->routeIs($link['route']); @endphp
+                    @php $active = isset($link['route']) && Route::has($link['route']) && request()->routeIs($link['route']); @endphp
                     <li>
-                        <a href="{{ Route::has($link['route']) ? route($link['route']) : '#' }}"
+                        <a href="{{ $linkHref($link) }}"
                            @class([
                                'relative block rounded-md px-3.5 py-2 text-ui transition',
                                'text-ink font-medium' => $active,
@@ -65,12 +80,12 @@
 
                 <span class="hidden h-6 w-px bg-hairline xl:block" aria-hidden="true"></span>
 
-                <a href="{{ Route::has('login') ? route('login') : '#' }}"
+                <a href="{{ Route::has('auth.login') ? route('auth.login') : '#' }}"
                    class="hidden px-1 text-ui text-steel transition hover:text-ink sm:inline-flex">
                     {{ __('nav.login') }}
                 </a>
 
-                <x-ui.button :href="Route::has('register') ? route('register') : '#'" size="sm" class="hidden sm:inline-flex">
+                <x-ui.button :href="Route::has('auth.register') ? route('auth.register') : '#'" size="sm" class="hidden sm:inline-flex">
                     {{ __('nav.register') }}
                 </x-ui.button>
 
@@ -95,7 +110,7 @@
             <ul class="flex flex-col gap-1">
                 @foreach ($links as $link)
                     <li>
-                        <a href="{{ Route::has($link['route']) ? route($link['route']) : '#' }}"
+                        <a href="{{ $linkHref($link) }}"
                            class="block rounded-md px-3 py-3 text-body text-steel transition hover:bg-surface hover:text-ink">
                             {{ $link['label'] }}
                         </a>
@@ -104,10 +119,10 @@
             </ul>
 
             <div class="mt-4 flex flex-col gap-2 border-t border-hairline-soft pt-4">
-                <x-ui.button :href="Route::has('login') ? route('login') : '#'" variant="secondary" size="md">
+                <x-ui.button :href="Route::has('auth.login') ? route('auth.login') : '#'" variant="secondary" size="md">
                     {{ __('nav.login') }}
                 </x-ui.button>
-                <x-ui.button :href="Route::has('register') ? route('register') : '#'" size="md">
+                <x-ui.button :href="Route::has('auth.register') ? route('auth.register') : '#'" size="md">
                     {{ __('nav.register') }}
                 </x-ui.button>
             </div>

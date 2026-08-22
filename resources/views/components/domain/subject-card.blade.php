@@ -2,7 +2,7 @@
     'name'          => '',
     'teacher'       => '',
     'icon'          => 'book',
-    'percent'       => 0,
+    'percent'       => null,       // null = سياق زائر: لا تقدّم ولا شريط
     'lecturesCount' => 0,
     'filesCount'    => null,       // اختياري — يظهر بجانب عدد المحاضرات إن مُرِّر
     'tone'          => 'accent',   // accent | tag | amber | warn
@@ -30,13 +30,20 @@
         </div>
     </div>
 
-    <div>
-        <div class="flex items-center justify-between text-caption text-steel">
-            <span>{{ __('student.subject_progress_label') }}</span>
-            <span class="num font-semibold text-ink">{{ (int) $percent }}%</span>
+    {{--
+        شريط التقدّم اختياري: الزائر غير المسجّل لا يملك تقدّماً، فعرض
+        «0%» له يقرأ كإخفاق لا كحياد. تمرير percent=null (الافتراضي)
+        يُسقط الكتلة كاملة — هذا ما تستعمله صفحة الفرع العامة.
+    --}}
+    @if ($percent !== null)
+        <div>
+            <div class="flex items-center justify-between text-caption text-steel">
+                <span>{{ __('student.subject_progress_label') }}</span>
+                <span class="num font-semibold text-ink">{{ (int) $percent }}%</span>
+            </div>
+            <x-ui.progress-bar :percent="$percent" size="sm" class="mt-2" />
         </div>
-        <x-ui.progress-bar :percent="$percent" size="sm" class="mt-2" />
-    </div>
+    @endif
 
     <p class="num text-caption text-stone">
         {{ $lecturesCount }} {{ __('student.lectures_unit') }}

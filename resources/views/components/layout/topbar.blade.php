@@ -68,7 +68,7 @@
                     <p class="text-ui font-semibold text-ink">{{ __('student.notifications_title') }}</p>
                     <button type="button" data-notif-mark-all
                             @if ($unreadCount === 0) hidden @endif
-                            class="text-caption font-semibold text-accent-deep transition hover:underline">
+                            class="inline-flex min-h-11 items-center rounded-md px-2 text-caption font-semibold text-accent-deep transition hover:underline lg:min-h-0 lg:px-0">
                         {{ __('student.notifications_mark_all_read') }}
                     </button>
                 </div>

@@ -1,7 +1,7 @@
 ---
 version: 2.3
 name: palEducation-design-system
-status: ADOPTED — implemented and verified in code (~52 components across 19 built screens, exercised on /styleguide)
+status: ADOPTED — implemented and verified in code (61 Blade components across 32 built screens, exercised live on /styleguide)
 description: "Design system for a Palestinian Tawjihi (high-school exit exam) study platform. Indigo-purple #525fe1 carries every action (buttons, links); amber #f0a500 is the sole secondary color, reserved for specific moments; both sit on one background, #f5f8f7, never stark white. Headings run in navy #0b104a. The system is bidirectional by design (Arabic RTL primary, English LTR secondary), with letter-spacing hard-zeroed and line-heights raised to suit connected Arabic glyphs. Every color/text pairing in this file is measured and confirmed to clear WCAG AA."
 
 # ═══════════════════════════════════════════════════
@@ -217,7 +217,7 @@ palEducation is a **study tool** a Palestinian teenager opens in the evening and
 ### Three traps this project actually hit
 
 **1. One shade of a color is never enough — each color needs two.**
-`amber` `#f0a500` is an excellent surface color (8.5:1 against navy) but only **2.07:1 as text** — unreadable. Hence `amber-deep` for text. Same logic applies to `accent` / `accent-deep`. The same trap resurfaced with the two semantic status colors: `warn` measured **3.14:1** and `error` **3.73:1** as text — both fail AA — while working fine as 12–14%-opacity tinted backgrounds. `warn-deep` (5.54:1) and `error-deep` (5.49:1) were added as the text-only shades; `badge.blade.php` was updated to use them. **Known gap:** several other files still reference bare `text-error` / `text-warn` for text and haven't been swept yet (see Known Gaps).
+`amber` `#f0a500` is an excellent surface color (8.5:1 against navy) but only **2.07:1 as text** — unreadable. Hence `amber-deep` for text. Same logic applies to `accent` / `accent-deep`. The same trap resurfaced with the two semantic status colors: `warn` measured **3.14:1** and `error` **3.73:1** as text — both fail AA — while working fine as 12–14%-opacity tinted backgrounds. `warn-deep` (5.54:1) and `error-deep` (5.49:1) were added as the text-only shades, and **every view was swept** — `alert`, `badge`, `branch-card`, `stat-card`, `teacher-card`, `media-slot`, and `home`. Verified by grep: 11 × `text-error-deep`, 11 × `text-warn-deep`, **zero bare `text-error` / `text-warn` remaining**. The base tokens are now surface-only by contract; if one ever reappears as a text color, that is a regression.
 
 **2. Lightening a dark surface silently breaks whatever sits on top of it.**
 When the dark band was lightened from `#0b104a` to `#242e83`, `accent` on top of it dropped from 3.44:1 to **2.28:1**. `accent-on-dark` `#bcc2f8` (6.8:1) was added to fix it. **Lightening any surface requires re-measuring everything on top of it.**
@@ -331,6 +331,8 @@ Tablets are touch input too, so the size reduction happens at the `lg` breakpoin
 
 `canvas` background · `{rounded.xl}` · no border · shadow `0 0 30px rgb(0 0 0 / 0.05)`, deepening to `0 0 30px rgb(0 0 0 / 0.12)` with a 4px lift on hover. The hover state is built into `.tile` itself — there is no separate `.tile-hover` modifier class.
 
+> 🔴 **Never put `.tile` on an element that carries interaction state** (`:checked`, `:hover` driven by a peer, etc.). `.tile` is plain CSS written outside `@layer`, and unlayered CSS beats *every* layered Tailwind utility regardless of specificity — so `peer-checked:bg-*` silently loses to `.tile`'s background. This broke `QuizOption` twice and `Toggle` once. Stateful surfaces re-create the tile look from utilities instead: `bg-canvas rounded-xl shadow-subtle ring-1 ring-hairline` (see `ui/selectable-card.blade.php`). Display-only cards may use `.tile` freely.
+
 > **Note:** `app.css` also defines a bordered `.card` / `.card-hover` pair (`canvas` bg, `hairline` border, `{rounded.xl}`, the `elevation.card` shadow on hover) that matches the documented card elevation token exactly — but it isn't applied anywhere in the current markup. Treat it as reserved for a future bordered-card variant, not the active pattern.
 
 **Featured state** (pricing card): 2px `accent` ring + `accent-glow` shadow, no border change.
@@ -365,7 +367,7 @@ Built and in use across the Profile and Subject-search screens. Token spec, as i
 
 ### Built components inventory
 
-Grown well past the Wave-1 homepage set — now ~45 Blade component files across four layers:
+Grown well past the Wave-1 homepage set — now **61** Blade component files across four layers:
 
 **Shells & layout** (`layouts/`, `layout/`): `layouts.public` (PublicShell) · `layouts.student` (StudentShell, holds the `[data-shell]` focus/collapse state target) · `layouts.focus` (standalone quiz/quiz-result fallback pages) · **`layouts.centered`** (CenteredShell — one shell serving all 7 auth and system-boundary screens; width via `narrow` 440px / `wide` 560px / `full` 1024px) · **`layouts.styleguide`** (internal dev surface) · `layout.sidebar` (collapsible, icon-only when collapsed, mobile drawer) · `layout.topbar` (notification-bell flyout, subscription badge, search)
 

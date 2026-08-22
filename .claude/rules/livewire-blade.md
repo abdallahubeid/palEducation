@@ -18,23 +18,27 @@
 
 ## 2. أين يعيش كل شيء
 
+البنية الفعلية اليوم (محدَّثة 2026-08-20):
+
 ```
 resources/views/
-├── components/              ← Blade Components (بلا حالة)
-│   ├── ui/                  ← الأساسيات: button, input, badge, card...
-│   ├── layout/              ← sidebar, topbar, page-header
-│   └── domain/              ← branch-card, subject-card, lecture-item, file-row
-├── layouts/
-│   ├── public.blade.php     ← PublicShell
-│   ├── student.blade.php    ← StudentShell
-│   ├── teacher.blade.php    ← TeacherShell
-│   └── admin.blade.php      ← AdminShell
-├── livewire/                ← مكوّنات Livewire (بحالة)
-│   ├── student/
-│   ├── teacher/
-│   └── admin/
-└── pages/                   ← الصفحات
+├── components/
+│   ├── ui/                  ← الأساسيات: button, input, select, checkbox, radio,
+│   │                          password-input, form-errors, selectable-card, modal…
+│   ├── layout/              ← sidebar, topbar
+│   ├── layouts/             ← القشرات (كمكوّنات Blade لا في views/layouts/)
+│   │   ├── public           ← PublicShell
+│   │   ├── student          ← StudentShell
+│   │   ├── focus            ← FocusShell (كويز مستقل)
+│   │   ├── centered         ← CenteredShell — 7 شاشات مصادقة وحالات نظام
+│   │   └── styleguide       ← سطح تطوير داخلي
+│   ├── domain/              ← branch-card, subject-card, lecture-item, file-row…
+│   └── site/                ← header, footer
+├── pages/                   ← الصفحات (home, student/*, auth/*, styleguide)
+└── errors/                  ← 402 · 403 · 404 — تلتقطها Laravel تلقائياً
 ```
+
+> ⏳ `livewire/` غير موجود بعد — Livewire 3 لم يُثبَّت. القشرتان `teacher` و`admin` تُبنيان مع الموجتين 7 و8.
 
 ---
 

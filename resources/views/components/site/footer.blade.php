@@ -4,7 +4,7 @@
             'title' => __('footer.product'),
             'links' => [
                 ['label' => __('nav.branches'),    'route' => 'branches.index'],
-                ['label' => __('nav.pricing'),     'route' => 'pricing'],
+                ['label' => __('nav.pricing'),     'route' => null, 'anchor' => 'pricing'],
                 ['label' => __('footer.library'),  'route' => null],
                 ['label' => __('footer.teachers'), 'route' => null],
             ],
@@ -12,7 +12,7 @@
         [
             'title' => __('footer.platform'),
             'links' => [
-                ['label' => __('nav.about'),      'route' => 'about'],
+                ['label' => __('nav.about'),      'route' => null, 'anchor' => 'about'],
                 ['label' => __('nav.news'),       'route' => 'news.index'],
                 ['label' => __('footer.join_us'), 'route' => null],
                 ['label' => __('footer.contact'), 'route' => null],
@@ -58,7 +58,10 @@
                            required
                            dir="ltr"
                            placeholder="name@example.com"
-                           class="h-11 flex-1 rounded-md border border-on-dark/15 bg-on-dark/5 px-4
+                           {{-- w-full ثم sm:flex-1: في الحاوية العمودية (الجوال) كان
+                                flex-1 يضبط flex-basis:0% على المحور الرأسي فينهار
+                                ارتفاع الحقل إلى 22px رغم h-11. النمو مقصود للصف فقط. --}}
+                           class="h-11 w-full rounded-md border border-on-dark/15 bg-on-dark/5 px-4 sm:flex-1
                                   font-latin text-ui text-on-dark transition placeholder:text-on-dark/35
                                   focus:border-accent focus:bg-on-dark/10 focus:outline-none">
 
@@ -74,11 +77,14 @@
             @foreach ($columns as $column)
                 <div>
                     <h3 class="text-ui font-semibold text-on-dark">{{ $column['title'] }}</h3>
-                    <ul class="mt-4 flex flex-col gap-3">
+                    {{-- قائمة تنقّل لا نص جارٍ: إعفاء WCAG للروابط المضمّنة في
+                         الفقرات لا ينطبق هنا، فكل رابط يبلغ 44px على اللمس. --}}
+                    <ul class="mt-4 flex flex-col gap-1 lg:gap-3">
                         @foreach ($column['links'] as $link)
                             <li>
-                                <a href="{{ $link['route'] && Route::has($link['route']) ? route($link['route']) : '#' }}"
-                                   class="text-caption text-on-dark-muted transition hover:text-accent-on-dark">
+                                <a href="{{ isset($link['anchor']) ? route('home') . '#' . $link['anchor'] : ($link['route'] && Route::has($link['route']) ? route($link['route']) : '#') }}"
+                                   class="inline-flex min-h-11 items-center text-caption text-on-dark-muted transition
+                                          hover:text-accent-on-dark lg:min-h-0">
                                     {{ $link['label'] }}
                                 </a>
                             </li>
@@ -92,7 +98,7 @@
         <div class="mt-14 flex flex-col items-center gap-4 border-t border-on-dark/10 pt-6
                     sm:flex-row sm:justify-between">
 
-            <a href="{{ route('home') }}" class="flex items-center gap-2 text-ui font-bold text-on-dark">
+            <a href="{{ route('home') }}" class="inline-flex min-h-11 items-center gap-2 text-ui font-bold text-on-dark lg:min-h-0">
                 <span class="grid size-7 place-items-center rounded-md bg-on-dark text-micro font-bold text-primary">p</span>
                 <span>pal <span class="text-accent-on-dark">education</span></span>
             </a>
