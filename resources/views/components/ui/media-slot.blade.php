@@ -4,6 +4,7 @@
     'ratio' => '4/3',
     'tone'  => 'accent',    // accent | tag | amber | warn
     'icon'  => 'play',      // أيقونة البديل المصمّم — 'play' افتراضياً لأصله في معاينة المحاضرة
+    'loading' => 'lazy',    // lazy | eager - above-the-fold covers load eager (DESIGN.md, Performance)
 ])
 
 @php
@@ -24,7 +25,7 @@
     @if ($src)
         <img src="{{ $src }}"
              alt="{{ $alt }}"
-             loading="lazy"
+             loading="{{ $loading }}"
              decoding="async"
              class="size-full object-cover">
     @else

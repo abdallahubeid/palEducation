@@ -367,6 +367,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initQuizBuilder();
     initBranchFilter();
     initNewsFilter();
+    initReadingProgress();
+    initShare();
     initHashScroll();
 });
 
@@ -446,14 +448,16 @@ function initNewsFilter() {
             item.hidden = !(matchesTerm && matchesCat);
         });
 
-        const anyVisible = items.some((i) => !i.hidden);
-        if (empty) empty.hidden = anyVisible;
+        const visible = items.filter((i) => !i.hidden);
+        if (empty) empty.hidden = visible.length > 0;
 
-        // عناوين الأقسام تختفي مع اختفاء محتواها — لا ترويسة فوق فراغ
-        root.querySelectorAll('[data-news-heading]').forEach((h) => {
-            const scope = h.nextElementSibling;
-            if (!scope) return;
-            h.hidden = !Array.from(scope.querySelectorAll('[data-news-item]')).some((i) => !i.hidden);
+        // عدّاد النتائج الحيّ
+        const counter = root.querySelector('[data-news-count]');
+        if (counter) counter.textContent = String(visible.length);
+
+        // الكتلة كاملة (ترويسة + شبكة) تختفي إذا خلت من نتائج — لا ترويسة فوق فراغ
+        root.querySelectorAll('[data-news-block]').forEach((block) => {
+            block.hidden = !Array.from(block.querySelectorAll('[data-news-item]')).some((i) => !i.hidden);
         });
     }
 
@@ -1701,6 +1705,107 @@ function initAccordionFallback() {
             document.querySelectorAll(`details[name="${g}"]`).forEach((o) => {
                 if (o !== d) o.open = false;
             });
+        });
+    });
+}
+
+/* ── Reading progress bar (news detail) ───────────────────
+   Measures progress through the ARTICLE BODY only, not the page: the body
+   ends well before "related news" and the CTA, and measuring the whole
+   document would leave the bar at 100% two screens after the article ends.
+
+   Driven by width, not transform: it grows from the inline-start edge
+   automatically in both directions with no rtl: variant. (Same principle as
+   the inset-inline rule in doctrine.md - a logical value beats flipping a
+   physical one by hand.) */
+function initReadingProgress() {
+    const bar = document.querySelector('[data-read-progress]');
+    const article = document.querySelector('[data-read-article]');
+    if (!bar || !article) return;
+
+    let ticking = false;
+
+    const update = () => {
+        ticking = false;
+
+        const rect = article.getBoundingClientRect();
+        const start = rect.top + window.scrollY;
+        // Scrollable distance inside the article, minus one viewport
+        const span = article.offsetHeight - window.innerHeight;
+
+        if (span <= 0) {
+            bar.style.width = '0%';
+            return;
+        }
+
+        const passed = window.scrollY - start;
+        const pct = Math.min(100, Math.max(0, (passed / span) * 100));
+        bar.style.width = pct.toFixed(2) + '%';
+    };
+
+    const onScroll = () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(update);
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    update();
+}
+
+/* ── Share and copy-link ──────────────────────────────────
+   No platform logos: navigator.share opens the OS share sheet (which already
+   contains WhatsApp on mobile); desktop falls back to copy-link.
+
+   The native share button starts hidden in the HTML and is revealed here only
+   when the API exists - never promise a button that cannot work. */
+function initShare() {
+    const rows = document.querySelectorAll('[data-share]');
+    if (!rows.length) return;
+
+    const canShare = typeof navigator.share === 'function';
+
+    rows.forEach((row) => {
+        const title = row.dataset.shareTitle || document.title;
+        const url = window.location.href;
+        const feedback = row.querySelector('[data-share-feedback]');
+        const nativeBtn = row.querySelector('[data-share-native]');
+        const copyBtn = row.querySelector('[data-share-copy]');
+
+        const say = (msg) => {
+            if (!feedback) return;
+            feedback.textContent = msg;
+            window.setTimeout(() => { feedback.textContent = ''; }, 2400);
+        };
+
+        if (nativeBtn && canShare) {
+            nativeBtn.hidden = false;
+            nativeBtn.addEventListener('click', () => {
+                // A user dismissing the sheet throws AbortError - not a reportable error
+                navigator.share({ title, url }).catch(() => {});
+            });
+        }
+
+        copyBtn?.addEventListener('click', async () => {
+            // Label comes from the lang file via data-copied-label, never hardcoded here
+            const done = () => say(row.dataset.copiedLabel || '');
+
+            try {
+                await navigator.clipboard.writeText(url);
+                done();
+            } catch {
+                // The clipboard API needs a secure context (https/localhost) - legacy fallback
+                const tmp = document.createElement('textarea');
+                tmp.value = url;
+                tmp.setAttribute('readonly', '');
+                tmp.style.position = 'fixed';
+                tmp.style.opacity = '0';
+                document.body.appendChild(tmp);
+                tmp.select();
+                try { document.execCommand('copy'); done(); } catch { /* nothing further we can do */ }
+                tmp.remove();
+            }
         });
     });
 }

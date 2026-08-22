@@ -1,7 +1,7 @@
 ---
-version: 2.3
+version: 2.4
 name: palEducation-design-system
-status: ADOPTED — implemented and verified in code (61 Blade components across 32 built screens, exercised live on /styleguide)
+status: ADOPTED — implemented and verified in code (64 Blade components across 32 built screens, exercised live on /styleguide)
 description: "Design system for a Palestinian Tawjihi (high-school exit exam) study platform. Indigo-purple #525fe1 carries every action (buttons, links); amber #f0a500 is the sole secondary color, reserved for specific moments; both sit on one background, #f5f8f7, never stark white. Headings run in navy #0b104a. The system is bidirectional by design (Arabic RTL primary, English LTR secondary), with letter-spacing hard-zeroed and line-heights raised to suit connected Arabic glyphs. Every color/text pairing in this file is measured and confirmed to clear WCAG AA."
 
 # ═══════════════════════════════════════════════════
@@ -367,21 +367,113 @@ Built and in use across the Profile and Subject-search screens. Token spec, as i
 
 ### Built components inventory
 
-Grown well past the Wave-1 homepage set — now **61** Blade component files across four layers:
+Grown well past the Wave-1 homepage set — now **64** Blade component files across four layers:
 
 **Shells & layout** (`layouts/`, `layout/`): `layouts.public` (PublicShell) · `layouts.student` (StudentShell, holds the `[data-shell]` focus/collapse state target) · `layouts.focus` (standalone quiz/quiz-result fallback pages) · **`layouts.centered`** (CenteredShell — one shell serving all 7 auth and system-boundary screens; width via `narrow` 440px / `wide` 560px / `full` 1024px) · **`layouts.styleguide`** (internal dev surface) · `layout.sidebar` (collapsible, icon-only when collapsed, mobile drawer) · `layout.topbar` (notification-bell flyout, subscription badge, search)
 
-**UI primitives** (`ui/`): `button` · `badge` · `input` · **`select`** · **`checkbox`** · **`radio`** · **`password-input`** · **`form-errors`** · **`selectable-card`** · `modal` · `confirm-dialog` · `alert` · `avatar` · `breadcrumb` · `tabs` · `pagination` · `progress-bar` · `empty-state` · `toggle` · `score-ring` · `accordion-item` (native `<details name>`, zero JS) · `media-slot` · `section-head` · `rule-label`
+**UI primitives** (`ui/`): `button` · `badge` · `input` · **`select`** · **`checkbox`** · **`radio`** · **`password-input`** · **`form-errors`** · **`selectable-card`** · `modal` · `confirm-dialog` · `alert` · `avatar` · `breadcrumb` · `tabs` · `pagination` · `progress-bar` · `empty-state` · `toggle` · `score-ring` · `accordion-item` (native `<details name>`, zero JS) · `media-slot` (takes a `loading` prop — `eager` for above-the-fold covers) · `section-head` · `rule-label` · **`share-row`** · **`sidebar-widget`**
 
 > **The six new form primitives were designed on `/styleguide` before being used in any screen** — deliberately, because stateful components are exactly what has broken repeatedly in this project. All of them are built from plain Tailwind utilities with **no custom class on the element carrying the state**, so `peer-checked:` and `has-checked:` stay inside one cascade layer. Two mechanics worth knowing:
 > - `peer-checked:` matches **siblings only** (`~`). To style a descendant of the sibling, reach through it: `peer-checked:[&>svg]:opacity-100`, not `peer-checked:opacity-100` on the descendant itself.
 > - In Tailwind 4, `scale-*` writes the standalone `scale` property, **not** `transform`. Verify with `getComputedStyle(el).scale`.
 
-**Domain components** (`domain/`): `branch-card` · `plan-card` · `teacher-card` · `subject-card` · `subject-hero` · `stat-card` · `continue-card` · `lecture-list-item` · `module-accordion` · `topic-accordion` · `topic-item` (the text/video/quiz 3-part row) · `video-player` · `quiz-option` · `quiz-result-card` · `answer-review-row` · `file-row` · `notification-item` · `plan-summary-card` · `streak-tracker` · `study-bar-chart`
+**Domain components** (`domain/`): `branch-card` · `plan-card` · `teacher-card` · `subject-card` · `subject-hero` · `stat-card` · `continue-card` · `lecture-list-item` · `module-accordion` · `topic-accordion` · `topic-item` (the text/video/quiz 3-part row) · `video-player` · `quiz-option` · `quiz-result-card` · `answer-review-row` · `file-row` · `notification-item` · `plan-summary-card` · `streak-tracker` · `study-bar-chart` · `news-card` (three layouts — `stacked` / `split` / `compact`) · **`key-points`**
 
 **Site chrome** (`site/`): `header` · `footer` · `icon` (grown past 12 inline SVGs as new screens needed new glyphs)
 
 Every list-bearing component above ships an `EmptyState` state where the design calls for one; every destructive action routes through `ConfirmDialog`. None of this is wired to real data yet — every page still supplies its own `@php` mock array (see Known Gaps).
+
+### Editorial surface — News index (24) & News detail (25)
+
+Redesigned 2026-08-22. Before writing layout, three portals were measured live in the browser — **BBC عربي**, **العربية**, **دنيا الوطن** — and the numbers, not impressions, drove the decisions.
+
+| Signal | BBC عربي | العربية | دنيا الوطن | Adopted here |
+|---|---|---|---|---|
+| Card image ratio | 16:9 | 16:9 everywhere | 1.40 – 1.75 mixed | **16:9, uniform** |
+| Category placement | separate label | **kicker above headline** | section header | **kicker above headline** |
+| Lead headline | 28px / 38px | 36px / 38px | 23px / 37px | 28px (`text-h2`) on the split card |
+| Grid card headline | 16px / 26px, 700 | 23px / 26px | 15–16px / 21px | 20px (`text-h4`), 3-line clamp |
+| Article measure | **645px ≈ 68ch** | — | — | **68ch — measured 68.1ch, unchanged** |
+| Article H1 | 40px / 54px | — | — | 36px (`text-h1`), 28px on mobile |
+| Article H2 | **32px = 2.0 × body** | — | — | 28px (`text-h2`) = **1.75 × body** |
+| Article hero | constrained to the measure | split lead | — | **split hero band** (see below) |
+
+**Four decisions worth keeping:**
+
+1. **The category is a kicker, not a badge floating on the image.** All three portals separate category from artwork; a pill overlaid on a photo is a blog trope, not an editorial one. Implemented as `border-s-2 ps-2.5` so it mirrors with direction and needs no `rtl:` variant.
+2. **One image ratio.** The old cards mixed 16:9 (featured), 16:10 (grid) and 21:9 (article cover). Mixed ratios make a grid read as unstable, and 21:9 across a 1280px container is a cinema bar that swallows a news photo.
+3. **The article H2 was too quiet.** It sat at `text-h3` (24px) — only 1.50× the body. BBC runs 2.0×. Raised to `text-h2` so a section break actually reads as one.
+4. **No "read more" button on cards.** The headline is the link. None of the three portals puts a CTA on a card.
+
+**New measured pairing** (the "measure every new pairing" rule): the `key-points` box is `accent-soft` at 60% over `ground` → effective `#f0f1fc`. Measured on it: `slate` **7.82:1** · `accent-deep` **6.48:1** · `ink` **15.74:1**. Also confirmed on this surface: `accent-deep` kicker on `canvas` **7.28:1** and on `ground` **6.82:1**; `stone` metadata on `canvas` **5.14:1**; `stone` figcaption on `ground` **4.81:1**. All clear AA.
+
+### Article hero — the three positions tried, and the rule that separates them
+
+The news-detail cover went through three arrangements on 2026-08-22. The distinction that matters is **whether the image lives inside a closed band or floats in the reading flow.**
+
+| Attempt | Arrangement | Outcome |
+|---|---|---|
+| 1 | Breakout figure, 896px, pulled up with `-mt-6`/`-mt-10` to straddle the header edge | ❌ Reverted |
+| 2 | Inline figure at the 68ch measure, in normal flow below the band | ✅ Sound, but plain |
+| 3 | **Split hero: 12-col band, text `col-span-7` on the inline start, cover `col-span-5` on the inline end** | ✅ **Current** |
+
+**Why attempt 1 failed — three measured defects:** the header's 1px `border-b` ran *behind* the cover and re-emerged either side of its 24px rounded corners, reading as a torn edge; the card shadow straddled two background colours (`canvas` above the seam, `ground` below) and rendered muddy instead of lifted; and the page carried three widths down one column — 587px header text, 896px cover, 587px body — which reads as misalignment even though all three were perfectly centred.
+
+> 🔴 **The rule: a band may own its internal axis; a floating figure may not.** Attempt 3 also puts the cover off the reading axis, and is fine — because it sits *inside* a closed band (`bg-canvas` + `border-b`) that declares its own grid, and the reading column starts cleanly below it. Attempt 1 was a figure crossing a band boundary with nothing to belong to. **A breakout figure needs plain background to break out over, not a bordered edge to sit on.**
+
+### Article body — two-column editorial layout
+
+The body was a symmetric centred column (`1fr | 68ch | 1fr`). At 1280px that left ~340px of dead margin on *each* side and the article read as isolated on the page. Replaced 2026-08-22 with the pattern every major portal uses.
+
+**Measured on Al Jazeera's article page at 1280px:** 12-column grid in a 1200px container · main stream **834px (71%)** on the inline start · sticky sidebar **278–370px (24%)** on the inline end · 30px gap.
+
+**As built here:** `lg:grid-cols-12` · main `col-span-8` (795px, **65%**) · sidebar `col-span-4` (374px, **31%**) · gap 40px at `lg`, 48px at `xl`. Outer margins align exactly with the hero band (both run `24 → 1241`).
+
+| Widget | Contents |
+|---|---|
+| Author | Avatar, role, bio, publish date, share row |
+| Most read | Three `news-card layout="compact"` items — **deliberately different articles from the related grid at the foot of the page**, so the same three are not shown twice |
+| Topics | Chip links, `min-h-11` each |
+
+> 🔴 **The measure is the invariant; font size is what scales with column width.** BBC Arabic runs 16px at 68ch in a 645px column; Al Jazeera runs **22px** at 64ch in an 834px column. Both land at 64–68 characters. Our prose stays 16px/68ch per spec, so in a 795px column it carries ~208px of trailing slack on the sidebar side. The key-points box spans the **full column width** to anchor the column head, so the capped prose reads as a deliberate text block rather than a narrow strip. `.measure` is applied **without `mx-auto`**, so the prose sits flush to the column's inline start in both directions.
+>
+> If prose should ever fill the column edge to edge, the correct lever is Al Jazeera's: raise the article font (22px reaches 68ch at 795px). That is a design-system change, not a layout tweak.
+
+**Sticky mechanics:** `position: sticky` goes on a div *inside* the `<aside>` grid item, never on the grid item itself — a stretched grid item has no travel room of its own. Verified: aside 1733px tall vs inner 1123px, so the rail actually travels.
+
+### Article body — vertical rhythm is declared once, on the container
+
+Long-form prose spacing is set with child-combinator variants on the wrapper, not with `mt-*` repeated on every tag:
+
+```
+[&>*:first-child]:mt-0  [&>h2]:mt-14  [&>h3]:mt-10  [&>p]:mt-5  [&>ul]:mt-5  [&>figure]:mt-12
+```
+
+Two reasons: the rhythm stays internally consistent because there is one place to change it, and article content added later inherits it instead of being hand-spaced. Only *spacing* is centralised — type styling stays explicit on each tag, which keeps the classes readable.
+
+**The scale is asymmetric on purpose.** A heading binds to the text *below* it, so space above an `h2` (56px) is far larger than the space below it (20px). Equal spacing on both sides leaves headings floating between sections rather than introducing one.
+
+> These compile to real selectors — verified in the build output as `.\[\&\>h2\]\:mt-14>h2{margin-top:calc(var(--spacing) * 14)}`. Note that `mt-14` does **not** emit a literal `3.5rem` in Tailwind 4; grepping the built CSS for rem values to confirm a spacing utility will give a false negative.
+
+**Other body-surface decisions:**
+
+- **Key-points markers are numbered, not check-circles.** Repeated ticks read as a completed checklist; numerals read as ranked takeaways and give the list an explicit reading order. Numerals carry `.num` (Inter + `tabular-nums`) so they align and never render as Eastern Arabic-Indic digits.
+- **Pull quote is `<figure>` + `<figcaption>`, not a bare `<blockquote>`** — the attribution is then programmatically tied to the quotation instead of being a loose sibling.
+- **The oversized quote mark stays inside the card.** A negative top offset gets sliced by the `overflow-hidden` that rounded corners plus an accent border require, and a half-cut glyph reads as a rendering bug. It sits at `top-1` as a watermark at `accent/12`, with the `relative` blockquote painting above it.
+- **Pull-quote text runs at 20px / 1.75.** A quote is still read as prose, so it keeps the Arabic line-height floor rather than the tighter `h4` default of 1.5.
+
+**New measured pairings** — key-points surface is `accent-soft` @50% over `ground` → `#f1f3fb`; the numeral chip is `accent` @12% over that → `#dee1f8`. On them: `ink` **15.96:1** · `slate` **7.93:1** · `accent-deep` numeral on chip **5.63:1**. Elsewhere on the body surface: `charcoal` quote **13.16:1**, `stone` role **5.14:1**, `charcoal` lead-in on `ground` **12.32:1**. Lowest anywhere: **5.14:1**.
+
+**Split-hero mechanics worth keeping:**
+
+- **Direction handling is free.** Grid column lines follow the inline direction, so `col-start-1` is the right-hand side in RTL and the left in LTR. Measured mirror at 1280px — RTL text `544→1241` / image `24→512`; LTR text `24→721` / image `753→1241`. Exact reflection, **zero `rtl:` variants**.
+- **DOM order is the mobile order** (kicker+headline → cover → excerpt+attribution), so no `order` utility is used anywhere and assistive tech reads the sequence sighted users see. Desktop re-places the same three children with explicit grid coordinates.
+- **`grid-rows-[auto_1fr]` with both text blocks `self-start`, not a blanket `items-center`.** The cover spans both rows and self-centres. If the cover ends up taller than the text, the surplus lands in the `1fr` row *below* the metadata rather than being split between the two text blocks — which is what would otherwise prise the headline and excerpt apart. Measured: rows 141px / 188px, text blocks contiguous at a 28px gap.
+- **Radius:** `rounded-xxl` (24px). Stock Tailwind `rounded-2xl` resolves to 16px and is **not** part of this project's declared scale (`xs · sm · md · lg · xl · xxl`) — reaching for it would silently introduce an undeclared token.
+>
+> ⚠️ **`.measure` must sit on a wrapper that inherits the 16px body size.** `ch` resolves against the element's *own* font-size, so putting `.measure` directly on a 14px `figcaption` yields ~514px, not 587px, and silently misaligns the caption from the image above it. Wrap image and caption in one `.measure` div instead.
+>
+> **Share without brand marks.** `share-row` deliberately carries no Facebook/WhatsApp/X logos: this icon system is stroke-only at 1.75 weight with `fill="none"`, and solid brand glyphs would break it. It uses `navigator.share` instead — which opens the OS sheet (WhatsApp included) on the mobile devices most of this audience actually uses — and falls back to copy-link on desktop. The native button ships `hidden` and is revealed by JS only when the API exists, so no button is ever shown that cannot work.
 
 ### Patterns carried over from Charitize
 
