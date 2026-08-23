@@ -197,8 +197,8 @@
         </div>
     </section>
 
-    {{-- ═══ FAQ ═══ --}}
-    <section class="py-14 lg:py-20">
+    {{-- ═══ FAQ ═══ (id: the contact page deflection card links straight here) --}}
+    <section id="faq" class="py-14 lg:py-20">
         <div class="mx-auto max-w-[1280px] px-6">
             <x-ui.section-head :title="__('subscription.faq_title')" />
 

@@ -4,7 +4,7 @@
             'title' => __('footer.product'),
             'links' => [
                 ['label' => __('nav.branches'),    'route' => 'branches.index'],
-                ['label' => __('nav.pricing'),     'route' => null, 'anchor' => 'pricing'],
+                ['label' => __('nav.pricing'),     'route' => 'pricing'],
                 ['label' => __('footer.library'),  'route' => null],
                 ['label' => __('footer.teachers'), 'route' => null],
             ],
@@ -15,7 +15,7 @@
                 ['label' => __('nav.about'),      'route' => null, 'anchor' => 'about'],
                 ['label' => __('nav.news'),       'route' => 'news.index'],
                 ['label' => __('footer.join_us'), 'route' => null],
-                ['label' => __('footer.contact'), 'route' => null],
+                ['label' => __('footer.contact'), 'route' => 'contact'],
             ],
         ],
         [

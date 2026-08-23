@@ -12,6 +12,7 @@
         ['label' => __('nav.about'),    'anchor' => 'about'],
         ['label' => __('nav.pricing'),  'route' => 'pricing'],
         ['label' => __('nav.news'),     'route' => 'news.index'],
+        ['label' => __('nav.contact'),  'route' => 'contact'],
     ];
 
     // يبني وجهة الرابط: مرساة على الرئيسية، أو مسار مسجّل، أو '#'

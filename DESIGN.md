@@ -342,6 +342,7 @@ Tablets are touch input too, so the size reduction happens at the `lg` breakpoin
 Built and in use across the Profile and Subject-search screens. Token spec, as implemented:
 
 - **Height:** 48px, 44px from `lg` — matches `button.md`, so an input paired with a `md` button aligns without extra CSS
+- **Hint line:** optional `hint` prop renders a `caption`/`stone` line under the field, suppressed while an `error` shows so the two never stack. Added 2026-08-22 — it was previously undeclared, so passing `hint` leaked a bogus `hint="..."` attribute onto the wrapper and the text never rendered. `ui/textarea` already had it; the two now match.
 - **Radius:** `{rounded.md}` (8px) — one step down from card radius, so an input reads as sitting *inside* a card
 - **Background:** `canvas` · **Border:** 1px `hairline`
 - **Hover:** border → `hairline-strong`

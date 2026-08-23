@@ -4,6 +4,7 @@
     'type'        => 'text',
     'value'       => null,
     'placeholder' => null,
+    'hint'        => null,   // helper line under the field; hidden while an error shows
     'error'       => null,
     'required'    => false,
     'dir'         => null,   // يُطبَّق على الحقل وحده لا على الغلاف
@@ -45,6 +46,16 @@
             'border-error bg-error/8' => $error,
             'border-hairline hover:border-hairline-strong' => !$error,
         ])>
+
+    {{--
+        Matches ui/textarea exactly: hint shows only while there is no error, so
+        the two never stack and compete. Added 2026-08-22 - `hint` was previously
+        undeclared here, so passing it leaked a bogus `hint="..."` attribute onto
+        the wrapper div and the text never rendered at all.
+    --}}
+    @if ($hint && ! $error)
+        <p class="text-caption text-stone">{{ $hint }}</p>
+    @endif
 
     @if ($error)
         <p class="text-caption text-error-deep">{{ $error }}</p>

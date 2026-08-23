@@ -370,6 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initReadingProgress();
     initShare();
     initPlanCalculator();
+    initContactForm();
     initHashScroll();
 });
 
@@ -1753,6 +1754,62 @@ function initReadingProgress() {
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
     update();
+}
+
+/* ── Contact form ─────────────────────────────────────────
+   No backend yet, so submission is an explicit demo: validate what the browser
+   can validate, show a sending state, then swap the form for a success panel.
+
+   The success panel REPLACES the form rather than appearing above it, so nobody
+   is left staring at a form they already sent. Same pattern as forgot-password.
+
+   Button labels come from data-* fed by the lang file - no Arabic in JS. */
+function initContactForm() {
+    const root = document.querySelector('[data-contact-form]');
+    if (!root) return;
+
+    const formPanel = root.querySelector('[data-contact-panel="form"]');
+    const successPanel = root.querySelector('[data-contact-panel="success"]');
+    const submit = root.querySelector('[data-contact-submit]');
+    const reset = root.querySelector('[data-contact-reset]');
+    if (!formPanel || !successPanel || !submit) return;
+
+    const fields = () => Array.from(formPanel.querySelectorAll('input, select, textarea'));
+    const idleLabel = submit.textContent.trim();
+
+    submit.addEventListener('click', () => {
+        // Use the browser's own constraint validation rather than reimplementing it.
+        const invalid = fields().find((f) => f.required && !f.checkValidity());
+        if (invalid) {
+            invalid.reportValidity();
+            invalid.focus();
+            return;
+        }
+
+        submit.disabled = true;
+        submit.textContent = submit.dataset.sendingLabel || idleLabel;
+
+        // Stands in for the request. Replaced by a real POST once a backend exists.
+        window.setTimeout(() => {
+            formPanel.hidden = true;
+            successPanel.hidden = false;
+            submit.disabled = false;
+            submit.textContent = idleLabel;
+            // Move focus to the confirmation so screen-reader users are told it happened.
+            successPanel.querySelector('h2')?.setAttribute('tabindex', '-1');
+            successPanel.querySelector('h2')?.focus();
+        }, 900);
+    });
+
+    reset?.addEventListener('click', () => {
+        fields().forEach((f) => {
+            if (f.tagName === 'SELECT') f.selectedIndex = 0;
+            else f.value = '';
+        });
+        successPanel.hidden = true;
+        formPanel.hidden = false;
+        formPanel.querySelector('input')?.focus();
+    });
 }
 
 /* ── Pricing calculator (screen 7) ────────────────────────
