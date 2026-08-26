@@ -20,7 +20,7 @@
         'subjectName'  => 'الرياضيات',
         'lectureTitle' => 'المعادلات التفاضلية — الدرس 3',
         'percent'      => 62,
-        'image'        => null,
+        'image'        => 'images/img/blog/4.jpg',
         'href'         => '#',
     ];
 
@@ -86,7 +86,8 @@
             :subject-name="$continueLecture['subjectName']"
             :lecture-title="$continueLecture['lectureTitle']"
             :percent="$continueLecture['percent']"
-            :image="$continueLecture['image']"
+            {{-- asset(): a bare relative path resolves against /student/… and 404s --}}
+            :image="asset($continueLecture['image'])"
             :href="$continueLecture['href']" />
 
         <div>

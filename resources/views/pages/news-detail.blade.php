@@ -5,6 +5,7 @@
         'date' => '2026-08-19',
         'dateLabel' => '19 آب 2026',
         'readingMinutes' => 4,
+        'image' => 'images/img/blog/4.jpg',   // matches this slug on the index
         'author' => 'فريق pal education',
         'lede' => 'أعلنت وزارة التربية والتعليم الجدول الرسمي لامتحانات الثانوية العامة للدورة الأولى، ويبدأ التطبيق مطلع حزيران ويستمر ثلاثة أسابيع لجميع الفروع.',
     ];
@@ -19,15 +20,15 @@
     // Sidebar: deliberately DIFFERENT items from $related below, so the rail and
     // the bottom grid do not show the same three articles twice on one page.
     $mostRead = [
-        ['slug' => 'exam-anxiety', 'cat' => __('public.news_cat_tips'),
+        ['slug' => 'exam-anxiety', 'image' => 'images/img/blog/6.jpg', 'cat' => __('public.news_cat_tips'),
          'title' => 'قلق الامتحان: ما ينفع فعلاً وما يزيده سوءاً',
          'date' => '2026-07-27', 'label' => '27 تموز 2026'],
 
-        ['slug' => 'library-launch', 'cat' => __('public.news_cat_platform'),
+        ['slug' => 'library-launch', 'image' => 'images/img/blog/5.jpg', 'cat' => __('public.news_cat_platform'),
          'title' => 'إطلاق المكتبة المنظّمة لجميع الفروع',
          'date' => '2026-08-12', 'label' => '12 آب 2026'],
 
-        ['slug' => 'physics-lab-videos', 'cat' => __('public.news_cat_platform'),
+        ['slug' => 'physics-lab-videos', 'image' => 'images/img1/header.jpg', 'cat' => __('public.news_cat_platform'),
          'title' => 'إضافة فيديوهات المختبر لمادة الفيزياء',
          'date' => '2026-08-05', 'label' => '5 آب 2026'],
     ];
@@ -35,17 +36,17 @@
     $topics = ['التوجيهي', 'امتحانات 2026', 'وزارة التربية', 'جدول الامتحانات', 'الفرع العلمي'];
 
     $related = [
-        ['slug' => 'english-exam-format', 'cat' => __('public.news_cat_exams'),
+        ['slug' => 'english-exam-format', 'image' => 'images/img/blog/2.jpg', 'cat' => __('public.news_cat_exams'),
          'title' => 'تغيير في نمط أسئلة اللغة الإنجليزية',
          'excerpt' => 'سؤال المقال يُستبدل بسؤالَي فهم مقروء، مع بقاء التوزيع الكلي للعلامات كما هو.',
          'date' => '2026-08-01', 'label' => '1 آب 2026', 'read' => 3],
 
-        ['slug' => 'math-curriculum-update', 'cat' => __('public.news_cat_curriculum'),
+        ['slug' => 'math-curriculum-update', 'image' => 'images/img/blog/1.jpg', 'cat' => __('public.news_cat_curriculum'),
          'title' => 'تعديلات على منهاج الرياضيات للفرع العلمي',
          'excerpt' => 'حُذفت وحدة المصفوفات من مقرر الفصل الثاني، وأُضيفت تطبيقات على التكامل المحدّد.',
          'date' => '2026-08-16', 'label' => '16 آب 2026', 'read' => 3],
 
-        ['slug' => 'study-plan-tips', 'cat' => __('public.news_cat_tips'),
+        ['slug' => 'study-plan-tips', 'image' => 'images/img/blog/3.jpg', 'cat' => __('public.news_cat_tips'),
          'title' => 'كيف تبني خطة مراجعة لا تنهار بعد أسبوع',
          'excerpt' => 'الخطة التي تنجح ليست الأطول بل الأقابل للاستمرار — أربع قواعد عملية.',
          'date' => '2026-08-09', 'label' => '9 آب 2026', 'read' => 6],
@@ -135,7 +136,9 @@
                     --}}
                     <figure class="mt-6 lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:row-start-1 lg:mt-0 lg:self-center">
                         <div class="overflow-hidden rounded-xxl ring-1 ring-hairline">
-                            <x-ui.media-slot :alt="$article['title']" icon="compass" ratio="16/9" loading="eager" class="w-full" />
+                            {{-- Same photo this article carries on the index, so the two agree --}}
+                            <x-ui.media-slot :src="asset($article['image'])" :alt="$article['title']"
+                                             icon="compass" ratio="16/9" loading="eager" class="w-full" />
                         </div>
 
                         <figcaption class="mt-3 text-caption text-stone">
@@ -408,6 +411,7 @@
                                         <li>
                                             <x-domain.news-card
                                                 layout="compact"
+                                                :image="asset($item['image'])"
                                                 :title="$item['title']"
                                                 :date="$item['date']"
                                                 :date-label="$item['label']"
@@ -472,7 +476,8 @@
                 <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach ($related as $item)
                         <x-domain.news-card
-                            :title="$item['title']"
+                            :image="asset($item['image'])"
+                                                :title="$item['title']"
                             :excerpt="$item['excerpt']"
                             :date="$item['date']"
                             :date-label="$item['label']"

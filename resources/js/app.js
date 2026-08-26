@@ -372,6 +372,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initPlanCalculator();
     initContactForm();
     initHashScroll();
+    initAdminFilter();
+    initRolePermissions();
+    initAdminShell();
+    initTrashSelection();
+    initFlash();
 });
 
 /* ── الوصول لمرساة عبر الصفحات (#about · #pricing) ────────
@@ -946,7 +951,7 @@ function initBranchPicker() {
     if (!confirmBtn) return;
 
     picker.addEventListener('change', (e) => {
-        if (e.target.name !== 'branch') return;
+        if (e.target.name !== 'branch_id') return;
 
         confirmBtn.disabled = false;
 
@@ -958,6 +963,19 @@ function initBranchPicker() {
         if (confirmBtn.disabled) return;
         modals['branch-confirm']?.open();
     });
+
+    /* حين يكون المُنتقي نموذج POST حقيقياً (تدفّق تسجيل جوجل)، زر
+       التأكيد داخل المودال يُرسل النموذج بدل أن ينتقل برابط — المودال
+       يبني زرّه كـ<a href> افتراضياً وهذا لا يصلح لطلب POST. */
+    if (picker.tagName === 'FORM' && picker.method?.toLowerCase() === 'post') {
+        document
+            .getElementById('branch-confirm')
+            ?.querySelector('[data-confirm-accept]')
+            ?.addEventListener('click', (e) => {
+                e.preventDefault();
+                picker.submit();
+            });
+    }
 }
 
 /* ── كشف/إخفاء كلمة المرور ────────────────────────────────
@@ -1951,5 +1969,207 @@ function initShare() {
                 tmp.remove();
             }
         });
+    });
+}
+
+/* ── لوحة الأدمن — تصفية جدول على العميل ──────────────────
+   القائمة عشرات لا آلاف، فالتصفية الفورية بلا رحلة خادم أهدأ.
+   تبحث في data-search المُجمَّع خادمياً لا في نصّ الصفّ: النصّ يحمل
+   أرقاماً وتواريخ تُنتج مطابقات عشوائية. */
+function initAdminFilter() {
+    document.querySelectorAll('[data-admin-filter]').forEach((root) => {
+        const input = root.querySelector('[data-admin-filter-input]');
+        const rows = [...root.querySelectorAll('[data-admin-filter-row]')];
+        const empty = root.querySelector('[data-admin-filter-empty]');
+        if (!input || !rows.length) return;
+
+        input.addEventListener('input', () => {
+            const q = input.value.trim().toLowerCase();
+            let shown = 0;
+
+            rows.forEach((row) => {
+                const hit = !q || (row.dataset.search || '').toLowerCase().includes(q);
+                row.hidden = !hit;
+                if (hit) shown++;
+            });
+
+            if (empty) empty.hidden = shown !== 0;
+        });
+    });
+}
+
+/* ── لوحة الأدمن — تبديل صلاحية فوري ──────────────────────
+   ترقية تدريجية: النموذج يعمل بلا هذا السكربت (زرّ حفظ يزامن الكل).
+   هنا نعترض التغيير ونرسله وحده، فيبقى المستخدم في مكانه.
+
+   ⚠️ ليس Alpine — Livewire 3 غير مثبّت فلا Alpine في المشروع. */
+function initRolePermissions() {
+    const form = document.querySelector('[data-role-permissions]');
+    if (!form) return;
+
+    const url = form.dataset.toggleUrl;
+    const token = document.querySelector('meta[name="csrf-token"]')?.content;
+    if (!url || !token) return;   // بلا رمز CSRF نترك النموذج يعمل بالحفظ العادي
+
+    form.querySelectorAll('input[data-permission]').forEach((box) => {
+        box.addEventListener('change', async () => {
+            const granted = box.checked;
+            box.disabled = true;
+
+            try {
+                const res = await fetch(url, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': token,
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify({ permission: box.dataset.permission, granted }),
+                });
+
+                /* الفشل يُعيد المفتاح لموضعه السابق: مفتاح يبقى مضاءً بعد
+                   رفض الخادم يكذب على المستخدم بشأن حالة النظام. */
+                if (!res.ok) box.checked = !granted;
+            } catch {
+                box.checked = !granted;
+            } finally {
+                box.disabled = false;
+            }
+        });
+    });
+}
+
+/* ── قشرة لوحة الأدمن — درج الجوال وطيّ الشريط الجانبي ────
+   بديل vanilla عن Alpine (غير متوفّر: Livewire 3 غير مثبّت).
+   حالة الطيّ تُحفظ في localStorage فتنجو من التنقّل بين الصفحات. */
+function initAdminShell() {
+    const shell = document.querySelector('[data-admin-shell]');
+    if (!shell) return;
+
+    const sidebar = shell.querySelector('[data-admin-sidebar]');
+    const overlay = shell.querySelector('[data-admin-overlay]');
+    const labels = shell.querySelectorAll('[data-admin-label]');
+    const rules = shell.querySelectorAll('[data-admin-collapsed-rule]');
+    const collapseIcon = shell.querySelector('[data-admin-collapse-icon]');
+    const KEY = 'paledu-admin-sidebar-collapsed';
+
+    /* ── الدرج على الجوال ── */
+    const openDrawer = () => {
+        sidebar.classList.remove('max-lg:-translate-x-full', 'max-lg:rtl:translate-x-full');
+        overlay.hidden = false;
+    };
+    const closeDrawer = () => {
+        sidebar.classList.add('max-lg:-translate-x-full', 'max-lg:rtl:translate-x-full');
+        overlay.hidden = true;
+    };
+
+    closeDrawer();   // الحالة الابتدائية: مغلق على الجوال، ظاهر على سطح المكتب
+
+    shell.querySelector('[data-admin-open]')?.addEventListener('click', openDrawer);
+    shell.querySelector('[data-admin-close]')?.addEventListener('click', closeDrawer);
+    overlay?.addEventListener('click', closeDrawer);
+    document.addEventListener('keydown', (e) => e.key === 'Escape' && closeDrawer());
+
+    /* ── الطيّ على سطح المكتب ── */
+    const applyCollapsed = (collapsed) => {
+        sidebar.classList.toggle('lg:w-20', collapsed);
+        sidebar.classList.toggle('lg:w-64', !collapsed);
+        labels.forEach((el) => el.classList.toggle('lg:hidden', collapsed));
+        rules.forEach((el) => { el.hidden = !collapsed; });
+        /* السهم يشير لاتجاه الفتح — يُقلب بصنف إضافي فوق rtl:-scale-x-100 */
+        collapseIcon?.classList.toggle('lg:rotate-180', collapsed);
+    };
+
+    applyCollapsed(localStorage.getItem(KEY) === 'true');
+
+    shell.querySelector('[data-admin-collapse]')?.addEventListener('click', () => {
+        const next = !(localStorage.getItem(KEY) === 'true');
+        localStorage.setItem(KEY, next);
+        applyCollapsed(next);
+    });
+}
+
+/* ── سلّة المحذوفات — تحديد جماعي ─────────────────────────
+   بديل vanilla عن Alpine. النموذج يعمل بلا هذا السكربت: كل صفّ يحمل
+   إجراءيه المفردين، والإجراءات على «الكل» لا تحتاج تحديداً أصلاً —
+   المعطَّل بلا JS هو التحديد الجماعي وحده. */
+function initTrashSelection() {
+    const root = document.querySelector('[data-trash]');
+    if (!root) return;
+
+    const master = root.querySelector('[data-trash-all]');
+    const boxes = [...root.querySelectorAll('[data-trash-item]')];
+    const bar = root.querySelector('[data-trash-bulk]');
+    const counter = root.querySelector('[data-trash-count]');
+    const forms = [...root.querySelectorAll('[data-trash-form]')];
+    if (!boxes.length) return;
+
+    const selected = () => boxes.filter((b) => b.checked).map((b) => b.value);
+
+    const sync = () => {
+        const picked = selected();
+        if (counter) counter.textContent = picked.length;
+        if (bar) bar.hidden = picked.length === 0;
+
+        if (master) {
+            master.checked = picked.length === boxes.length;
+            /* الحالة الثالثة: بعض لا كل. تمنع «تحديد الكل» من الكذب. */
+            master.indeterminate = picked.length > 0 && picked.length < boxes.length;
+        }
+    };
+
+    master?.addEventListener('change', () => {
+        boxes.forEach((b) => { b.checked = master.checked; });
+        sync();
+    });
+
+    boxes.forEach((b) => b.addEventListener('change', sync));
+
+    /* 🔴 الخانات تعيش في الجدول لا داخل نموذجي الإجراء، وخانة خارج النموذج
+       لا تُرسَل معه. تُحقن الرموز كحقول مخفية لحظة الإرسال. */
+    forms.forEach((form) => {
+        form.addEventListener('submit', () => {
+            form.querySelectorAll('[data-trash-token]').forEach((el) => el.remove());
+
+            selected().forEach((token) => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'items[]';
+                input.value = token;
+                input.setAttribute('data-trash-token', '');
+                form.appendChild(input);
+            });
+        });
+    });
+
+    sync();
+}
+
+/* ── إشعارات لوحة التحكّم — إغلاق يدوي وتلاشٍ تلقائي ──────
+   المكوّن يرسم الإشعار على الخادم؛ هذا يضيف الإغلاق فقط. بلا هذا
+   السكربت تبقى الإشعارات ظاهرة حتى الانتقال التالي — مزعج لا معطّل. */
+function initFlash() {
+    const root = document.querySelector('[data-flash]');
+    if (!root) return;
+
+    const dismiss = (item) => {
+        item.classList.add('opacity-0', '-translate-y-2');
+        /* الإزالة بعد الانتقال لا فوراً، وإلا اختفى بلا حركة */
+        setTimeout(() => {
+            item.remove();
+            if (!root.querySelector('[data-flash-item]')) root.remove();
+        }, 300);
+    };
+
+    root.querySelectorAll('[data-flash-item]').forEach((item, i) => {
+        item.querySelector('[data-flash-close]')
+            ?.addEventListener('click', () => dismiss(item));
+
+        /* 🔴 الأخطاء لا تختفي وحدها: رسالة «صحّح الأخطاء» قد تكون الشيء
+           الوحيد الذي يشرح لماذا لم يُحفظ النموذج. الباقي يتلاشى. */
+        if (item.classList.contains('bg-error/10')) return;
+
+        setTimeout(() => dismiss(item), 5000 + i * 400);
     });
 }

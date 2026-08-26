@@ -11,11 +11,22 @@
 @php
     $id = $attributes->get('id') ?: 'field-' . $name;
 
-    // يقبل ['a','b'] أو ['a' => 'أ'] — الأولى تُطبَّع للثانية
-    $normalized = [];
-    foreach ($options as $key => $label_) {
-        $normalized[is_int($key) ? $label_ : $key] = $label_;
-    }
+    /*
+     | يقبل ['a','b'] أو ['a' => 'أ'] — الأولى تُطبَّع للثانية.
+     |
+     | 🔴 الفحص بـ array_is_list لا بـ is_int على كل مفتاح. الثاني كان
+     | يعتبر أي مصفوفة بمفاتيح رقمية «قائمة بسيطة» فيستخدم النص كقيمة —
+     | وهذا يكسر بصمت كل قائمة تأتي من قاعدة البيانات (pluck('name','id')
+     | مفاتيحها أعداد صحيحة)، فتُرسَل «علمي» بدل 1 ولا يظهر أي خطأ.
+     | array_is_list يميّز [0,1,2,…] المتتالية عن [3 => 'علمي'] فعلياً.
+     */
+    $optionsArray = $options instanceof \Illuminate\Support\Collection
+        ? $options->all()
+        : (array) $options;
+
+    $normalized = array_is_list($optionsArray)
+        ? array_combine($optionsArray, $optionsArray)
+        : $optionsArray;
 @endphp
 
 {{--

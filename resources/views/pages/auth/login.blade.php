@@ -1,8 +1,3 @@
-@php
-    // عرض تجريبي: ?error=1 يُظهر حالة فشل الدخول (بلا خادم بعد)
-    $showError = request()->boolean('error');
-@endphp
-
 <x-layouts.centered :title="__('auth.login_title')" width="narrow">
 
     <div class="rounded-xl bg-canvas p-6 shadow-subtle sm:p-8">
@@ -15,22 +10,34 @@
         {{--
             الخطأ على مستوى النموذج لا الحقل: أمنياً لا يُكشف أيّ الحقلين
             كان الخطأ، فوسم حقل بعينه بالأحمر يسرّب المعلومة بصرياً.
+            الكنترولر يرمي الخطأ على مفتاح email دائماً لهذا السبب.
         --}}
-        @if ($showError)
+        @if ($errors->any())
             <x-ui.form-errors class="mt-6" :title="__('auth.login_failed_title')">
-                {{ __('auth.login_failed_body') }}
+                {{ $errors->first() }}
             </x-ui.form-errors>
         @endif
 
-        {{--
-            data-demo-submit: بلا خادم بعد — JS يمنع الإرسال الفعلي وينتقل
-            للوجهة. عمداً لا method="GET" حتى لا تظهر كلمة المرور في الرابط.
-        --}}
-        <form data-demo-submit="{{ route('student.dashboard') }}" class="mt-6 flex flex-col gap-4">
+        {{-- جوجل أولاً: أسرع مسار دخول، وأكثره استخداماً لدى طلبة الثانوية --}}
+        <div class="mt-6">
+            <x-ui.google-button href="{{ route('auth.google.redirect') }}" />
+        </div>
+
+        {{-- فاصل «أو» — الخط يمرّ خلف النص لا بجانبه --}}
+        <div class="my-5 flex items-center gap-3" role="separator">
+            <span class="h-px flex-1 bg-hairline"></span>
+            <span class="text-caption text-stone">{{ __('auth.or_divider') }}</span>
+            <span class="h-px flex-1 bg-hairline"></span>
+        </div>
+
+        <form method="POST" action="{{ route('auth.login.store') }}" class="flex flex-col gap-4">
+            @csrf
 
             <x-ui.input
                 name="email"
                 type="email"
+                autocomplete="email"
+                :value="old('email')"
                 :label="__('auth.email_label')"
                 :placeholder="__('auth.email_placeholder')"
                 required />
@@ -38,6 +45,7 @@
             <div class="flex flex-col gap-1.5">
                 <x-ui.password-input
                     name="password"
+                    autocomplete="current-password"
                     :label="__('auth.password_label')"
                     required />
 
@@ -47,7 +55,7 @@
                 </a>
             </div>
 
-            <x-ui.checkbox name="remember" :label="__('auth.login_remember')" />
+            <x-ui.checkbox name="remember" value="1" :label="__('auth.login_remember')" />
 
             <x-ui.button type="submit" size="md" class="mt-2 w-full">
                 {{ __('auth.login_submit') }}

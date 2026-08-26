@@ -591,6 +591,8 @@ All motion is disabled under `prefers-reduced-motion` — content appears, it do
 
 - Built assets, never the Vite dev server — **4.7× difference** in load time (dev path recompiles Tailwind's full CSS on every request, measured at 2.02s for one file; production build: ~1.3s total)
 - Fonts self-hosted · images use `loading="lazy"` except above-the-fold
+- **Every image path goes through `asset()`.** A bare relative path (`images/…`) resolves against the current URL, so the same string that works at `/` 404s at `/student/dashboard`. This happened and was fixed; verified by asserting all 32 `<img>` tags across every page emit an absolute URL.
+- **A 16:9 slot needs a landscape source.** `object-cover` crops a portrait image to a narrow horizontal slice. Checked by probing `naturalWidth`/`naturalHeight` before wiring an asset in.
 - Texture and grain are inline SVG — zero network request
 
 > ⚠️ `npm run dev` creates `public/hot` and silently re-enables the slow dev path. For browsing, run `npm run build` and stop the dev server.
@@ -602,7 +604,7 @@ All motion is disabled under `prefers-reduced-motion` — content appears, it do
 | # | Gap | Status |
 |---|---|---|
 | 1 | Logo | ⏳ Not delivered yet |
-| 2 | Real teacher photos | ⏳ Current set is from the source template |
+| 2 | Real photography | ⏳ **Every image in the project is generic stock.** Two asset bundles (`public/images/img`, `public/images/img1`, 112 files) were wired in 2026-08-22 across news, branch teachers and the dashboard, which removes the empty-placeholder look — but none of it is Palestinian, and none is of actual platform content. Real photography is still needed. Inventory: `public/images/README.md`. |
 | 3 | Subscription scope — determines `plan-card`'s final shape | ✅ **Closed 2026-08-22** — M-1 resolved: two models coexist (per-subject · discounted full-branch pass). `plan-card` extended with `oldPrice`/`badge`/`note`; `plan-calculator` added for the per-subject path. |
 | 4 | Quiz behavior | ⏳ Pending decision M-2 — the built quiz/result screens implement docs/01 §7's *recommended default* (2 attempts, highest score kept, no lecture lock) as demo/localStorage logic. This is a mock standing in for a decision, not the decision itself. |
 | 5 | Payment mechanism | ✅ **Closed 2026-08-22** — M-4 resolved as manual payment (bank transfer · e-wallet · local agent · cash). Screens 8–10 built: checkout, payment-proof upload, pending review. No card data is ever collected or stored. |

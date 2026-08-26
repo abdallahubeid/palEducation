@@ -190,7 +190,7 @@ it('منع طالب من مشاهدة محاضرة خارج فرعه', function 
 ## 8. الجودة
 
 ```bash
-php artisan pint
+./vendor/bin/pint
 ```
 ```bash
 php artisan test

@@ -11,9 +11,14 @@
     "require": {
         "php": "^8.3",
         "laravel/framework": "^13.17",
-        "laravel/tinker": "^3.0"
+        "laravel/socialite": "*",
+        "laravel/tinker": "^3.0",
+        "php-flasher/flasher-laravel": "*",
+        "spatie/laravel-permission": "*"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "*",
+        "beyondcode/laravel-query-detector": "*",
         "fakerphp/faker": "^1.23",
         "laravel/boost": "*",
         "laravel/pail": "^1.2.5",

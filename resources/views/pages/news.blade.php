@@ -7,37 +7,37 @@
     ];
 
     $articles = [
-        ['slug' => 'tawjihi-exam-dates-2026', 'cat' => 'exams',
+        ['slug' => 'tawjihi-exam-dates-2026', 'image' => 'images/img/blog/4.jpg', 'cat' => 'exams',
          'title' => 'إعلان مواعيد امتحانات التوجيهي للدورة الأولى 2026',
          'excerpt' => 'أعلنت وزارة التربية والتعليم الجدول الرسمي لامتحانات الثانوية العامة، ويبدأ التطبيق مطلع حزيران لجميع الفروع.',
          'date' => '2026-08-19', 'label' => '19 آب 2026', 'read' => 4, 'featured' => true],
 
-        ['slug' => 'math-curriculum-update', 'cat' => 'curriculum',
+        ['slug' => 'math-curriculum-update', 'image' => 'images/img/blog/1.jpg', 'cat' => 'curriculum',
          'title' => 'تعديلات على منهاج الرياضيات للفرع العلمي',
          'excerpt' => 'حُذفت وحدة المصفوفات من مقرر الفصل الثاني، وأُضيفت تطبيقات على التكامل المحدّد.',
          'date' => '2026-08-16', 'label' => '16 آب 2026', 'read' => 3],
 
-        ['slug' => 'library-launch', 'cat' => 'platform',
+        ['slug' => 'library-launch', 'image' => 'images/img/blog/5.jpg', 'cat' => 'platform',
          'title' => 'إطلاق المكتبة المنظّمة لجميع الفروع',
          'excerpt' => 'أوراق العمل والملخّصات والامتحانات السابقة صارت مجمّعة بفرعك ومادتك، بدل تشتّتها بين المجموعات.',
          'date' => '2026-08-12', 'label' => '12 آب 2026', 'read' => 2],
 
-        ['slug' => 'study-plan-tips', 'cat' => 'tips',
+        ['slug' => 'study-plan-tips', 'image' => 'images/img/blog/3.jpg', 'cat' => 'tips',
          'title' => 'كيف تبني خطة مراجعة لا تنهار بعد أسبوع',
          'excerpt' => 'الخطة التي تنجح ليست الأطول بل الأقابل للاستمرار — أربع قواعد عملية من تجربة طلبة سابقين.',
          'date' => '2026-08-09', 'label' => '9 آب 2026', 'read' => 6],
 
-        ['slug' => 'physics-lab-videos', 'cat' => 'platform',
+        ['slug' => 'physics-lab-videos', 'image' => 'images/img1/header.jpg', 'cat' => 'platform',
          'title' => 'إضافة فيديوهات المختبر لمادة الفيزياء',
          'excerpt' => 'تجارب المنهاج مصوّرة خطوة بخطوة، لطلبة المدارس التي لا تتوفّر فيها مختبرات مجهّزة.',
          'date' => '2026-08-05', 'label' => '5 آب 2026', 'read' => 3],
 
-        ['slug' => 'english-exam-format', 'cat' => 'exams',
+        ['slug' => 'english-exam-format', 'image' => 'images/img/blog/2.jpg', 'cat' => 'exams',
          'title' => 'تغيير في نمط أسئلة اللغة الإنجليزية',
          'excerpt' => 'سؤال المقال يُستبدل بسؤالَي فهم مقروء، مع بقاء التوزيع الكلي للعلامات كما هو.',
          'date' => '2026-08-01', 'label' => '1 آب 2026', 'read' => 3],
 
-        ['slug' => 'exam-anxiety', 'cat' => 'tips',
+        ['slug' => 'exam-anxiety', 'image' => 'images/img/blog/6.jpg', 'cat' => 'tips',
          'title' => 'قلق الامتحان: ما ينفع فعلاً وما يزيده سوءاً',
          'excerpt' => 'ثلاث ممارسات يوصي بها مرشدون تربويون، وممارستان شائعتان تضرّان أكثر مما تنفعان.',
          'date' => '2026-07-27', 'label' => '27 تموز 2026', 'read' => 5],
@@ -130,6 +130,7 @@
                         <x-domain.news-card
                             layout="split"
                             eager
+                            :image="asset($featured['image'])"
                             :title="$featured['title']"
                             :excerpt="$featured['excerpt']"
                             :date="$featured['date']"
@@ -155,6 +156,7 @@
                              data-search="{{ $article['title'] }} {{ $article['excerpt'] }}"
                              data-cat="{{ $article['cat'] }}">
                             <x-domain.news-card
+                                :image="asset($article['image'])"
                                 :title="$article['title']"
                                 :excerpt="$article['excerpt']"
                                 :date="$article['date']"

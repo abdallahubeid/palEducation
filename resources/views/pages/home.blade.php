@@ -1,38 +1,86 @@
 @php
     // بيانات عرض — تُستبدل باستعلامات عند بناء نماذج المجال
     $branches = [
-        ['key' => 'sci', 'icon' => 'beaker',    'subjects' => 8, 'teachers' => 12, 'tone' => 'accent'],
-        ['key' => 'lit', 'icon' => 'book',      'subjects' => 7, 'teachers' => 9,  'tone' => 'tag'],
-        ['key' => 'com', 'icon' => 'briefcase', 'subjects' => 6, 'teachers' => 7,  'tone' => 'amber'],
-        ['key' => 'ind', 'icon' => 'wrench',    'subjects' => 6, 'teachers' => 5,  'tone' => 'warn'],
+        ['key' => 'sci', 'icon' => 'beaker', 'subjects' => 8, 'teachers' => 12, 'tone' => 'accent'],
+        ['key' => 'lit', 'icon' => 'book', 'subjects' => 7, 'teachers' => 9, 'tone' => 'tag'],
+        ['key' => 'com', 'icon' => 'briefcase', 'subjects' => 6, 'teachers' => 7, 'tone' => 'amber'],
+        ['key' => 'ind', 'icon' => 'wrench', 'subjects' => 6, 'teachers' => 5, 'tone' => 'warn'],
     ];
 
     $features = [
         ['icon' => 'clipboard', 'key' => 'f1', 'tone' => 'accent'],
-        ['icon' => 'folder',    'key' => 'f2', 'tone' => 'tag'],
-        ['icon' => 'users',     'key' => 'f3', 'tone' => 'amber'],
-        ['icon' => 'compass',   'key' => 'f4', 'tone' => 'warn'],
+        ['icon' => 'folder', 'key' => 'f2', 'tone' => 'tag'],
+        ['icon' => 'users', 'key' => 'f3', 'tone' => 'amber'],
+        ['icon' => 'compass', 'key' => 'f4', 'tone' => 'warn'],
     ];
 
     $teachers = [
-        ['photo' => 'images/teachers/team-1.jpg', 'name' => 'أ. سامر خليل', 'subject' => 'الرياضيات',        'branch' => 'علمي',  'lectures' => 42, 'students' => 610, 'tone' => 'accent'],
-        ['photo' => 'images/teachers/team-2.jpg', 'name' => 'أ. رنا عوض',   'subject' => 'الفيزياء',         'branch' => 'علمي',  'lectures' => 36, 'students' => 480, 'tone' => 'accent'],
-        ['photo' => 'images/teachers/team-3.jpg', 'name' => 'أ. وليد حمد',  'subject' => 'الكيمياء',         'branch' => 'علمي',  'lectures' => 31, 'students' => 395, 'tone' => 'accent'],
-        ['photo' => 'images/teachers/team-4.jpg', 'name' => 'أ. مازن سالم', 'subject' => 'اللغة العربية',    'branch' => 'أدبي',  'lectures' => 38, 'students' => 520, 'tone' => 'tag'],
-        ['photo' => 'images/teachers/team-5.jpg', 'name' => 'أ. لينا فرح',  'subject' => 'اللغة الإنجليزية', 'branch' => 'أدبي',  'lectures' => 34, 'students' => 460, 'tone' => 'tag'],
-        ['photo' => 'images/teachers/team-6.jpg', 'name' => 'أ. هدى ناصر',  'subject' => 'المحاسبة',         'branch' => 'تجاري', 'lectures' => 29, 'students' => 340, 'tone' => 'amber'],
+        [
+            'photo' => 'images/teachers/team-1.jpg',
+            'name' => 'أ. سامر خليل',
+            'subject' => 'الرياضيات',
+            'branch' => 'علمي',
+            'lectures' => 42,
+            'students' => 610,
+            'tone' => 'accent',
+        ],
+        [
+            'photo' => 'images/teachers/team-2.jpg',
+            'name' => 'أ. رنا عوض',
+            'subject' => 'الفيزياء',
+            'branch' => 'علمي',
+            'lectures' => 36,
+            'students' => 480,
+            'tone' => 'accent',
+        ],
+        [
+            'photo' => 'images/teachers/team-3.jpg',
+            'name' => 'أ. وليد حمد',
+            'subject' => 'الكيمياء',
+            'branch' => 'علمي',
+            'lectures' => 31,
+            'students' => 395,
+            'tone' => 'accent',
+        ],
+        [
+            'photo' => 'images/teachers/team-4.jpg',
+            'name' => 'أ. مازن سالم',
+            'subject' => 'اللغة العربية',
+            'branch' => 'أدبي',
+            'lectures' => 38,
+            'students' => 520,
+            'tone' => 'tag',
+        ],
+        [
+            'photo' => 'images/teachers/team-5.jpg',
+            'name' => 'أ. لينا فرح',
+            'subject' => 'اللغة الإنجليزية',
+            'branch' => 'أدبي',
+            'lectures' => 34,
+            'students' => 460,
+            'tone' => 'tag',
+        ],
+        [
+            'photo' => 'images/teachers/team-6.jpg',
+            'name' => 'أ. هدى ناصر',
+            'subject' => 'المحاسبة',
+            'branch' => 'تجاري',
+            'lectures' => 29,
+            'students' => 340,
+            'tone' => 'amber',
+        ],
     ];
 
     $stats = [
-        ['n' => 480,  'l' => __('home.stat_lectures'), 'icon' => 'play'],
-        ['n' => 33,   'l' => __('home.stat_teachers'), 'icon' => 'users'],
-        ['n' => 120,  'l' => __('home.stat_files'),    'icon' => 'folder'],
+        ['n' => 480, 'l' => __('home.stat_lectures'), 'icon' => 'play'],
+        ['n' => 33, 'l' => __('home.stat_teachers'), 'icon' => 'users'],
+        ['n' => 120, 'l' => __('home.stat_files'), 'icon' => 'folder'],
         ['n' => 2400, 'l' => __('home.stat_students'), 'icon' => 'compass'],
     ];
 
     $slides = [
-        ['n' => 1, 'tone' => 'accent',   'img' => 'images/hero/slide-1-focus.jpg'],
-        ['n' => 2, 'tone' => 'tag',    'img' => 'images/hero/slide-2-quiz.jpg'],
+        ['n' => 1, 'tone' => 'accent', 'img' => 'images/hero/slide-1-focus.jpg'],
+        ['n' => 2, 'tone' => 'tag', 'img' => 'images/hero/slide-2-quiz.jpg'],
         ['n' => 3, 'tone' => 'amber', 'img' => 'images/hero/slide-3-library.jpg'],
     ];
 @endphp
@@ -43,19 +91,19 @@
          ١ · الهيرو — سلايدر: نص + خانة صورة
          ═══════════════════════════════════════════════════════ --}}
     <section class="hero-canvas pt-14 pb-24 lg:pt-20 lg:pb-28"
-             aria-roledescription="carousel"
-             aria-label="{{ __('home.hero_slider_label') }}">
+        aria-roledescription="carousel"
+        aria-label="{{ __('home.hero_slider_label') }}">
         <div class="mx-auto max-w-[1280px] px-6">
             <div data-slider class="relative overflow-hidden lg:px-16">
 
                 <div class="slider">
                     @foreach ($slides as $i => $slide)
                         <div data-slide
-                             class="slider__slide {{ $i === 0 ? 'is-active' : '' }}"
-                             role="group"
-                             aria-roledescription="slide"
-                             aria-label="{{ $i + 1 }} / {{ count($slides) }}"
-                             @if ($i !== 0) aria-hidden="true" @endif>
+                            class="slider__slide {{ $i === 0 ? 'is-active' : '' }}"
+                            role="group"
+                            aria-roledescription="slide"
+                            aria-label="{{ $i + 1 }} / {{ count($slides) }}"
+                            @if ($i !== 0) aria-hidden="true" @endif>
 
                             <div class="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16">
 
@@ -64,8 +112,10 @@
                                     <x-ui.rule-label>{{ __('home.slide_' . $slide['n'] . '_eyebrow') }}</x-ui.rule-label>
 
                                     <h1 class="mt-6 text-h1 font-bold sm:text-display lg:text-hero">
-                                        <span class="block text-ink">{{ __('home.slide_' . $slide['n'] . '_line_1') }}</span>
-                                        <span class="block text-accent-deep">{{ __('home.slide_' . $slide['n'] . '_line_2') }}</span>
+                                        <span
+                                            class="block text-ink">{{ __('home.slide_' . $slide['n'] . '_line_1') }}</span>
+                                        <span
+                                            class="block text-accent-deep">{{ __('home.slide_' . $slide['n'] . '_line_2') }}</span>
                                     </h1>
 
                                     <p class="mt-6 max-w-xl text-lead text-steel">
@@ -99,28 +149,28 @@
                 {{-- أسهم مربّعة مكدّسة عند حافّة البداية — كالقالب --}}
                 <div class="slider__nav">
                     <button type="button" data-slide-prev
-                            aria-label="{{ __('home.slide_prev') }}"
-                            class="slider__arrow cursor-pointer">
+                        aria-label="{{ __('home.slide_prev') }}"
+                        class="slider__arrow cursor-pointer">
                         <x-icon name="arrow" class="size-5 rtl:-scale-x-100" />
                     </button>
 
                     <button type="button" data-slide-next
-                            aria-label="{{ __('home.slide_next') }}"
-                            class="slider__arrow cursor-pointer">
+                        aria-label="{{ __('home.slide_next') }}"
+                        class="slider__arrow cursor-pointer">
                         <x-icon name="arrow" class="size-5 ltr:-scale-x-100" />
                     </button>
                 </div>
 
                 {{-- النقاط — للمس وللوضوح --}}
                 <div class="mt-10 flex items-center gap-2" role="tablist"
-                     aria-label="{{ __('home.hero_slider_label') }}">
+                    aria-label="{{ __('home.hero_slider_label') }}">
                     @foreach ($slides as $i => $slide)
                         <button type="button"
-                                data-slide-dot
-                                role="tab"
-                                aria-selected="{{ $i === 0 ? 'true' : 'false' }}"
-                                aria-label="{{ __('home.hero_go_to', ['n' => $i + 1]) }}"
-                                class="slider__dot cursor-pointer"><span></span></button>
+                            data-slide-dot
+                            role="tab"
+                            aria-selected="{{ $i === 0 ? 'true' : 'false' }}"
+                            aria-label="{{ __('home.hero_go_to', ['n' => $i + 1]) }}"
+                            class="slider__dot cursor-pointer"><span></span></button>
                     @endforeach
                 </div>
             </div>
@@ -132,7 +182,8 @@
          ═══════════════════════════════════════════════════════ --}}
     <section class="pb-20 lg:pb-24">
         <div class="mx-auto max-w-[1280px] px-6">
-            <div class="reveal flex flex-col items-center justify-between gap-6 rounded-xl
+            <div
+                class="reveal flex flex-col items-center justify-between gap-6 rounded-xl
                         bg-amber px-8 py-10 text-center lg:flex-row lg:px-14 lg:text-start">
 
                 <div>
@@ -166,13 +217,16 @@
             <ol class="relative mt-16 grid gap-8 lg:grid-cols-3 lg:gap-6">
 
                 {{-- الخيط الرابط بين الخطوات — يظهر على الشاشات الواسعة فقط --}}
-                <span class="absolute inset-x-[16%] top-8 hidden h-px bg-linear-to-l
+                <span
+                    class="absolute inset-x-[16%] top-8 hidden h-px bg-linear-to-l
                              from-transparent via-hairline-strong to-transparent lg:block"
-                      aria-hidden="true"></span>
+                    aria-hidden="true"></span>
 
                 @foreach ([1, 2, 3] as $i)
-                    <li class="reveal relative flex flex-col items-center text-center" data-delay="{{ $i - 1 }}">
-                        <span class="num relative z-10 grid size-16 place-items-center rounded-full
+                    <li class="reveal relative flex flex-col items-center text-center"
+                        data-delay="{{ $i - 1 }}">
+                        <span
+                            class="num relative z-10 grid size-16 place-items-center rounded-full
                                      border border-hairline bg-canvas text-h4 font-bold text-accent-deep">
                             0{{ $i }}
                         </span>
@@ -203,9 +257,9 @@
                         ratio="4/3" />
 
                     <span class="pointer-events-none absolute start-0 top-0 h-[90px] w-1/3 bg-ground"
-                          aria-hidden="true"></span>
+                        aria-hidden="true"></span>
                     <span class="pointer-events-none absolute bottom-0 end-0 h-[90px] w-1/3 bg-ground"
-                          aria-hidden="true"></span>
+                        aria-hidden="true"></span>
                 </div>
 
                 {{-- النص --}}
@@ -233,7 +287,8 @@
                         </div>
 
                         {{-- صندوق ملوّن بزر — كـ bg-primary p-4 text-center في القالب --}}
-                        <div class="flex flex-col items-center justify-center gap-5 rounded-xl
+                        <div
+                            class="flex flex-col items-center justify-center gap-5 rounded-xl
                                     bg-linear-to-bl from-deep-from to-deep-to p-7 text-center">
                             <p class="text-ui text-on-dark/85">{{ __('home.about_cta_body') }}</p>
 
@@ -272,8 +327,10 @@
                     </ul>
 
                     <div class="mt-9 flex flex-wrap gap-3">
-                        <x-ui.button variant="primary" size="lg" href="#">{{ __('home.stats_cta') }}</x-ui.button>
-                        <x-ui.button variant="secondary" size="lg" href="#branches">{{ __('home.stats_cta_alt') }}</x-ui.button>
+                        <x-ui.button variant="primary" size="lg"
+                            href="#">{{ __('home.stats_cta') }}</x-ui.button>
+                        <x-ui.button variant="secondary" size="lg"
+                            href="#branches">{{ __('home.stats_cta_alt') }}</x-ui.button>
                     </div>
                 </div>
 
@@ -290,7 +347,7 @@
                         <div @class([
                             'flex flex-col items-center justify-center gap-3 px-6 py-12 text-center',
                             'bg-amber text-ink' => $amber,
-                            'bg-accent text-on-primary' => ! $amber,
+                            'bg-accent text-on-primary' => !$amber,
                         ])>
                             <x-icon :name="$stat['icon']" class="size-12 opacity-90" />
 
@@ -355,12 +412,13 @@
 
                     {{-- لوح التشغيل --}}
                     <button type="button"
-                            data-modal-open="demo-video"
-                            class="group relative grid aspect-video w-full cursor-pointer place-items-center
+                        data-modal-open="demo-video"
+                        class="group relative grid aspect-video w-full cursor-pointer place-items-center
                                    overflow-hidden rounded-lg bg-canvas-dark/60 ring-1 ring-on-dark/10
                                    transition hover:ring-accent/50">
 
-                        <span class="grid size-18 place-items-center rounded-full bg-accent text-on-primary
+                        <span
+                            class="grid size-18 place-items-center rounded-full bg-accent text-on-primary
                                      transition duration-300 group-hover:scale-110">
                             <x-icon name="play" class="size-7" />
                         </span>
@@ -374,24 +432,25 @@
 
     {{-- مودال الفيديو --}}
     <div id="demo-video" data-modal hidden
-         class="fixed inset-0 z-[60] grid place-items-center bg-primary/80 p-6"
-         role="dialog" aria-modal="true" aria-label="{{ __('home.demo_title') }}">
+        class="fixed inset-0 z-[60] grid place-items-center bg-primary/80 p-6"
+        role="dialog" aria-modal="true" aria-label="{{ __('home.demo_title') }}">
 
         <div class="w-full max-w-4xl">
             <div class="flex justify-end pb-3">
                 <button type="button" data-modal-close
-                        aria-label="{{ __('home.demo_close') }}"
-                        class="grid size-10 cursor-pointer place-items-center rounded-full
+                    aria-label="{{ __('home.demo_close') }}"
+                    class="grid size-10 cursor-pointer place-items-center rounded-full
                                bg-on-dark/10 text-on-dark transition hover:bg-on-dark/20">
                     <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         stroke-width="1.75" stroke-linecap="round" aria-hidden="true">
-                        <path d="M6 6l12 12M18 6L6 18"/>
+                        stroke-width="1.75" stroke-linecap="round" aria-hidden="true">
+                        <path d="M6 6l12 12M18 6L6 18" />
                     </svg>
                 </button>
             </div>
 
             {{-- المشغّل LTR إجبارياً · المحتوى بانتظار قرار مزوّد الفيديو --}}
-            <div dir="ltr" class="grid aspect-video place-items-center rounded-xl bg-canvas-dark
+            <div dir="ltr"
+                class="grid aspect-video place-items-center rounded-xl bg-canvas-dark
                                   ring-1 ring-on-dark/10">
                 <p class="text-caption text-on-dark/50">{{ __('home.demo_pending') }}</p>
             </div>
@@ -416,10 +475,14 @@
                     <article class="reveal tile group p-6" data-delay="{{ $i % 4 }}">
                         <span @class([
                             'tile__icon',
-                            'bg-accent/14 text-accent-deep group-hover:bg-accent group-hover:text-on-primary'          => $feature['tone'] === 'accent',
-                            'bg-tag/12 text-tag group-hover:bg-tag group-hover:text-on-dark'                  => $feature['tone'] === 'tag',
-                            'bg-amber/12 text-amber-deep group-hover:bg-amber group-hover:text-ink'    => $feature['tone'] === 'amber',
-                            'bg-warn/14 text-warn-deep group-hover:bg-warn group-hover:text-on-dark'          => $feature['tone'] === 'warn',
+                            'bg-accent/14 text-accent-deep group-hover:bg-accent group-hover:text-on-primary' =>
+                                $feature['tone'] === 'accent',
+                            'bg-tag/12 text-tag group-hover:bg-tag group-hover:text-on-dark' =>
+                                $feature['tone'] === 'tag',
+                            'bg-amber/12 text-amber-deep group-hover:bg-amber group-hover:text-ink' =>
+                                $feature['tone'] === 'amber',
+                            'bg-warn/14 text-warn-deep group-hover:bg-warn group-hover:text-on-dark' =>
+                                $feature['tone'] === 'warn',
                         ])>
                             <x-icon :name="$feature['icon']" class="size-6" />
                         </span>
@@ -476,7 +539,12 @@
                         price="120"
                         :period="__('home.plan_term_period')"
                         :cta="__('home.plan_term_cta')"
-                        :features="[__('home.plan_term_f1'), __('home.plan_term_f2'), __('home.plan_term_f3'), __('home.plan_term_f4')]" />
+                        :features="[
+                            __('home.plan_term_f1'),
+                            __('home.plan_term_f2'),
+                            __('home.plan_term_f3'),
+                            __('home.plan_term_f4'),
+                        ]" />
                 </div>
 
                 <div class="reveal" data-delay="2">
@@ -486,7 +554,12 @@
                         price="200"
                         :period="__('home.plan_year_period')"
                         :cta="__('home.plan_year_cta')"
-                        :features="[__('home.plan_year_f1'), __('home.plan_year_f2'), __('home.plan_year_f3'), __('home.plan_year_f4')]" />
+                        :features="[
+                            __('home.plan_year_f1'),
+                            __('home.plan_year_f2'),
+                            __('home.plan_year_f3'),
+                            __('home.plan_year_f4'),
+                        ]" />
                 </div>
             </div>
 
@@ -554,7 +627,8 @@
             <div class="grid gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,9fr)] lg:gap-10">
 
                 {{-- لوح العنوان — سطح داكن كخلفية القالب المزخرفة --}}
-                <div class="reveal flex flex-col justify-center rounded-xl
+                <div
+                    class="reveal flex flex-col justify-center rounded-xl
                             bg-linear-to-bl from-deep-from to-deep-to p-8 lg:p-10">
                     <x-ui.rule-label on="dark">{{ __('home.voices_eyebrow') }}</x-ui.rule-label>
                     <h2 class="mt-5 text-h2 font-bold text-on-dark">{{ __('home.voices_title') }}</h2>
@@ -569,17 +643,18 @@
                         <div class="slider">
                             @foreach ([1, 2, 3] as $i)
                                 <div data-slide
-                                     class="slider__slide {{ $i === 1 ? 'is-active' : '' }}"
-                                     role="group" aria-roledescription="slide"
-                                     aria-label="{{ $i }} / 3"
-                                     @if ($i !== 1) aria-hidden="true" @endif>
+                                    class="slider__slide {{ $i === 1 ? 'is-active' : '' }}"
+                                    role="group" aria-roledescription="slide"
+                                    aria-label="{{ $i }} / 3"
+                                    @if ($i !== 1) aria-hidden="true" @endif>
 
                                     <div class="grid items-center gap-8 md:grid-cols-2 md:gap-10">
 
                                         {{-- الصورة مع كتلة لونية خلفها كالقالب --}}
                                         <div class="relative ps-10 pt-8">
-                                            <span class="absolute inset-s-0 top-0 h-full w-[calc(50%+2.5rem)] rounded-lg bg-accent/18"
-                                                  aria-hidden="true"></span>
+                                            <span
+                                                class="absolute inset-s-0 top-0 h-full w-[calc(50%+2.5rem)] rounded-lg bg-accent/18"
+                                                aria-hidden="true"></span>
                                             <x-ui.media-slot
                                                 class="relative rounded-lg"
                                                 :src="asset('images/voices/student-' . $i . '.jpg')"
@@ -592,8 +667,10 @@
                                         <div class="ps-12 md:ps-0">
                                             <div class="flex gap-1" aria-label="{{ __('home.rating_full') }}">
                                                 @for ($s = 0; $s < 5; $s++)
-                                                    <svg class="size-4 text-accent" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                                        <path d="m12 2 3 6.5 7 .9-5 4.9 1.2 7L12 18l-6.2 3.3L7 14.3l-5-4.9 7-.9z"/>
+                                                    <svg class="size-4 text-accent" viewBox="0 0 24 24"
+                                                        fill="currentColor" aria-hidden="true">
+                                                        <path
+                                                            d="m12 2 3 6.5 7 .9-5 4.9 1.2 7L12 18l-6.2 3.3L7 14.3l-5-4.9 7-.9z" />
                                                     </svg>
                                                 @endfor
                                             </div>
@@ -603,14 +680,19 @@
                                             </blockquote>
 
                                             <div class="mt-6 flex items-center gap-4">
-                                                <span class="grid size-12 shrink-0 place-items-center rounded-md bg-surface text-accent-deep">
-                                                    <svg class="size-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                                        <path d="M10 7H6a3 3 0 0 0-3 3v7h7v-7H6a1 1 0 0 1 1-1h3zm11 0h-4a3 3 0 0 0-3 3v7h7v-7h-4a1 1 0 0 1 1-1h3z"/>
+                                                <span
+                                                    class="grid size-12 shrink-0 place-items-center rounded-md bg-surface text-accent-deep">
+                                                    <svg class="size-6" viewBox="0 0 24 24" fill="currentColor"
+                                                        aria-hidden="true">
+                                                        <path
+                                                            d="M10 7H6a3 3 0 0 0-3 3v7h7v-7H6a1 1 0 0 1 1-1h3zm11 0h-4a3 3 0 0 0-3 3v7h7v-7h-4a1 1 0 0 1 1-1h3z" />
                                                     </svg>
                                                 </span>
                                                 <span>
-                                                    <span class="block text-h5 font-semibold text-ink">{{ __('home.voice_' . $i . '_name') }}</span>
-                                                    <span class="block text-caption text-stone">{{ __('home.voice_' . $i . '_meta') }}</span>
+                                                    <span
+                                                        class="block text-h5 font-semibold text-ink">{{ __('home.voice_' . $i . '_name') }}</span>
+                                                    <span
+                                                        class="block text-caption text-stone">{{ __('home.voice_' . $i . '_meta') }}</span>
                                                 </span>
                                             </div>
                                         </div>
@@ -622,13 +704,13 @@
                         {{-- أسهم مكدّسة كالقالب --}}
                         <div class="slider__nav slider__nav--inset">
                             <button type="button" data-slide-prev
-                                    aria-label="{{ __('home.slide_prev') }}"
-                                    class="slider__arrow slider__arrow--dark cursor-pointer">
+                                aria-label="{{ __('home.slide_prev') }}"
+                                class="slider__arrow slider__arrow--dark cursor-pointer">
                                 <x-icon name="arrow" class="size-5 rtl:-scale-x-100" />
                             </button>
                             <button type="button" data-slide-next
-                                    aria-label="{{ __('home.slide_next') }}"
-                                    class="slider__arrow slider__arrow--dark cursor-pointer">
+                                aria-label="{{ __('home.slide_next') }}"
+                                class="slider__arrow slider__arrow--dark cursor-pointer">
                                 <x-icon name="arrow" class="size-5 ltr:-scale-x-100" />
                             </button>
                         </div>
@@ -677,7 +759,8 @@
          ═══════════════════════════════════════════════════════ --}}
     <section class="pb-20 lg:pb-24">
         <div class="mx-auto max-w-[1280px] px-6">
-            <div class="hero-canvas reveal overflow-hidden rounded-xl
+            <div
+                class="hero-canvas reveal overflow-hidden rounded-xl
                         px-8 py-16 text-center lg:px-16 lg:py-20">
 
                 <h2 class="text-h1 font-bold text-ink">{{ __('home.cta_title') }}</h2>

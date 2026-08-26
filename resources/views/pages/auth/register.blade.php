@@ -1,11 +1,5 @@
 @php
-    // بيانات عرض ثابتة — تُستبدل باستعلام حقيقي عند بناء الخادم
-    $countries = [
-        'ps' => 'فلسطين',
-        'jo' => 'الأردن',
-        'other' => 'دولة أخرى',
-    ];
-
+    // المحافظات — قائمة ثابتة (ليست كياناً في قاعدة البيانات).
     $governorates = [
         'jenin' => 'جنين', 'tulkarm' => 'طولكرم', 'nablus' => 'نابلس',
         'qalqilya' => 'قلقيلية', 'salfit' => 'سلفيت', 'ramallah' => 'رام الله والبيرة',
@@ -14,12 +8,10 @@
         'deir-albalah' => 'دير البلح', 'khan-younis' => 'خان يونس', 'rafah' => 'رفح',
     ];
 
-    $branches = [
-        'scientific' => 'علمي',
-        'literary' => 'أدبي',
-        'commercial' => 'تجاري',
-        'industrial' => 'صناعي',
-    ];
+    $countries = ['ps' => 'فلسطين', 'jo' => 'الأردن', 'ot' => 'دولة أخرى'];
+
+    // 🔴 الفروع تأتي من قاعدة البيانات الآن (RegisteredUserController::create)
+    // لا من مصفوفة ثابتة — القيمة المرسلة هي branch_id حقيقي.
 @endphp
 
 <x-layouts.centered :title="__('auth.register_title')" width="wide">
@@ -34,12 +26,33 @@
             <p class="mt-1.5 text-ui text-steel">{{ __('auth.register_subtitle') }}</p>
         </div>
 
+        {{-- جوجل يتخطّى الخطوة 1 كاملة: الاسم والبريد يأتيان منه موثَّقين --}}
+        <div class="mt-6">
+            <x-ui.google-button href="{{ route('auth.google.redirect') }}" />
+        </div>
+
+        <div class="my-5 flex items-center gap-3" role="separator">
+            <span class="h-px flex-1 bg-hairline"></span>
+            <span class="text-caption text-stone">{{ __('auth.or_divider') }}</span>
+            <span class="h-px flex-1 bg-hairline"></span>
+        </div>
+
+        @if ($errors->any())
+            <x-ui.form-errors class="mb-5" :title="__('auth.login_failed_title')">
+                <ul class="flex list-disc flex-col gap-1 ps-4">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </x-ui.form-errors>
+        @endif
+
         {{--
             مؤشّر الخطوات — شريطان بعرض متساوٍ. الخطوة الحالية باللون
             accent والقادمة بلون الخط الفاصل. نصّ الحالة يُقرأ صوتياً عبر
             aria-live كي يعرف مستخدم قارئ الشاشة أن الخطوة تبدّلت.
         --}}
-        <div class="mt-7">
+        <div class="mt-2">
             <div class="flex items-center gap-2" aria-hidden="true">
                 <span data-wizard-bar="1" class="h-1.5 flex-1 rounded-full bg-accent transition-colors"></span>
                 <span data-wizard-bar="2" class="h-1.5 flex-1 rounded-full bg-hairline transition-colors"></span>
@@ -53,13 +66,16 @@
             </p>
         </div>
 
-        <form data-demo-submit="{{ route('auth.branch') }}" class="mt-6">
+        <form method="POST" action="{{ route('auth.register.store') }}" class="mt-6">
+            @csrf
 
             {{-- ══ الخطوة 1 — الحساب وكلمة المرور ══ --}}
             <div data-wizard-step="1" class="flex flex-col gap-4">
 
                 <x-ui.input
                     name="name"
+                    autocomplete="name"
+                    :value="old('name')"
                     :label="__('auth.register_name_label')"
                     :placeholder="__('auth.register_name_placeholder')"
                     required />
@@ -67,22 +83,26 @@
                 <x-ui.input
                     name="email"
                     type="email"
+                    autocomplete="email"
+                    :value="old('email')"
                     :label="__('auth.email_label')"
                     :placeholder="__('auth.email_placeholder')"
                     required />
 
                 <x-ui.password-input
                     name="password"
+                    autocomplete="new-password"
                     :label="__('auth.password_label')"
                     :hint="__('auth.register_password_hint')"
                     required />
 
                 <x-ui.password-input
                     name="password_confirmation"
+                    autocomplete="new-password"
                     :label="__('auth.register_password_confirm_label')"
                     required />
 
-                <x-ui.checkbox name="terms" required>
+                <x-ui.checkbox name="terms" value="1" required>
                     <span class="block text-ui text-ink">
                         {{ __('auth.register_terms_label') }}
                         {{-- وجهة نائبة — تُستبدل بصفحة الشروط الحقيقية عند كتابتها --}}
@@ -107,7 +127,7 @@
                         :label="__('auth.register_country_label')"
                         :placeholder="__('auth.register_country_placeholder')"
                         :options="$countries"
-                        value="ps"
+                        :value="old('country', 'ps')"
                         required />
 
                     <x-ui.select
@@ -115,6 +135,7 @@
                         :label="__('auth.register_governorate_label')"
                         :placeholder="__('auth.register_governorate_placeholder')"
                         :options="$governorates"
+                        :value="old('governorate')"
                         required />
                 </div>
 
@@ -122,27 +143,31 @@
                     🔴 رقم الجوال LTR إلزاماً داخل نموذج RTL — الأرقام لا
                     تنعكس في أي لغة. dir=ltr على الحقل نفسه، وtext-start
                     تُبقي المؤشّر عند بداية الرقم لا نهايته.
+
+                    ملاحظة: الهاتف بيانات تواصل لا هوية — الهوية بريد إلكتروني.
                 --}}
                 <x-ui.input
                     name="phone"
                     type="tel"
+                    :value="old('phone')"
                     :label="__('auth.register_phone_label')"
                     :placeholder="__('auth.register_phone_placeholder')"
                     dir="ltr"
                     inputmode="tel"
-                    required />
+                    autocomplete="tel" />
 
                 <x-ui.input
                     name="school"
+                    :value="old('school')"
                     :label="__('auth.register_school_label')"
-                    :placeholder="__('auth.register_school_placeholder')"
-                    required />
+                    :placeholder="__('auth.register_school_placeholder')" />
 
                 <x-ui.select
-                    name="branch"
+                    name="branch_id"
                     :label="__('auth.register_branch_label')"
                     :placeholder="__('auth.register_branch_placeholder')"
                     :options="$branches"
+                    :value="old('branch_id')"
                     required />
 
                 {{-- نفس ترتيب ui/confirm-dialog: الثانوي أولاً ثم الأساسي.

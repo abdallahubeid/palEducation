@@ -17,10 +17,10 @@
                 ['name' => 'التربية الإسلامية', 'teacher' => 'أ. أحمد بشير', 'icon' => 'book', 'tone' => 'amber', 'lectures' => 6, 'files' => 3],
             ],
             'teachers' => [
-                ['name' => 'أ. سامر خليل', 'subject' => 'الرياضيات', 'initials' => 'س خ', 'lectures' => 12, 'tone' => 'accent'],
-                ['name' => 'أ. رنا عوض',   'subject' => 'الفيزياء',  'initials' => 'ر ع', 'lectures' => 9,  'tone' => 'tag'],
-                ['name' => 'أ. وليد حمد',  'subject' => 'الكيمياء',  'initials' => 'و ح', 'lectures' => 10, 'tone' => 'amber'],
-                ['name' => 'أ. هدى ناصر',  'subject' => 'الأحياء',   'initials' => 'ه ن', 'lectures' => 11, 'tone' => 'warn'],
+                ['name' => 'أ. سامر خليل', 'photo' => 'images/img1/team-1.jpg', 'subject' => 'الرياضيات', 'initials' => 'س خ', 'lectures' => 12, 'tone' => 'accent'],
+                ['name' => 'أ. رنا عوض',   'photo' => 'images/img1/team-2.jpg', 'subject' => 'الفيزياء',  'initials' => 'ر ع', 'lectures' => 9,  'tone' => 'tag'],
+                ['name' => 'أ. وليد حمد',  'photo' => 'images/img1/team-3.jpg', 'subject' => 'الكيمياء',  'initials' => 'و ح', 'lectures' => 10, 'tone' => 'amber'],
+                ['name' => 'أ. هدى ناصر',  'photo' => 'images/img1/team-4.jpg', 'subject' => 'الأحياء',   'initials' => 'ه ن', 'lectures' => 11, 'tone' => 'warn'],
             ],
         ],
     ];
@@ -142,6 +142,7 @@
                         :name="$teacher['name']"
                         :subject="$teacher['subject']"
                         :branch="$branch['name']"
+                        :photo="asset($teacher['photo'])"
                         :initials="$teacher['initials']"
                         :lectures="$teacher['lectures']"
                         :tone="$teacher['tone']" />

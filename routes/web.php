@@ -55,16 +55,16 @@ Route::view('/styleguide', 'pages.styleguide')->name('styleguide');
 | شاشة دخول واحدة للأدوار الثلاثة (توصية م-7)، والتوجيه بعد الدخول
 | حسب الدور عند بناء المصادقة.
 */
-Route::view('/login', 'pages.auth.login')->name('auth.login');
-Route::view('/register', 'pages.auth.register')->name('auth.register');
-Route::view('/forgot-password', 'pages.auth.forgot-password')->name('auth.forgot');
+// 🔁 نُقلت إلى routes/auth.php — صارت كنترولرز حقيقية لا Route::view.
 
 /*
 | الشاشة 16 — اختيار الفرع · قرار شبه دائم
 | ⏳ يلامس م-6 (تغيير الفرع لاحقاً): النصّ هنا يتبع التوصية المسجّلة
 | (تغيير عبر طلب للأدمن فقط) وليس قراراً محسوماً.
 */
-Route::view('/select-branch', 'pages.auth.select-branch')->name('auth.branch');
+// 🔁 اختيار الفرع صار الخطوة الأخيرة في تسجيل جوجل — routes/auth.php
+// (auth.google.branch). ما تبقّى هنا مسار معاينة أثناء التطوير فقط.
+Route::view('/preview/select-branch', 'pages.auth.select-branch')->name('preview.branch');
 
 /*
 |--------------------------------------------------------------------------
