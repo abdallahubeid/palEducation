@@ -8,29 +8,19 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
+/**
+ * الإعدادات — صفحة واحدة بتبويبات.
+ *
+ * 🔴 لا شاشة نظرة عامة ولا شاشة لكل قسم: صفحة واحدة تعرض كل الألواح،
+ * والتبويب يبدّل بينها على العميل. كل لوح يحفظ عبر مساره الخاص ويعود
+ * إلى نفس التبويب.
+ */
 class SettingController extends Controller
 {
-    /**
-     * نظرة عامة على الإعدادات — بوّابة الأقسام.
-     *
-     * موجودة لأن «الإعدادات» صارت أكثر من شاشة واحدة: الصفحة تعرض الأقسام
-     * وحالة كل قسم، بدل أن يقفز الرابط الجانبي مباشرةً إلى قسم بعينه.
-     */
     public function index(): View
     {
-        $settings = Setting::map();
-
         return view('admin.settings.index', [
-            'navbarFilled' => collect(Setting::NAVBAR_SOCIAL_KEYS)
-                ->filter(fn (string $key) => filled($settings[$key] ?? null))
-                ->count(),
-            'navbarTotal' => count(Setting::NAVBAR_SOCIAL_KEYS),
-        ]);
-    }
-
-    public function navbar(): View
-    {
-        return view('admin.settings.navbar', [
+            'groups' => Setting::GROUPS,
             'settings' => Setting::map(),
         ]);
     }
@@ -53,6 +43,17 @@ class SettingController extends Controller
 
         flash()->success('تم تحديث البيانات بنجاح.');
 
-        return redirect()->route('admin.settings.navbar');
+        return $this->backToTab('navbar');
+    }
+
+    /**
+     * يعيد إلى الصفحة **وإلى التبويب نفسه**.
+     *
+     * ⚠️ المرساة لا تصل الخادم أبداً، فالتبويب يُمرَّر كاستعلام `tab`
+     * ويلتقطه العرض. بدونه يعود المستخدم دائماً للتبويب الأول بعد كل حفظ.
+     */
+    private function backToTab(string $tab): RedirectResponse
+    {
+        return redirect()->route('admin.settings.index', ['tab' => $tab]);
     }
 }

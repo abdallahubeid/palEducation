@@ -63,12 +63,12 @@ function sliderPayload(array $overrides = []): array
 
 it('يمنع الزائر من كل مسارات الأدمن', function () {
     get(route('admin.sliders.index'))->assertRedirect(route('auth.login'));
-    get(route('admin.settings.navbar'))->assertRedirect(route('auth.login'));
+    get(route('admin.settings.index'))->assertRedirect(route('auth.login'));
 });
 
 it('يمنع الطالب من الشرائح والإعدادات — 403 لا إخفاء رابط', function () {
     actingAs($this->student)->get(route('admin.sliders.index'))->assertForbidden();
-    actingAs($this->student)->get(route('admin.settings.navbar'))->assertForbidden();
+    actingAs($this->student)->get(route('admin.settings.index'))->assertForbidden();
 
     // 🔴 الأهم: الطلب المباشر بـPOST يُرفض أيضاً، لا الشاشة وحدها.
     actingAs($this->student)->post(route('admin.sliders.store'), sliderPayload())
@@ -87,7 +87,7 @@ it('يرفض أدمناً نُزعت منه الصلاحية رغم بقاء د�
     actingAs($this->admin)->get(route('admin.sliders.index'))->assertForbidden();
 
     // الدور باقٍ، والصلاحية الأخرى باقية — الحراستان مستقلّتان.
-    actingAs($this->admin)->get(route('admin.settings.navbar'))->assertOk();
+    actingAs($this->admin)->get(route('admin.settings.index'))->assertOk();
 });
 
 // ── الشرائح ─────────────────────────────────────────────────────
@@ -119,7 +119,7 @@ it('يعرض شاشة التعديل بقيم الشريحة وصورتها ال
 it('يعرض شاشة إعدادات الشريط العلوي بالقيم المحفوظة', function () {
     Setting::put('navbar.social_link1', 'https://facebook.com/paledu');
 
-    actingAs($this->admin)->get(route('admin.settings.navbar'))
+    actingAs($this->admin)->get(route('admin.settings.index'))
         ->assertOk()
         ->assertSee('https://facebook.com/paledu');
 });
@@ -248,7 +248,7 @@ it('يحفظ روابط التواصل الثلاثة', function () {
         'social_link1' => 'https://facebook.com/paledu',
         'social_link2' => 'https://instagram.com/paledu',
         'social_link3' => null,
-    ])->assertRedirect(route('admin.settings.navbar'));
+    ])->assertRedirect(route('admin.settings.index', ['tab' => 'navbar']));
 
     expect(Setting::get('navbar.social_link1'))->toBe('https://facebook.com/paledu')
         ->and(Setting::get('navbar.social_link2'))->toBe('https://instagram.com/paledu')

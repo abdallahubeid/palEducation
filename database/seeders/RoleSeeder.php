@@ -2,65 +2,42 @@
 
 namespace Database\Seeders;
 
+use App\Support\PermissionCatalog;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 /**
- * الأدوار الثلاثة وصلاحياتها.
+ * الأدوار الثلاثة الثابتة وصلاحياتها.
  *
- * ثابتة لا تُدار من الواجهة: المنصة لها ثلاثة أدوار بالتعريف، وكل دور
- * يقابل جدول مجال. إضافة دور رابع تعني جدول مجال رابعاً، وهو قرار
- * معماري لا إعداد تشغيلي.
+ * الأدوار الثلاثة تقابل جداول المجال الثلاثة (Student · Teacher · Admin)
+ * ولا تُحذف من الواجهة. أدوار إضافية يُنشئها الأدمن من شاشة الأدوار.
  *
- * 🔴 الصلاحيات تُبذَر هنا فقط حين يفحصها شيء فعلاً. القاعدة المسجّلة:
- * اسم صلاحية لا يحرسه مسار ولا Policy أسوأ من غيابه — يوهم بحماية غير
- * موجودة. أُضيفت manage-sliders و manage-settings مع أول مسار أدمن
- * يفحصهما بـ`can:` middleware.
+ * ⚠️ تُبقي القوائم في PermissionCatalog لا هنا: البذرة مستهلِك للفهرس
+ * لا مالك له، وإلّا صار عندنا مصدران للحقيقة.
  */
 class RoleSeeder extends Seeder
 {
-    public const ROLES = ['student', 'teacher', 'admin'];
+    /** @deprecated يُقرأ من PermissionCatalog — مُبقى لتوافق الاستدعاءات القائمة. */
+    public const ROLES = PermissionCatalog::SYSTEM_ROLES;
 
-    /**
-     * الصلاحيات المُنفَّذة فعلاً — كل واحدة يحرسها مسار.
-     *
-     * 🔴 مُقسَّمة لا مجمّعة: «manage-sliders» واحدة كانت تعني أن مَن يعرض
-     * القائمة يستطيع الحذف. الفصل يسمح بأدمن محتوى ينشئ ويعدّل ولا يحذف —
-     * وهو التمييز الذي يجعل شاشة الأدوار مفيدة أصلاً.
-     */
-    public const PERMISSIONS = [
-        'view-sliders',
-        'create-sliders',
-        'edit-sliders',
-        'delete-sliders',
-        'manage-settings',
-        'manage-roles',
-    ];
-
-    /**
-     * 🔴 صلاحيات لا يجوز نزعها عن دور admin من الواجهة.
-     *
-     * بدون هذا الحارس يستطيع أدمن أن يُطفئ manage-roles عن دوره فيقفل
-     * على نفسه شاشة الأدوار نهائياً — ولا سبيل للعودة إلا من قاعدة
-     * البيانات مباشرة. القفل الذاتي خطأ لا يُصلَّح بالندم.
-     */
-    public const LOCKED_ADMIN_PERMISSIONS = ['manage-roles'];
+    /** @deprecated يُقرأ من PermissionCatalog. */
+    public const LOCKED_ADMIN_PERMISSIONS = PermissionCatalog::LOCKED_ADMIN_PERMISSIONS;
 
     public function run(): void
     {
         $guard = config('auth.defaults.guard', 'web');
 
-        foreach (self::ROLES as $name) {
+        foreach (PermissionCatalog::SYSTEM_ROLES as $name) {
             Role::findOrCreate($name, $guard);
         }
 
         // ⚠️ الإنشاء كله أولاً، ثم تفريغ الذاكرة، ثم المنح — بهذا الترتيب.
-        // givePermissionTo يحلّ الأسماء من ذاكرة الحزمة المؤقّتة، وهي مُحمّلة
-        // منذ بداية الطلب. المنح مباشرةً بعد الإنشاء يرمي PermissionDoesNotExist
-        // على صلاحية أُنشئت للتوّ فعلاً — الصفّ موجود والذاكرة لا تعرفه.
-        foreach (self::PERMISSIONS as $permission) {
+        // givePermissionTo يحلّ الأسماء من ذاكرة الحزمة المؤقّتة المحمّلة منذ
+        // بداية الطلب، فالمنح مباشرةً بعد الإنشاء يرمي PermissionDoesNotExist
+        // على صلاحية أُنشئت للتوّ — الصفّ موجود والذاكرة لا تعرفه.
+        foreach (PermissionCatalog::names() as $permission) {
             Permission::findOrCreate($permission, $guard);
         }
 
@@ -68,7 +45,7 @@ class RoleSeeder extends Seeder
 
         // givePermissionTo تراكمية وآمنة لإعادة التشغيل — لا syncPermissions:
         // المزامنة تنزع أي صلاحية عدّلها الأدمن من شاشة الأدوار.
-        Role::findByName('admin', $guard)->givePermissionTo(self::PERMISSIONS);
+        Role::findByName('admin', $guard)->givePermissionTo(PermissionCatalog::names());
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }

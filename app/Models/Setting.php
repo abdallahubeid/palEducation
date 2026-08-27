@@ -29,6 +29,24 @@ class Setting extends Model
         'navbar.social_link3',
     ];
 
+    /**
+     * تبويبات صفحة الإعدادات.
+     *
+     * 🔴 مصدر واحد: شريط التبويبات، واللوح المعروض، والمسار الذي يحفظه —
+     * ثلاثتها تُبنى من هنا. إضافة تبويب = صفّ واحد + جزئية باسمه، بلا لمس
+     * الشريط ولا الـJS.
+     *
+     * `partial` اسم جزئية تحت resources/views/admin/settings/tabs/.
+     */
+    public const GROUPS = [
+        'navbar' => [
+            'label' => 'الشريط العلوي',
+            'icon' => 'link',
+            'partial' => 'navbar',
+            'route' => 'admin.settings.navbar.update',
+        ],
+    ];
+
     protected $fillable = [
         'key',
         'value',

@@ -3,6 +3,7 @@
 use App\Models\Admin;
 use App\Models\Branch;
 use App\Models\Media;
+use App\Models\Setting;
 use App\Models\Slider;
 use App\Models\Student;
 use Database\Seeders\RoleSeeder;
@@ -317,7 +318,7 @@ it('يعرض نظرة الإعدادات وقسم الشريط العلوي', fu
     actingAs($this->admin)->get(route('admin.settings.index'))
         ->assertOk()->assertSee('الشريط العلوي');
 
-    actingAs($this->admin)->get(route('admin.settings.navbar'))->assertOk();
+    actingAs($this->admin)->get(route('admin.settings.index'))->assertOk();
 });
 
 it('يعرض الملف الشخصي ويحدّث الاسم على سجلّ المجال', function () {
@@ -336,4 +337,62 @@ it('يمنع تغيير كلمة المرور بلا كلمة المرور ال�
     actingAs($this->admin)->put(route('admin.profile.password'), [
         'current_password' => 'wrong', 'password' => 'NewPass123', 'password_confirmation' => 'NewPass123',
     ])->assertSessionHasErrors('current_password');
+});
+
+// ── حجم الصفحة من الإعداد ───────────────────────────────────────
+
+it('يقرأ حجم الصفحة من الإعداد لا من رقم مكتوب', function () {
+    config(['app.paginate_page' => 3]);
+
+    foreach (range(1, 5) as $i) {
+        makeSlider(['title' => "شريحة {$i}", 'display_order' => $i]);
+    }
+
+    // 🔴 التأكيد على السلوك لا على الرقم: تغيير الإعداد يجب أن يغيّر عدد
+    // الصفوف فعلاً، وإلّا فالرقم ما زال مكتوباً في الكنترولر.
+    actingAs($this->admin)->get(route('admin.sliders.index'))
+        ->assertOk()
+        ->assertSee('شريحة 1')
+        ->assertDontSee('شريحة 4');
+});
+
+it('يعرّف الإعداد كعدد صحيح لا نصّاً', function () {
+    // قيم .env نصوص دائماً؛ التحويل في config يجعل كل مستهلك يستقبل عدداً.
+    expect(config('app.paginate_page'))->toBeInt()->toBeGreaterThan(0);
+});
+
+// ── الإعدادات: صفحة واحدة بتبويبات ──────────────────────────────
+
+it('يعرض كل ألواح الإعدادات في صفحة واحدة', function () {
+    Setting::put('navbar.social_link1', 'https://facebook.com/paledu');
+
+    actingAs($this->admin)->get(route('admin.settings.index'))
+        ->assertOk()
+        ->assertSee('data-settings-tabs', false)
+        ->assertSee('data-settings-tab="navbar"', false)
+        ->assertSee('data-settings-panel="navbar"', false)
+        ->assertSee('https://facebook.com/paledu');
+});
+
+it('يفتح التبويب الذي جاء في الاستعلام بعد الحفظ', function () {
+    actingAs($this->admin)->put(route('admin.settings.navbar.update'), [
+        'social_link1' => 'https://a.test/x',
+    ])->assertRedirect(route('admin.settings.index', ['tab' => 'navbar']));
+
+    // ⚠️ المرساة لا تصل الخادم، فالتبويب يُمرَّر كاستعلام ويلتقطه العرض.
+    actingAs($this->admin)->get(route('admin.settings.index', ['tab' => 'navbar']))
+        ->assertOk()
+        ->assertSee('aria-selected="true"', false);
+});
+
+it('يتجاهل تبويباً مجهولاً ويعود للأول بلا خطأ', function () {
+    actingAs($this->admin)->get(route('admin.settings.index', ['tab' => 'nope']))
+        ->assertOk()
+        ->assertSee('data-settings-panel="navbar"', false);
+});
+
+it('لم يعد لصفحة إعدادات الشريط العلوي مسار عرض مستقل', function () {
+    // الصفحة الواحدة بتبويبات ألغت المسار المنفصل؛ بقي مسار الحفظ فقط.
+    expect(app('router')->getRoutes()->getByName('admin.settings.navbar'))->toBeNull()
+        ->and(app('router')->getRoutes()->getByName('admin.settings.navbar.update'))->not->toBeNull();
 });

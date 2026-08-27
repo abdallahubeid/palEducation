@@ -15,7 +15,7 @@ class SliderController extends Controller
     public function index(): View
     {
         return view('admin.sliders.index', [
-            'sliders' => Slider::query()->with('image')->ordered()->paginate(15),
+            'sliders' => Slider::query()->with('image')->ordered()->paginate(config('app.paginate_page')),
             // المحذوفات لم تعد تُعرَض هنا — السلّة مركزية تحت /admin/trash.
         ]);
     }

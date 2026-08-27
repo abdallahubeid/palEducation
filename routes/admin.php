@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SliderController;
 use App\Http\Controllers\Admin\TrashController;
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -94,23 +95,65 @@ Route::middleware(['auth', 'role:admin'])
         | الإعدادات
         |----------------------------------------------------------------
         */
+        // صفحة واحدة بتبويبات: مسار عرض واحد، ومسار حفظ لكل تبويب.
         Route::middleware('can:manage-settings')->prefix('settings')->name('settings.')->group(function () {
             Route::get('/', [SettingController::class, 'index'])->name('index');
-            Route::get('navbar', [SettingController::class, 'navbar'])->name('navbar');
             Route::put('navbar', [SettingController::class, 'updateNavbar'])->name('navbar.update');
+        });
+
+        /*
+        |----------------------------------------------------------------
+        | المستخدمون
+        |----------------------------------------------------------------
+        | صلاحية لكل إجراء: أدمن يراجع الحسابات قد لا يملك إنشاءها ولا حذفها.
+        */
+        Route::prefix('users')->name('users.')->group(function () {
+            Route::get('/', [UserController::class, 'index'])
+                ->middleware('can:view-users')->name('index');
+
+            Route::middleware('can:create-users')->group(function () {
+                Route::get('create', [UserController::class, 'create'])->name('create');
+                Route::post('/', [UserController::class, 'store'])->name('store');
+            });
+
+            Route::middleware('can:edit-users')->group(function () {
+                Route::get('{user}/edit', [UserController::class, 'edit'])->name('edit');
+                Route::put('{user}', [UserController::class, 'update'])->name('update');
+                Route::patch('{user}/toggle', [UserController::class, 'toggle'])->name('toggle');
+            });
+
+            Route::delete('{user}', [UserController::class, 'destroy'])
+                ->middleware('can:delete-users')->name('destroy');
         });
 
         /*
         |----------------------------------------------------------------
         | الأدوار والصلاحيات
         |----------------------------------------------------------------
-        | الأدوار الثلاثة ثابتة (تقابل جداول المجال) — لا إنشاء ولا حذف.
+        | 🔴 الأدوار الثلاثة النظامية (student · teacher · admin) تقابل
+        | جداول المجال ولا تُحذف ولا يُغيَّر اسمها — User::roleName() تشتقّ
+        | الدور من userable_type بهذه الأسماء حرفياً. أدوار إضافية تُنشأ
+        | وتُحذف بحرّية.
         */
-        Route::middleware('can:manage-roles')->prefix('roles')->name('roles.')->group(function () {
-            Route::get('/', [RoleController::class, 'index'])->name('index');
-            Route::get('{role}/edit', [RoleController::class, 'edit'])->name('edit');
-            Route::put('{role}', [RoleController::class, 'update'])->name('update');
-            Route::patch('{role}/permissions', [RoleController::class, 'togglePermission'])
-                ->name('permissions.toggle');
+        Route::prefix('roles')->name('roles.')->group(function () {
+            Route::get('/', [RoleController::class, 'index'])
+                ->middleware('can:view-roles')->name('index');
+
+            Route::middleware('can:create-roles')->group(function () {
+                Route::get('create', [RoleController::class, 'create'])->name('create');
+                Route::post('/', [RoleController::class, 'store'])->name('store');
+            });
+
+            Route::middleware('can:manage-roles')->group(function () {
+                Route::get('{role}/edit', [RoleController::class, 'edit'])->name('edit');
+                Route::put('{role}', [RoleController::class, 'update'])->name('update');
+                Route::patch('{role}/permissions', [RoleController::class, 'togglePermission'])
+                    ->name('permissions.toggle');
+                Route::patch('{role}/permissions/group', [RoleController::class, 'toggleGroup'])
+                    ->name('permissions.group');
+            });
+
+            Route::delete('{role}', [RoleController::class, 'destroy'])
+                ->middleware('can:delete-roles')->name('destroy');
         });
     });

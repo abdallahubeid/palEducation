@@ -1,5 +1,23 @@
-// palEducation — تفاعلات خفيفة بلا اعتماديات
-// (Alpine يأتي مع Livewire 3؛ يُستبدل هذا الملف عند تثبيته)
+// palEducation — تفاعلات الواجهة
+//
+// ⚠️ Alpine مثبَّت الآن عبر npm مباشرةً، لا عبر Livewire 3 (غير مثبّت).
+// يُستعمل في **لوحة الأدمن فقط** حيث الحالة التفاعلية حقيقية (مفاتيح
+// الصلاحيات). كل ما بُني قبله من تفاعل الواجهة العامة يبقى vanilla —
+// لا تُعاد كتابته بلا سبب، فالصفحات العامة لا تحتاج إطاراً.
+import Alpine from 'alpinejs';
+
+window.Alpine = Alpine;
+
+/*
+ * 🔴 Alpine.start() ليست هنا — بل في **آخر الملف** بعد تسجيل كل مكوّنات
+ * Alpine.data().
+ *
+ * السبب: start() تُطلق حدث `alpine:init` **تزامنياً**. فاستدعاؤها هنا
+ * يعني أن أي `Alpine.data(...)` مكتوب لاحقاً في الملف يُسجَّل بعد فوات
+ * الحدث، فلا يوجد المكوّن أصلاً. والعطل صامت في الصفحة: `x-text` لا
+ * يكتب شيئاً، و`:class` لا يُطبَّق فيظهر المفتاح **بلا خلفية** — أي
+ * غير مرئي تماماً. وقع هذا فعلاً.
+ */
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -377,6 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initAdminShell();
     initTrashSelection();
     initFlash();
+    initSettingsTabs();
 });
 
 /* ── الوصول لمرساة عبر الصفحات (#about · #pricing) ────────
@@ -2173,3 +2192,134 @@ function initFlash() {
         setTimeout(() => dismiss(item), 5000 + i * 400);
     });
 }
+
+/* ── تبويبات الإعدادات ────────────────────────────────────
+   ترقية تدريجية: كل الألواح تصل مرئية من الخادم، وهذا يخفي غير النشط.
+   بلا هذا السكربت تظهر النماذج تحت بعضها وكلها تعمل — لا تُعطَّل الصفحة. */
+function initSettingsTabs() {
+    const root = document.querySelector('[data-settings-tabs]');
+    if (!root) return;
+
+    const tabs = [...root.querySelectorAll('[data-settings-tab]')];
+    const panels = [...root.querySelectorAll('[data-settings-panel]')];
+    if (!tabs.length) return;
+
+    const on = 'border-accent text-accent-deep';
+    const off = 'border-transparent text-steel hover:border-hairline-strong hover:text-ink';
+
+    const activate = (key) => {
+        tabs.forEach((tab) => {
+            const isOn = tab.dataset.settingsTab === key;
+            tab.setAttribute('aria-selected', isOn);
+            tab.classList.remove(...(isOn ? off : on).split(' '));
+            tab.classList.add(...(isOn ? on : off).split(' '));
+        });
+
+        panels.forEach((panel) => {
+            panel.hidden = panel.dataset.settingsPanel !== key;
+        });
+
+        /* ⚠️ replaceState لا pushState: التبويب ليس صفحة، فلا يجب أن يُراكم
+           مدخلات في سجلّ المتصفّح تجعل زرّ الرجوع يمشي عبر التبويبات بدل
+           مغادرة الصفحة. والاستعلام يبقى فيصمد التبويب عبر التحديث. */
+        const url = new URL(window.location);
+        url.searchParams.set('tab', key);
+        window.history.replaceState({}, '', url);
+    };
+
+    tabs.forEach((tab) => {
+        tab.addEventListener('click', () => activate(tab.dataset.settingsTab));
+    });
+
+    /* التبويب المفتوح: ما ضبطه الخادم في aria-selected (بعد الحفظ) وإلا الأول */
+    const initial = tabs.find((t) => t.getAttribute('aria-selected') === 'true') ?? tabs[0];
+    activate(initial.dataset.settingsTab);
+}
+
+/* ── شبكة الصلاحيات — Alpine ──────────────────────────────
+   حالة المفاتيح + حفظ فوري في الخلفية بلا إعادة تحميل.
+
+   🔴 حالة القسم **محسوبة** من الصلاحيات تحته لا مخزّنة منفصلة: مفتاح قسم
+   بحالة مستقلّة يكذب لحظة تغيير صلاحية مفردة تحته. */
+Alpine.data('permissionGrid', (config) => ({
+        state: config.state,
+        locked: config.locked || [],
+        toggleUrl: config.toggleUrl,
+        groupUrl: config.groupUrl,
+        csrf: config.csrf,
+        busy: false,
+
+        /* ── الحالات المحسوبة ──
+           🔴 مفتاح القسم يقرأ all() ولا يخزّن حالته: هذا هو التزامن في
+           الاتجاهين كلّه. تشغيله يشغّل الأبناء، وإطفاء ابن واحد يجعل all()
+           تُرجع false فينطفئ المفتاح فوراً — بلا مستمع ولا مزامنة يدوية. */
+        count(group) {
+            return Object.values(this.state[group]).filter(Boolean).length;
+        },
+        all(group) {
+            return this.count(group) === Object.keys(this.state[group]).length;
+        },
+
+        /* ── تبديل صلاحية مفردة ── */
+        async toggle(group, permission, granted) {
+            const previous = this.state[group][permission];
+            this.state[group][permission] = granted;
+
+            /* بلا مسار = وضع النموذج: الحالة تكفي، والإرسال يحمل الخانات. */
+            if (!this.toggleUrl) return;
+
+            const ok = await this.send(this.toggleUrl, { permission, granted });
+
+            /* الفشل يُعيد المفتاح لموضعه: مفتاح يبقى مضاءً بعد رفض الخادم
+               يكذب على المستخدم بشأن حالة النظام. */
+            if (!ok) this.state[group][permission] = previous;
+        },
+
+        /* ── تبديل قسم كامل ── */
+        async toggleGroup(group, granted) {
+            const previous = { ...this.state[group] };
+
+            Object.keys(this.state[group]).forEach((permission) => {
+                /* المقفلة لا تُطفأ مع القسم — تُستثنى لا تمنع الباقي. */
+                if (!granted && this.locked.includes(permission)) return;
+                this.state[group][permission] = granted;
+            });
+
+            if (!this.groupUrl) return;
+
+            /* 🔴 نداء واحد للقسم لا نداء لكل صلاحية: أربعة طلبات متسابقة
+               على مخزن Spatie المؤقّت تجعل آخرها يفوز، فتضيع نتائج البقية. */
+            const ok = await this.send(this.groupUrl, { group, granted });
+
+            if (!ok) this.state[group] = previous;
+        },
+
+        /* ── الإرسال ── */
+        async send(url, body) {
+            if (this.busy) return false;
+            this.busy = true;
+
+            try {
+                const res = await fetch(url, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-CSRF-TOKEN': this.csrf,
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify(body),
+                });
+
+                return res.ok;
+            } catch {
+                return false;
+            } finally {
+                this.busy = false;
+            }
+        },
+    }));
+
+/* ⚠️ آخر سطر في الملف عمداً: start() تُطلق alpine:init تزامنياً،
+   فكل Alpine.data() يجب أن يُسجَّل قبلها. */
+Alpine.start();
