@@ -6,6 +6,12 @@ return [
     'branches_subtitle' => 'اختر فرعك لتعرف مواده وأساتذته ومكتبته قبل أن تسجّل. كل فرع عالم مستقل — ولن ترى غيره بعد اختيارك.',
     'branches_search_placeholder' => 'ابحث باسم الفرع أو المادة...',
     'branches_filter_all' => 'كل الفروع',
+    // حالة القائمة الفارغة — تختلف عن «لا نتائج بحث»: تلك تعني أن الفلتر
+    // ضيّق، وهذه تعني أن لا فرع منشوراً أصلاً.
+    'branches_empty_title' => 'لا فروع منشورة بعد',
+    'branches_empty_body' => 'ستظهر هنا فروع التوجيهي فور تفعيلها.',
+    'branch_teachers_empty_title' => 'لم يُسنَد أساتذة لهذا الفرع بعد',
+    'branch_teachers_empty_body' => 'يظهر الأساتذة هنا فور إسنادهم لمواد الفرع.',
     'branches_no_results_title' => 'لا فرع مطابق',
     'branches_no_results_body' => 'جرّب كلمة بحث مختلفة.',
     'branches_cta_title' => 'جاهز تبدأ؟',
@@ -43,7 +49,9 @@ return [
     'news_empty_title' => 'لا أخبار بعد',
     'news_empty_body' => 'كل جديد يخصّ التوجيهي والمنصة سيظهر هنا.',
     'news_no_results_title' => 'لا نتائج مطابقة',
-    'news_no_results_body' => 'جرّب كلمة بحث مختلفة أو بدّل التصنيف.',
+    // ⚠️ لم يعد هناك تصنيفات — لا عمود category في جدول news، وشرائح
+    // التصنيف أُزيلت معه. النصّ لا يجوز أن يقترح تبديل تصنيف غير موجود.
+    'news_no_results_body' => 'جرّب كلمة بحث مختلفة.',
 
     // التصنيفات
     'news_cat_exams' => 'امتحانات',
@@ -80,9 +88,6 @@ return [
     'news_view_all' => 'الكل',
 
     // ── تواصل معنا (إضافة خارج الـ48) ──
-    'contact_eyebrow' => 'تواصل معنا',
-    'contact_title' => 'كيف نقدر نساعدك؟',
-    'contact_lede' => 'سؤال عن اشتراك، مشكلة تقنية، أو اقتراح — اكتب لنا ونردّ عادةً خلال يوم عمل واحد.',
 
     'contact_form_title' => 'أرسل لنا رسالة',
     'contact_name' => 'الاسم',
@@ -110,14 +115,6 @@ return [
     'contact_phone_channel' => 'هاتف',
     'contact_email_channel' => 'البريد الإلكتروني',
     'contact_office' => 'المكتب',
-    'contact_office_desc' => 'رام الله — شارع الإرسال، عمارة النخيل، ط3',
 
     'contact_hours_title' => 'ساعات العمل',
-    'contact_hours_weekdays' => 'السبت — الخميس',
-    'contact_hours_weekdays_time' => '9:00 ص — 6:00 م',
-    'contact_hours_friday' => 'الجمعة',
-    'contact_hours_closed' => 'مغلق',
-    'contact_hours_note' => 'رسائل واتساب خارج الدوام يُردّ عليها صباح اليوم التالي.',
-    'contact_faq_body' => 'معظم الأسئلة عن الاشتراكات والدفع مُجابة في صفحة الأسعار — قد توفّر على نفسك انتظار الردّ.',
-    'contact_faq_action' => 'الأسئلة الشائعة',
 ];

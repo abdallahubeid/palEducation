@@ -28,6 +28,7 @@ class Lecture extends Model
         'title',
         'slug',
         'description',
+        'unit_name',
         'display_order',
         'video_source',
         'video_reference',
@@ -126,6 +127,113 @@ class Lecture extends Model
      * ⏳ ناقص هنا عمداً: شرط م-3 (كويز بسؤال واحد على الأقل) — يُضاف مع
      * جدول quizzes في المرحلة 5. لا تعتبر هذه الدالة كاملة قبله.
      */
+    /*
+    |--------------------------------------------------------------------------
+    | يوتيوب
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * يستخرج معرّف فيديو يوتيوب من رابط، أو null إن لم يكن رابط يوتيوب.
+     *
+     * 🔴 قائمة سماح للمضيف لا بحث عن نصّ «youtube» في الرابط. فحص
+     * str_contains كان سيقبل `evil.test/youtube.com/x` — وهو رابط لطرف
+     * ثالث يُضمَّن في iframe داخل صفحات طلبتنا.
+     *
+     * ⚠️ المعرّف نفسه يُتحقَّق من شكله (11 محرفاً من مجموعة محدّدة): ما
+     * يُخزَّن هنا يُركَّب لاحقاً في عنوان iframe، فقيمة غير مقيّدة تعني
+     * حقن معاملات في ذلك العنوان.
+     */
+    public static function youtubeId(string $url): ?string
+    {
+        $url = trim($url);
+
+        // يقبل الرابط بلا بروتوكول: المعلّم ينسخ من شريط العنوان غالباً.
+        if (! preg_match('#^https?://#i', $url)) {
+            $url = 'https://'.$url;
+        }
+
+        $parts = parse_url($url);
+
+        if (! isset($parts['host'])) {
+            return null;
+        }
+
+        $host = strtolower(preg_replace('/^www\./i', '', $parts['host']));
+        $path = trim($parts['path'] ?? '', '/');
+
+        $candidate = match (true) {
+            // youtu.be/VIDEO_ID
+            $host === 'youtu.be' => $path,
+
+            // youtube.com/watch?v=VIDEO_ID
+            in_array($host, ['youtube.com', 'm.youtube.com', 'music.youtube.com'], true)
+                && $path === 'watch' => self::queryParam($parts['query'] ?? '', 'v'),
+
+            // youtube.com/embed/VIDEO_ID و youtube.com/shorts/VIDEO_ID
+            in_array($host, ['youtube.com', 'm.youtube.com', 'www.youtube-nocookie.com', 'youtube-nocookie.com'], true)
+                && preg_match('#^(embed|shorts|v)/(.+)$#', $path, $m) === 1 => $m[2],
+
+            default => null,
+        };
+
+        if ($candidate === null) {
+            return null;
+        }
+
+        // قد يبقى جزء مسار بعد المعرّف (youtu.be/ID/extra) — يُقتطع.
+        $candidate = explode('/', $candidate)[0];
+
+        return preg_match('/^[A-Za-z0-9_-]{11}$/', $candidate) === 1 ? $candidate : null;
+    }
+
+    /** قراءة معامل واحد من سلسلة استعلام بلا الاعتماد على ترتيبها. */
+    private static function queryParam(string $query, string $key): ?string
+    {
+        parse_str($query, $params);
+
+        return is_string($params[$key] ?? null) ? $params[$key] : null;
+    }
+
+    /**
+     * رابط التضمين النظيف، أو null لغير اليوتيوب.
+     *
+     * ⚠️ يُبنى من المعرّف في كل مرة ولا يُخزَّن: الرابط المخزَّن يتجمّد على
+     * صيغة نطاق قد تتغيّر، والمعرّف لا يتغيّر.
+     */
+    public function getEmbedUrlAttribute(): ?string
+    {
+        return $this->video_source === VideoSource::YouTube && filled($this->video_reference)
+            ? 'https://www.youtube.com/embed/'.$this->video_reference
+            : null;
+    }
+
+    /** رابط المشاهدة العادي — لفتح الفيديو خارج المنصّة. */
+    public function getWatchUrlAttribute(): ?string
+    {
+        return $this->video_source === VideoSource::YouTube && filled($this->video_reference)
+            ? 'https://www.youtube.com/watch?v='.$this->video_reference
+            : null;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | نطاق المعلّم
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * محاضرات المواد المسندة لهذا المعلّم وحدها.
+     *
+     * 🔴 الفلترة على **المادة** لا على lectures.teacher_id: المعلّم يدير
+     * محتوى مادته كلّها، بما فيه ما رفعه زميل سبقه على نفس المادة. والعكس
+     * أخطر — teacher_id وحده كان سيُخفي عنه محاضرات مادته الحالية.
+     */
+    public function scopeForTeacher(Builder $query, Teacher $teacher): Builder
+    {
+        return $query->whereIn('subject_id', $teacher->subjects()->select('subjects.id'));
+    }
+
     public function isReadyToPublish(): bool
     {
         return $this->video_status === VideoStatus::Ready

@@ -1,75 +1,13 @@
 @php
+    // 🔁 The $branches mock is gone: the cards now read from the `branches`
+    // table via HomeController ($branchCards).
     // بيانات عرض — تُستبدل باستعلامات عند بناء نماذج المجال
-    $branches = [
-        ['key' => 'sci', 'icon' => 'beaker', 'subjects' => 8, 'teachers' => 12, 'tone' => 'accent'],
-        ['key' => 'lit', 'icon' => 'book', 'subjects' => 7, 'teachers' => 9, 'tone' => 'tag'],
-        ['key' => 'com', 'icon' => 'briefcase', 'subjects' => 6, 'teachers' => 7, 'tone' => 'amber'],
-        ['key' => 'ind', 'icon' => 'wrench', 'subjects' => 6, 'teachers' => 5, 'tone' => 'warn'],
-    ];
 
-    $features = [
-        ['icon' => 'clipboard', 'key' => 'f1', 'tone' => 'accent'],
-        ['icon' => 'folder', 'key' => 'f2', 'tone' => 'tag'],
-        ['icon' => 'users', 'key' => 'f3', 'tone' => 'amber'],
-        ['icon' => 'compass', 'key' => 'f4', 'tone' => 'warn'],
-    ];
+    // 🔁 The $features mock is gone: the cards now read from the `features`
+    // table via HomeController ($featureCards).
 
-    $teachers = [
-        [
-            'photo' => 'images/teachers/team-1.jpg',
-            'name' => 'أ. سامر خليل',
-            'subject' => 'الرياضيات',
-            'branch' => 'علمي',
-            'lectures' => 42,
-            'students' => 610,
-            'tone' => 'accent',
-        ],
-        [
-            'photo' => 'images/teachers/team-2.jpg',
-            'name' => 'أ. رنا عوض',
-            'subject' => 'الفيزياء',
-            'branch' => 'علمي',
-            'lectures' => 36,
-            'students' => 480,
-            'tone' => 'accent',
-        ],
-        [
-            'photo' => 'images/teachers/team-3.jpg',
-            'name' => 'أ. وليد حمد',
-            'subject' => 'الكيمياء',
-            'branch' => 'علمي',
-            'lectures' => 31,
-            'students' => 395,
-            'tone' => 'accent',
-        ],
-        [
-            'photo' => 'images/teachers/team-4.jpg',
-            'name' => 'أ. مازن سالم',
-            'subject' => 'اللغة العربية',
-            'branch' => 'أدبي',
-            'lectures' => 38,
-            'students' => 520,
-            'tone' => 'tag',
-        ],
-        [
-            'photo' => 'images/teachers/team-5.jpg',
-            'name' => 'أ. لينا فرح',
-            'subject' => 'اللغة الإنجليزية',
-            'branch' => 'أدبي',
-            'lectures' => 34,
-            'students' => 460,
-            'tone' => 'tag',
-        ],
-        [
-            'photo' => 'images/teachers/team-6.jpg',
-            'name' => 'أ. هدى ناصر',
-            'subject' => 'المحاسبة',
-            'branch' => 'تجاري',
-            'lectures' => 29,
-            'students' => 340,
-            'tone' => 'amber',
-        ],
-    ];
+    // 🔁 The $teachers mock is gone: the roster now reads from the
+    // `teachers` table via HomeController ($teacherCards).
 
     $stats = [
         ['n' => 480, 'l' => __('home.stat_lectures'), 'icon' => 'play'],
@@ -186,13 +124,22 @@
                 class="reveal flex flex-col items-center justify-between gap-6 rounded-xl
                         bg-amber px-8 py-10 text-center lg:flex-row lg:px-14 lg:text-start">
 
+                {{-- 🔴 محتوى محرَّر من لوحة الأدمن لا نصّ واجهة: يأتي من
+                     settings عبر HomeController، فخرج من نظام الترجمة.
+                     مفاتيح home.banner_* حُذفت لئلّا تبقى نسخة ثانية
+                     تُقرأ كأنها المصدر. --}}
                 <div>
-                    <h2 class="text-h2 font-bold text-ink">{{ __('home.banner_title') }}</h2>
-                    <p class="mt-2 text-body text-ink/80">{{ __('home.banner_lede') }}</p>
+                    <h2 class="text-h2 font-bold text-ink">{{ $cta['title'] }}</h2>
+
+                    {{-- الفقرة كلّها تسقط عند خلوّ الحقل — لا فقرة فارغة
+                         تترك فجوة تحت العنوان. --}}
+                    @if (filled($cta['sub_title']))
+                        <p class="mt-2 text-body text-ink/80">{{ $cta['sub_title'] }}</p>
+                    @endif
                 </div>
 
-                <x-ui.button variant="on-dark" size="lg" href="#" class="shrink-0">
-                    {{ __('home.banner_cta') }}
+                <x-ui.button variant="on-dark" size="lg" :href="$cta['btn_link']" class="shrink-0">
+                    {{ $cta['btn_text'] }}
                     <x-icon name="arrow" class="size-4 rtl:-scale-x-100" />
                 </x-ui.button>
             </div>
@@ -206,36 +153,50 @@
     <section id="how" class="py-20 lg:py-24">
         <div class="mx-auto max-w-[1280px] px-6">
 
+            {{-- 🔴 محتوى محرَّر من لوحة الأدمن لا نصّ واجهة: الترويسة من
+                 settings والخطوات من جدول steps، كلاهما عبر HomeController.
+                 مفاتيح home.how_* حُذفت لئلّا تبقى نسخة ثانية تُقرأ
+                 كأنها المصدر. --}}
             <div class="reveal">
                 <x-ui.section-head
                     align="center"
-                    :eyebrow="__('home.how_eyebrow')"
-                    :title="__('home.how_title')"
-                    :lede="__('home.how_lede')" />
+                    :eyebrow="$how['badge_text']"
+                    :title="$how['title']"
+                    :lede="filled($how['sub_title']) ? $how['sub_title'] : null" />
             </div>
 
-            <ol class="relative mt-16 grid gap-8 lg:grid-cols-3 lg:gap-6">
+            {{-- القسم كلّه يسقط بلا خطوات: قائمة فارغة تحت ترويسة تعد
+                 بثلاث خطوات أسوأ من غياب القسم. --}}
+            @if ($steps->isNotEmpty())
+                <ol class="relative mt-16 grid gap-8 lg:grid-cols-3 lg:gap-6">
 
-                {{-- الخيط الرابط بين الخطوات — يظهر على الشاشات الواسعة فقط --}}
-                <span
-                    class="absolute inset-x-[16%] top-8 hidden h-px bg-linear-to-l
-                             from-transparent via-hairline-strong to-transparent lg:block"
-                    aria-hidden="true"></span>
+                    {{-- الخيط الرابط بين الخطوات — يظهر على الشاشات الواسعة فقط --}}
+                    <span
+                        class="absolute inset-x-[16%] top-8 hidden h-px bg-linear-to-l
+                                 from-transparent via-hairline-strong to-transparent lg:block"
+                        aria-hidden="true"></span>
 
-                @foreach ([1, 2, 3] as $i)
-                    <li class="reveal relative flex flex-col items-center text-center"
-                        data-delay="{{ $i - 1 }}">
-                        <span
-                            class="num relative z-10 grid size-16 place-items-center rounded-full
-                                     border border-hairline bg-canvas text-h4 font-bold text-accent-deep">
-                            0{{ $i }}
-                        </span>
+                    @foreach ($steps as $step)
+                        <li class="reveal relative flex flex-col items-center text-center"
+                            data-delay="{{ $loop->index }}">
+                            {{-- الرقم من موضع الصفّ لا من display_order:
+                                 ذاك يرتّب وقد يقفز (10 · 20 · 30)، وهذا
+                                 يَعُدّ فيجب أن يكون متّصلاً دائماً. --}}
+                            <span
+                                class="num relative z-10 grid size-16 place-items-center rounded-full
+                                         border border-hairline bg-canvas text-h4 font-bold text-accent-deep">
+                                {{ sprintf('%02d', $loop->iteration) }}
+                            </span>
 
-                        <h3 class="mt-6 text-h4 font-semibold text-ink">{{ __('home.how_' . $i . '_title') }}</h3>
-                        <p class="mt-3 max-w-xs text-body text-steel">{{ __('home.how_' . $i . '_body') }}</p>
-                    </li>
-                @endforeach
-            </ol>
+                            <h3 class="mt-6 text-h4 font-semibold text-ink">{{ $step->title }}</h3>
+
+                            @if (filled($step->sub_title))
+                                <p class="mt-3 max-w-xs text-body text-steel">{{ $step->sub_title }}</p>
+                            @endif
+                        </li>
+                    @endforeach
+                </ol>
+            @endif
         </div>
     </section>
 
@@ -247,34 +208,56 @@
         <div class="mx-auto max-w-[1280px] px-6">
             <div class="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
 
-                {{-- الصورة بقصّتين في زاويتين — نمط .about-img من القالب --}}
-                <div class="reveal relative">
+                {{--
+                    🔴 The two bg-ground "corner cut" spans are gone.
+
+                    They were 195×90 opaque rectangles absolutely positioned
+                    over the photo's corners. Measured against the live page:
+                    container 584×438, source 1200×900 — both exactly 4:3,
+                    with object-fit: cover, so the image itself was never
+                    cropped or distorted. The whole defect was two blocks of
+                    page background painted on top of the photograph, which
+                    reads as a rendering fault rather than a design flourish.
+
+                    w-full is explicit so the slot fills its grid column at
+                    every breakpoint instead of relying on the default
+                    stretch; the aspect ratio then fixes the height and
+                    object-cover fills it with no letterboxing.
+                --}}
+                <div class="reveal">
+                    {{-- Image path comes from settings (about.img) and is
+                         root-relative, matching the `custom` upload disk. --}}
                     <x-ui.media-slot
-                        class="rounded-xl"
-                        :src="asset('images/about/classroom.jpg')"
+                        class="w-full rounded-xl"
+                        :src="asset(ltrim($about['img'], '/'))"
                         :alt="__('home.about_image_alt')"
                         tone="accent"
                         ratio="4/3" />
-
-                    <span class="pointer-events-none absolute start-0 top-0 h-[90px] w-1/3 bg-ground"
-                        aria-hidden="true"></span>
-                    <span class="pointer-events-none absolute bottom-0 end-0 h-[90px] w-1/3 bg-ground"
-                        aria-hidden="true"></span>
                 </div>
 
                 {{-- النص --}}
                 <div class="reveal" data-delay="1">
-                    <x-ui.rule-label>{{ __('home.about_eyebrow') }}</x-ui.rule-label>
+                    {{-- Admin-edited content, not interface copy: read from
+                         `settings` via HomeController. The home.about_*
+                         language keys were removed so no second copy reads
+                         as if it were the source. --}}
+                    <x-ui.rule-label>{{ $about['badge_text'] }}</x-ui.rule-label>
 
-                    <h2 class="mt-5 text-h1 font-bold text-ink">{{ __('home.about_title') }}</h2>
-                    <p class="mt-5 text-body text-steel">{{ __('home.about_body') }}</p>
+                    <h2 class="mt-5 text-h1 font-bold text-ink">{{ $about['title1'] }}</h2>
+
+                    @if (filled($about['content1']))
+                        <p class="mt-5 text-body text-steel">{{ $about['content1'] }}</p>
+                    @endif
 
                     <div class="mt-8 grid gap-5 sm:grid-cols-2">
 
                         {{-- رسالتنا + بنود --}}
                         <div>
-                            <h3 class="text-h4 font-semibold text-ink">{{ __('home.about_mission_title') }}</h3>
-                            <p class="mt-2.5 text-ui text-steel">{{ __('home.about_mission_body') }}</p>
+                            <h3 class="text-h4 font-semibold text-ink">{{ $about['title2'] }}</h3>
+
+                            @if (filled($about['content2']))
+                                <p class="mt-2.5 text-ui text-steel">{{ $about['content2'] }}</p>
+                            @endif
 
                             <ul class="mt-4 flex flex-col gap-2.5">
                                 @foreach (['about_check_1', 'about_check_2', 'about_check_3'] as $check)
@@ -290,10 +273,10 @@
                         <div
                             class="flex flex-col items-center justify-center gap-5 rounded-xl
                                     bg-linear-to-bl from-deep-from to-deep-to p-7 text-center">
-                            <p class="text-ui text-on-dark/85">{{ __('home.about_cta_body') }}</p>
+                            <p class="text-ui text-on-dark/85">{{ $about['title_box'] }}</p>
 
-                            <x-ui.button variant="accent" size="md" href="#">
-                                {{ __('home.about_cta_btn') }}
+                            <x-ui.button variant="accent" size="md" :href="$about['btn_link']">
+                                {{ $about['btn_text'] }}
                             </x-ui.button>
                         </div>
                     </div>
@@ -312,10 +295,15 @@
 
                 {{-- النص — يبدأ من جهة البداية --}}
                 <div class="reveal order-1">
-                    <x-ui.rule-label>{{ __('home.stats_eyebrow') }}</x-ui.rule-label>
+                    {{-- Admin-edited content — see Setting::WHY_US_DEFAULTS.
+                         The counter cards on the other side stay static. --}}
+                    <x-ui.rule-label>{{ $whyUs['badge_text'] }}</x-ui.rule-label>
 
-                    <h2 class="mt-5 text-h1 font-bold text-ink">{{ __('home.stats_title') }}</h2>
-                    <p class="mt-5 text-body text-steel">{{ __('home.stats_lede') }}</p>
+                    <h2 class="mt-5 text-h1 font-bold text-ink">{{ $whyUs['title'] }}</h2>
+
+                    @if (filled($whyUs['description']))
+                        <p class="mt-5 text-body text-steel">{{ $whyUs['description'] }}</p>
+                    @endif
 
                     <ul class="mt-7 flex flex-col gap-3.5">
                         @foreach (['stats_check_1', 'stats_check_2', 'stats_check_3'] as $check)
@@ -328,9 +316,14 @@
 
                     <div class="mt-9 flex flex-wrap gap-3">
                         <x-ui.button variant="primary" size="lg"
-                            href="#">{{ __('home.stats_cta') }}</x-ui.button>
-                        <x-ui.button variant="secondary" size="lg"
-                            href="#branches">{{ __('home.stats_cta_alt') }}</x-ui.button>
+                            :href="$whyUs['btn1_link']">{{ $whyUs['btn1_text'] }}</x-ui.button>
+
+                        {{-- Secondary button drops entirely when its text is
+                             cleared — a button with no label is not a button. --}}
+                        @if (filled($whyUs['btn2_text']))
+                            <x-ui.button variant="secondary" size="lg"
+                                :href="$whyUs['btn2_link'] ?: '#'">{{ $whyUs['btn2_text'] }}</x-ui.button>
+                        @endif
                     </div>
                 </div>
 
@@ -371,26 +364,32 @@
         <div class="mx-auto max-w-[1280px] px-6">
 
             <div class="reveal">
+                {{-- Header from `settings`, cards from the `branches` table. --}}
                 <x-ui.section-head
-                    :eyebrow="__('home.branches_eyebrow')"
-                    :title="__('home.branches_title')"
-                    :lede="__('home.branches_lede')" />
+                    :eyebrow="$branchesHeader['badge_text']"
+                    :title="$branchesHeader['title']"
+                    :lede="filled($branchesHeader['sub_title']) ? $branchesHeader['sub_title'] : null" />
             </div>
 
-            <div class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                @foreach ($branches as $i => $branch)
-                    <div class="reveal" data-delay="{{ $i }}">
-                        <x-domain.branch-card
-                            :name="__('home.branch_' . $branch['key'] . '_name')"
-                            :summary="__('home.branch_' . $branch['key'] . '_summary')"
-                            :subjects="$branch['subjects']"
-                            :teachers="$branch['teachers']"
-                            :icon="$branch['icon']"
-                            :tone="$branch['tone']"
-                            href="#" />
-                    </div>
-                @endforeach
-            </div>
+            @if ($branchCards->isNotEmpty())
+                <div class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                    @foreach ($branchCards as $branch)
+                        <div class="reveal" data-delay="{{ $loop->index }}">
+                            {{-- icon and accent_token hold names that must
+                                 exist in x-icon / the card's tone map: an
+                                 unknown value renders blank, silently. --}}
+                            <x-domain.branch-card
+                                :name="$branch->name"
+                                :summary="$branch->description"
+                                :subjects="$branch->subjects_count"
+                                :teachers="$branch->teachers_count"
+                                :icon="$branch->icon ?? 'beaker'"
+                                :tone="$branch->accent_token ?? 'accent'"
+                                :href="route('branches.show', $branch->slug)" />
+                        </div>
+                    @endforeach
+                </div>
+            @endif
         </div>
     </section>
 
@@ -404,10 +403,14 @@
                 <div class="grid items-center gap-10 p-8 lg:grid-cols-2 lg:gap-16 lg:p-14">
 
                     <div>
-                        <x-ui.rule-label on="dark">{{ __('home.demo_eyebrow') }}</x-ui.rule-label>
+                        {{-- Admin-edited content — see Setting::VIDEO_TOUR_DEFAULTS. --}}
+                        <x-ui.rule-label on="dark">{{ $videoTour['badge_text'] }}</x-ui.rule-label>
 
-                        <h2 class="mt-5 text-h1 font-bold text-on-dark">{{ __('home.demo_title') }}</h2>
-                        <p class="mt-5 max-w-lg text-body text-on-dark/70">{{ __('home.demo_lede') }}</p>
+                        <h2 class="mt-5 text-h1 font-bold text-on-dark">{{ $videoTour['title'] }}</h2>
+
+                        @if (filled($videoTour['sub_title']))
+                            <p class="mt-5 max-w-lg text-body text-on-dark/70">{{ $videoTour['sub_title'] }}</p>
+                        @endif
                     </div>
 
                     {{-- لوح التشغيل --}}
@@ -433,7 +436,7 @@
     {{-- مودال الفيديو --}}
     <div id="demo-video" data-modal hidden
         class="fixed inset-0 z-[60] grid place-items-center bg-primary/80 p-6"
-        role="dialog" aria-modal="true" aria-label="{{ __('home.demo_title') }}">
+        role="dialog" aria-modal="true" aria-label="{{ $videoTour['title'] }}">
 
         <div class="w-full max-w-4xl">
             <div class="flex justify-end pb-3">
@@ -448,11 +451,21 @@
                 </button>
             </div>
 
-            {{-- المشغّل LTR إجبارياً · المحتوى بانتظار قرار مزوّد الفيديو --}}
+            {{-- Player is force-LTR: the timeline runs left-to-right in every
+                 locale, and mirroring it confuses every user.
+
+                 ⏳ A self-hosted <video> until decision M-5 (video provider)
+                 is settled; a provider embed replaces this block, not the
+                 setting key. --}}
             <div dir="ltr"
-                class="grid aspect-video place-items-center rounded-xl bg-canvas-dark
+                class="grid aspect-video place-items-center overflow-hidden rounded-xl bg-canvas-dark
                                   ring-1 ring-on-dark/10">
-                <p class="text-caption text-on-dark/50">{{ __('home.demo_pending') }}</p>
+                @if (filled($videoTour['video_path']))
+                    <video class="size-full" controls preload="none"
+                           src="{{ asset(ltrim($videoTour['video_path'], '/')) }}"></video>
+                @else
+                    <p class="text-caption text-on-dark/50">{{ __('home.demo_pending') }}</p>
+                @endif
             </div>
         </div>
     </div>
@@ -464,44 +477,58 @@
     <section id="features" class="py-20 lg:py-24">
         <div class="mx-auto max-w-[1280px] px-6">
 
+            {{-- 🔴 Admin-edited content, not interface copy: the header comes
+                 from `settings` and the cards from the `features` table, both
+                 via HomeController. The home.features_* and home.f*_ language
+                 keys were removed so no second copy reads as the source. --}}
             <div class="reveal">
                 <x-ui.section-head
-                    :eyebrow="__('home.features_eyebrow')"
-                    :title="__('home.features_title')" />
+                    :eyebrow="$featuresHeader['badge_text']"
+                    :title="$featuresHeader['title']" />
             </div>
 
-            <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                @foreach ($features as $i => $feature)
-                    <article class="reveal tile group p-6" data-delay="{{ $i % 4 }}">
-                        <span @class([
-                            'tile__icon',
-                            'bg-accent/14 text-accent-deep group-hover:bg-accent group-hover:text-on-primary' =>
-                                $feature['tone'] === 'accent',
-                            'bg-tag/12 text-tag group-hover:bg-tag group-hover:text-on-dark' =>
-                                $feature['tone'] === 'tag',
-                            'bg-amber/12 text-amber-deep group-hover:bg-amber group-hover:text-ink' =>
-                                $feature['tone'] === 'amber',
-                            'bg-warn/14 text-warn-deep group-hover:bg-warn group-hover:text-on-dark' =>
-                                $feature['tone'] === 'warn',
-                        ])>
-                            <x-icon :name="$feature['icon']" class="size-6" />
-                        </span>
+            @if ($featureCards->isNotEmpty())
+                <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                    @foreach ($featureCards as $feature)
+                        <article class="reveal tile group p-6" data-delay="{{ $loop->index % 4 }}">
+                            {{-- Every class is written out in full. Tailwind's
+                                 scanner does not run PHP, so a class built by
+                                 string concatenation generates no CSS at all —
+                                 a trap this file has already fallen into. --}}
+                            <span @class([
+                                'tile__icon',
+                                'bg-accent/14 text-accent-deep group-hover:bg-accent group-hover:text-on-primary' =>
+                                    $feature->accent_token === 'accent',
+                                'bg-tag/12 text-tag group-hover:bg-tag group-hover:text-on-dark' =>
+                                    $feature->accent_token === 'tag',
+                                'bg-amber/12 text-amber-deep group-hover:bg-amber group-hover:text-ink' =>
+                                    $feature->accent_token === 'amber',
+                                'bg-warn/14 text-warn-deep group-hover:bg-warn group-hover:text-on-dark' =>
+                                    $feature->accent_token === 'warn',
+                            ])>
+                                <x-icon :name="$feature->icon ?? 'sparkle'" class="size-6" />
+                            </span>
 
-                        <h3 class="mt-5 text-h5 font-semibold text-ink">
-                            {{ __('home.' . $feature['key'] . '_title') }}
-                        </h3>
+                            <h3 class="mt-5 text-h5 font-semibold text-ink">{{ $feature->title }}</h3>
 
-                        <p class="mt-2.5 text-ui text-steel">
-                            {{ __('home.' . $feature['key'] . '_body') }}
-                        </p>
+                            @if (filled($feature->description))
+                                <p class="mt-2.5 text-ui text-steel">{{ $feature->description }}</p>
+                            @endif
 
-                        <a href="#" class="tile__link mt-4 text-caption font-semibold text-ink">
-                            {{ __('home.read_more') }}
-                            <x-icon name="arrow" class="size-3.5 rtl:-scale-x-100" />
-                        </a>
-                    </article>
-                @endforeach
-            </div>
+                            {{-- The link drops entirely unless BOTH text and
+                                 destination are set: text with no href is a
+                                 dead link, href with no text is invisible. --}}
+                            @if ($feature->hasAction())
+                                <a href="{{ $feature->btn_link }}"
+                                   class="tile__link mt-4 text-caption font-semibold text-ink">
+                                    {{ $feature->btn_text }}
+                                    <x-icon name="arrow" class="size-3.5 rtl:-scale-x-100" />
+                                </a>
+                            @endif
+                        </article>
+                    @endforeach
+                </div>
+            @endif
         </div>
     </section>
 
@@ -512,71 +539,63 @@
     <section id="pricing" class="py-20 lg:py-24">
         <div class="mx-auto max-w-[1280px] px-6">
 
+            {{-- 🔴 Admin-edited content, not interface copy: the header comes
+                 from `settings` and the tiers from `pricing_plans`, both via
+                 HomeController. The home.pricing_* and home.plan_* language
+                 keys were removed so no second copy reads as the source. --}}
             <div class="reveal">
                 <x-ui.section-head
                     align="center"
-                    :eyebrow="__('home.pricing_eyebrow')"
-                    :title="__('home.pricing_title')"
-                    :lede="__('home.pricing_lede')" />
+                    :eyebrow="$pricingHeader['badge_text']"
+                    :title="$pricingHeader['title']"
+                    :lede="filled($pricingHeader['sub_title']) ? $pricingHeader['sub_title'] : null" />
             </div>
 
-            <div class="mt-14 grid items-stretch gap-6 lg:grid-cols-3">
-                <div class="reveal">
-                    <x-domain.plan-card
-                        :name="__('home.plan_free_name')"
-                        :summary="__('home.plan_free_summary')"
-                        price="0"
-                        :period="__('home.plan_free_period')"
-                        :cta="__('home.plan_free_cta')"
-                        :features="[__('home.plan_free_f1'), __('home.plan_free_f2'), __('home.plan_free_f3')]" />
+            @if ($pricingPlans->isNotEmpty())
+                {{-- The column count follows the data: three tiers is today's
+                     design, but a fourth plan must not spill into a second row
+                     of one. --}}
+                <div @class([
+                    'mt-14 grid items-stretch gap-6',
+                    'lg:grid-cols-2' => $pricingPlans->count() === 2,
+                    'lg:grid-cols-3' => $pricingPlans->count() !== 2,
+                ])>
+                    @foreach ($pricingPlans as $plan)
+                        <div class="reveal" data-delay="{{ $loop->index }}">
+                            <x-domain.plan-card
+                                :name="$plan->name"
+                                :summary="$plan->badge"
+                                :price="$plan->price"
+                                :period="$plan->period"
+                                :features="$plan->featureList()"
+                                :cta="$plan->btn_text"
+                                :href="$plan->btn_link ?: '#'"
+                                :featured="$plan->isHighlighted()"
+                                :badge="$plan->highlight_badge" />
+                        </div>
+                    @endforeach
                 </div>
-
-                <div class="reveal" data-delay="1">
-                    <x-domain.plan-card
-                        featured
-                        :name="__('home.plan_term_name')"
-                        :summary="__('home.plan_term_summary')"
-                        price="120"
-                        :period="__('home.plan_term_period')"
-                        :cta="__('home.plan_term_cta')"
-                        :features="[
-                            __('home.plan_term_f1'),
-                            __('home.plan_term_f2'),
-                            __('home.plan_term_f3'),
-                            __('home.plan_term_f4'),
-                        ]" />
-                </div>
-
-                <div class="reveal" data-delay="2">
-                    <x-domain.plan-card
-                        :name="__('home.plan_year_name')"
-                        :summary="__('home.plan_year_summary')"
-                        price="200"
-                        :period="__('home.plan_year_period')"
-                        :cta="__('home.plan_year_cta')"
-                        :features="[
-                            __('home.plan_year_f1'),
-                            __('home.plan_year_f2'),
-                            __('home.plan_year_f3'),
-                            __('home.plan_year_f4'),
-                        ]" />
-                </div>
-            </div>
+            @endif
 
             {{--
                 Link through to the full pricing screen (7), which carries the
-                per-subject calculator and the comparison table. The homepage keeps
-                a three-tier teaser; the real two-model choice from decision M-1
-                lives on /pricing.
-            --}}
-            <div class="reveal mt-8 flex flex-col items-center gap-3">
-                <x-ui.button variant="secondary" size="md" :href="route('pricing')">
-                    {{ __('home.pricing_all_plans') }}
-                    <x-icon name="arrow" class="size-4 rtl:-scale-x-100" />
-                </x-ui.button>
+                per-subject calculator and the comparison table. The homepage
+                keeps a tier teaser; the real two-model choice from decision
+                M-1 lives on /pricing.
 
-                <p class="text-center text-caption text-stone">{{ __('home.pricing_note') }}</p>
-            </div>
+                🔴 The "prices are in shekels and include all fees…" line that
+                used to sit here is REMOVED, not relocated: it is a claim about
+                billing terms that nothing in the system enforces, and the
+                subscription layer that would make it true is unbuilt.
+            --}}
+            @if (filled($pricingHeader['btn_text']) && filled($pricingHeader['btn_link']))
+                <div class="reveal mt-8 flex justify-center">
+                    <x-ui.button variant="secondary" size="md" :href="$pricingHeader['btn_link']">
+                        {{ $pricingHeader['btn_text'] }}
+                        <x-icon name="arrow" class="size-4 rtl:-scale-x-100" />
+                    </x-ui.button>
+                </div>
+            @endif
         </div>
     </section>
 
@@ -589,32 +608,56 @@
     <section id="teachers" class="py-20 lg:py-24">
         <div class="mx-auto max-w-[1280px] px-6">
 
+            {{-- 🔴 Header from `settings`; cards built from the database via
+                 HomeController. Nothing on a card is typed copy: the portrait
+                 comes from the polymorphic media relation, the branch through
+                 the teacher's subjects, and the lecture count is counted. The
+                 home.teachers_* language keys were removed so no second copy
+                 reads as the source. --}}
             <div class="reveal flex flex-wrap items-end justify-between gap-6">
                 <x-ui.section-head
-                    :eyebrow="__('home.teachers_eyebrow')"
-                    :title="__('home.teachers_title')"
-                    :lede="__('home.teachers_lede')" />
+                    :eyebrow="$teachersHeader['badge_text']"
+                    :title="$teachersHeader['title']"
+                    :lede="filled($teachersHeader['sub_title']) ? $teachersHeader['sub_title'] : null" />
 
-                <x-ui.button variant="secondary" size="md" href="#" class="shrink-0">
-                    {{ __('home.teachers_all') }}
-                    <x-icon name="arrow" class="size-4 rtl:-scale-x-100" />
-                </x-ui.button>
+                @if (filled($teachersHeader['btn_text']) && filled($teachersHeader['btn_link']))
+                    <x-ui.button variant="secondary" size="md"
+                                 :href="$teachersHeader['btn_link']" class="shrink-0">
+                        {{ $teachersHeader['btn_text'] }}
+                        <x-icon name="arrow" class="size-4 rtl:-scale-x-100" />
+                    </x-ui.button>
+                @endif
             </div>
 
-            <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                @foreach ($teachers as $i => $teacher)
-                    <div class="reveal" data-delay="{{ $i }}">
-                        <x-domain.teacher-card
-                            :photo="asset($teacher['photo'])"
-                            :name="$teacher['name']"
-                            :subject="$teacher['subject']"
-                            :branch="$teacher['branch']"
-                            :lectures="$teacher['lectures']"
-                            :students="$teacher['students']"
-                            :tone="$teacher['tone']" />
-                    </div>
-                @endforeach
-            </div>
+            @if ($teacherCards->isNotEmpty())
+                <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                    @foreach ($teacherCards as $teacher)
+                        @php
+                            $branch = $teacher->primaryBranch();
+
+                            /*
+                             * The card tone follows the branch's own colour
+                             * token, so a teacher always reads in their
+                             * branch's colour. Every class the card can apply
+                             * is written out literally in its tone map —
+                             * Tailwind's scanner does not run PHP.
+                             */
+                            $tone = $branch?->accent_token ?: 'accent';
+                        @endphp
+
+                        <div class="reveal" data-delay="{{ $loop->index % 4 }}">
+                            <x-domain.teacher-card
+                                :photo="$teacher->avatarUrl()"
+                                :initials="$teacher->initials()"
+                                :name="$teacher->full_name"
+                                :subject="$teacher->displayTitle()"
+                                :branch="$branch?->name ?? ''"
+                                :lectures="$teacher->lectures_count"
+                                :tone="$tone" />
+                        </div>
+                    @endforeach
+                </div>
+            @endif
         </div>
     </section>
 
@@ -630,9 +673,57 @@
                 <div
                     class="reveal flex flex-col justify-center rounded-xl
                             bg-linear-to-bl from-deep-from to-deep-to p-8 lg:p-10">
-                    <x-ui.rule-label on="dark">{{ __('home.voices_eyebrow') }}</x-ui.rule-label>
-                    <h2 class="mt-5 text-h2 font-bold text-on-dark">{{ __('home.voices_title') }}</h2>
-                    <p class="mt-4 text-body text-on-dark/70">{{ __('home.voices_lede') }}</p>
+                    {{-- 🔴 Admin-edited content: header from `settings`, the
+                         reviews from `testimonials`, and each reviewer's name,
+                         branch and city read live from their linked student
+                         account. The home.voices_* and home.voice_* language
+                         keys were removed so no second copy reads as source. --}}
+                    <x-ui.rule-label on="dark">{{ $testimonialsHeader['badge_text'] }}</x-ui.rule-label>
+                    <h2 class="mt-5 text-h2 font-bold text-on-dark">{{ $testimonialsHeader['title'] }}</h2>
+                    @if (filled($testimonialsHeader['sub_title']))
+                        <p class="mt-4 text-body text-on-dark/70">{{ $testimonialsHeader['sub_title'] }}</p>
+                    @endif
+
+                    {{-- 🔴 Empty btn_text hides the button — that is the off
+                         switch. A filled btn_link turns it into a plain link
+                         to that destination; empty (the normal case) opens
+                         the submission modal in place. --}}
+                    @if (filled($testimonialsHeader['btn_text']))
+                        @if (filled($testimonialsHeader['btn_link']))
+                            <x-ui.button variant="accent" size="md"
+                                         :href="$testimonialsHeader['btn_link']"
+                                         class="mt-7 self-start">
+                                {{ $testimonialsHeader['btn_text'] }}
+                            </x-ui.button>
+                        @else
+                            {{-- Dispatches on the window rather than reaching
+                                 into the modal's scope: the trigger and the
+                                 dialog stay independent of each other.
+
+                                 🔴 x-data="{}" is REQUIRED, not decoration.
+                                 Alpine only binds directives inside a
+                                 component, so without a scope of its own this
+                                 button's x-on:click is never wired — and the
+                                 failure is silent: the markup looks correct,
+                                 the button renders, and clicking it does
+                                 nothing at all. --}}
+                            <x-ui.button variant="accent" size="md" type="button"
+                                         data-testimonial-open
+                                         x-data="{}"
+                                         x-on:click="$dispatch('open-testimonial-modal')"
+                                         class="mt-7 self-start">
+                                {{ $testimonialsHeader['btn_text'] }}
+                            </x-ui.button>
+                        @endif
+                    @endif
+
+                    {{-- Server-rendered confirmation for the no-JS path: the
+                         plain POST redirects back here with this flash. --}}
+                    @if (session('testimonial.submitted'))
+                        <p class="mt-5 rounded-xl bg-on-dark/10 px-4 py-3 text-caption text-on-dark">
+                            {{ session('testimonial.submitted') }}
+                        </p>
+                    @endif
                 </div>
 
                 {{-- الكاروسيل --}}
@@ -641,12 +732,12 @@
                     <div data-slider data-interval="7500" class="relative overflow-hidden">
 
                         <div class="slider">
-                            @foreach ([1, 2, 3] as $i)
+                            @foreach ($testimonials as $testimonial)
                                 <div data-slide
-                                    class="slider__slide {{ $i === 1 ? 'is-active' : '' }}"
+                                    class="slider__slide {{ $loop->first ? 'is-active' : '' }}"
                                     role="group" aria-roledescription="slide"
-                                    aria-label="{{ $i }} / 3"
-                                    @if ($i !== 1) aria-hidden="true" @endif>
+                                    aria-label="{{ $loop->iteration }} / {{ $testimonials->count() }}"
+                                    @if (! $loop->first) aria-hidden="true" @endif>
 
                                     <div class="grid items-center gap-8 md:grid-cols-2 md:gap-10">
 
@@ -655,20 +746,34 @@
                                             <span
                                                 class="absolute inset-s-0 top-0 h-full w-[calc(50%+2.5rem)] rounded-lg bg-accent/18"
                                                 aria-hidden="true"></span>
+                                            {{-- Attached portrait first, then the
+                                                 student's own avatar; media-slot
+                                                 draws its placeholder for null. --}}
                                             <x-ui.media-slot
                                                 class="relative rounded-lg"
-                                                :src="asset('images/voices/student-' . $i . '.jpg')"
-                                                :alt="__('home.voice_' . $i . '_name')"
+                                                :src="$testimonial->photoUrl()"
+                                                :alt="$testimonial->displayName()"
                                                 tone="accent"
                                                 ratio="1/1" />
                                         </div>
 
                                         {{-- النص --}}
                                         <div class="ps-12 md:ps-0">
-                                            <div class="flex gap-1" aria-label="{{ __('home.rating_full') }}">
-                                                @for ($s = 0; $s < 5; $s++)
-                                                    <svg class="size-4 text-accent" viewBox="0 0 24 24"
-                                                        fill="currentColor" aria-hidden="true">
+                                            {{-- 🔴 stars() clamps to 1..5. The column
+                                                 is an unsigned tiny int that accepts
+                                                 255, and the database has no idea
+                                                 seven stars do not exist. --}}
+                                            @php $stars = $testimonial->stars(); @endphp
+
+                                            <div class="flex gap-1"
+                                                 aria-label="{{ $stars }} / {{ \App\Models\Testimonial::MAX_RATE }}">
+                                                @for ($s = 1; $s <= \App\Models\Testimonial::MAX_RATE; $s++)
+                                                    <svg @class([
+                                                            'size-4',
+                                                            'text-accent' => $s <= $stars,
+                                                            'text-hairline-strong' => $s > $stars,
+                                                        ])
+                                                        viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                                         <path
                                                             d="m12 2 3 6.5 7 .9-5 4.9 1.2 7L12 18l-6.2 3.3L7 14.3l-5-4.9 7-.9z" />
                                                     </svg>
@@ -676,7 +781,7 @@
                                             </div>
 
                                             <blockquote class="mt-4 text-lead text-slate">
-                                                {{ __('home.voice_' . $i . '_quote') }}
+                                                {{ $testimonial->description }}
                                             </blockquote>
 
                                             <div class="mt-6 flex items-center gap-4">
@@ -689,10 +794,14 @@
                                                     </svg>
                                                 </span>
                                                 <span>
+                                                    {{-- Live from the linked student, or the
+                                                         stored snapshot once that account is
+                                                         gone. --}}
                                                     <span
-                                                        class="block text-h5 font-semibold text-ink">{{ __('home.voice_' . $i . '_name') }}</span>
-                                                    <span
-                                                        class="block text-caption text-stone">{{ __('home.voice_' . $i . '_meta') }}</span>
+                                                        class="block text-h5 font-semibold text-ink">{{ $testimonial->displayName() }}</span>
+                                                    @if (filled($meta = $testimonial->displayMeta()))
+                                                        <span class="block text-caption text-stone">{{ $meta }}</span>
+                                                    @endif
                                                 </span>
                                             </div>
                                         </div>
@@ -721,6 +830,17 @@
     </section>
 
 
+    {{--
+        Review submission modal — mounted once, outside the section.
+
+        🔴 The student check is server-side: the form only renders for an
+        account that resolves to a `students` row. A teacher or admin is
+        authenticated but has no such row, and the route refuses them too —
+        this just means they are not shown a form that would be rejected.
+    --}}
+    <x-domain.testimonial-modal :is-student="auth()->check() && auth()->user()->userable instanceof \App\Models\Student" />
+
+
     {{-- ═══════════════════════════════════════════════════════
          · الأسئلة الشائعة
          ═══════════════════════════════════════════════════════ --}}
@@ -728,54 +848,56 @@
         <div class="mx-auto max-w-[1280px] px-6">
             <div class="grid gap-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-20">
 
+                {{-- 🔴 Admin-edited content: header from `settings`, questions
+                     from the `faqs` table, both via HomeController. The
+                     home.faq_* language keys were removed so no second copy
+                     reads as the source. --}}
                 <div class="reveal lg:sticky lg:top-28 lg:self-start">
-                    <x-ui.rule-label>{{ __('home.faq_eyebrow') }}</x-ui.rule-label>
+                    <x-ui.rule-label>{{ $faqHeader['badge_text'] }}</x-ui.rule-label>
 
-                    <h2 class="mt-5 text-h1 font-bold text-ink">{{ __('home.faq_title') }}</h2>
-                    <p class="mt-5 text-body text-steel">{{ __('home.faq_lede') }}</p>
+                    <h2 class="mt-5 text-h1 font-bold text-ink">{{ $faqHeader['title'] }}</h2>
 
-                    <x-ui.button variant="secondary" size="md" href="#" class="mt-7">
-                        {{ __('home.faq_contact') }}
-                        <x-icon name="arrow" class="size-4 rtl:-scale-x-100" />
-                    </x-ui.button>
+                    @if (filled($faqHeader['sub_title']))
+                        <p class="mt-5 text-body text-steel">{{ $faqHeader['sub_title'] }}</p>
+                    @endif
+
+                    @if (filled($faqHeader['btn_text']) && filled($faqHeader['btn_link']))
+                        <x-ui.button variant="secondary" size="md"
+                                     :href="$faqHeader['btn_link']" class="mt-7">
+                            {{ $faqHeader['btn_text'] }}
+                            <x-icon name="arrow" class="size-4 rtl:-scale-x-100" />
+                        </x-ui.button>
+                    @endif
                 </div>
 
-                <div class="flex flex-col gap-3">
-                    @foreach ([1, 2, 3, 4, 5, 6] as $i)
-                        <div class="reveal" data-delay="{{ min($i - 1, 3) }}">
-                            <x-ui.accordion-item group="faq" :question="__('home.faq_' . $i . '_q')" :open="$i === 1">
-                                {{ __('home.faq_' . $i . '_a') }}
-                            </x-ui.accordion-item>
-                        </div>
-                    @endforeach
-                </div>
+                @if ($faqs->isNotEmpty())
+                    <div class="flex flex-col gap-3">
+                        @foreach ($faqs as $faq)
+                            {{-- The stagger caps at 3: past that the last card
+                                 waits noticeably long for no benefit. --}}
+                            <div class="reveal" data-delay="{{ min($loop->index, 3) }}">
+                                {{-- First one open, so the section shows what an
+                                     answer looks like rather than a stack of
+                                     closed bars. --}}
+                                <x-ui.accordion-item group="faq"
+                                                     :question="$faq->question"
+                                                     :open="$loop->first">
+                                    {{ $faq->answer }}
+                                </x-ui.accordion-item>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
             </div>
         </div>
     </section>
 
 
     {{-- ═══════════════════════════════════════════════════════
-         ٩ · CTA — النطاق الداكن الوحيد، يبقى كما هو
+         ٩ · CTA الختامي — المكوّن المشترك نفسه المستخدم في صفحات
+         الفروع. كان مكرّراً هنا وفي صفحتَي الفروع بثلاث نسخ من
+         نفس الكتلة؛ نسخة واحدة تقرأ نفس الإعدادات.
          ═══════════════════════════════════════════════════════ --}}
-    <section class="pb-20 lg:pb-24">
-        <div class="mx-auto max-w-[1280px] px-6">
-            <div
-                class="hero-canvas reveal overflow-hidden rounded-xl
-                        px-8 py-16 text-center lg:px-16 lg:py-20">
-
-                <h2 class="text-h1 font-bold text-ink">{{ __('home.cta_title') }}</h2>
-                <p class="mx-auto mt-4 max-w-xl text-lead text-steel">{{ __('home.cta_lede') }}</p>
-
-                <div class="mt-9 flex justify-center">
-                    <x-ui.button variant="primary" size="lg" href="#">
-                        {{ __('home.cta_btn') }}
-                        <x-icon name="arrow" class="size-4 rtl:-scale-x-100" />
-                    </x-ui.button>
-                </div>
-
-                <p class="mt-5 text-caption text-stone">{{ __('home.cta_note') }}</p>
-            </div>
-        </div>
-    </section>
+    <x-site.cta-final />
 
 </x-layouts.public>

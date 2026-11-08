@@ -82,14 +82,32 @@
 
                 <span class="hidden h-6 w-px bg-hairline xl:block" aria-hidden="true"></span>
 
-                <a href="{{ Route::has('auth.login') ? route('auth.login') : '#' }}"
-                   class="hidden px-1 text-ui text-steel transition hover:text-ink sm:inline-flex">
-                    {{ __('nav.login') }}
-                </a>
+                {{--
+                    🔴 Signed in and signed out are mutually exclusive here,
+                    not layered: an authenticated visitor sees ONE control, not
+                    a dashboard link beside an invitation to log in again.
 
-                <x-ui.button :href="Route::has('auth.register') ? route('auth.register') : '#'" size="sm" class="hidden sm:inline-flex">
-                    {{ __('nav.register') }}
-                </x-ui.button>
+                    The destination comes from User::homeRoute(), which is the
+                    same method the three login paths redirect through — so
+                    this link and the post-login redirect can never disagree
+                    about where a role belongs.
+                --}}
+                @auth
+                    <x-ui.button :href="auth()->user()->homeRoute()" size="sm" class="hidden sm:inline-flex">
+                        {{ __('nav.dashboard') }}
+                    </x-ui.button>
+                @endauth
+
+                @guest
+                    <a href="{{ Route::has('auth.login') ? route('auth.login') : '#' }}"
+                       class="hidden px-1 text-ui text-steel transition hover:text-ink sm:inline-flex">
+                        {{ __('nav.login') }}
+                    </a>
+
+                    <x-ui.button :href="Route::has('auth.register') ? route('auth.register') : '#'" size="sm" class="hidden sm:inline-flex">
+                        {{ __('nav.register') }}
+                    </x-ui.button>
+                @endguest
 
                 <button type="button"
                         data-nav-toggle
@@ -121,12 +139,23 @@
             </ul>
 
             <div class="mt-4 flex flex-col gap-2 border-t border-hairline-soft pt-4">
-                <x-ui.button :href="Route::has('auth.login') ? route('auth.login') : '#'" variant="secondary" size="md">
-                    {{ __('nav.login') }}
-                </x-ui.button>
-                <x-ui.button :href="Route::has('auth.register') ? route('auth.register') : '#'" size="md">
-                    {{ __('nav.register') }}
-                </x-ui.button>
+                {{-- ⚠️ The drawer is a second copy of these controls, so it
+                     needs the same guard. Missing it here would hide the
+                     buttons on desktop and leave them on mobile. --}}
+                @auth
+                    <x-ui.button :href="auth()->user()->homeRoute()" size="md">
+                        {{ __('nav.dashboard') }}
+                    </x-ui.button>
+                @endauth
+
+                @guest
+                    <x-ui.button :href="Route::has('auth.login') ? route('auth.login') : '#'" variant="secondary" size="md">
+                        {{ __('nav.login') }}
+                    </x-ui.button>
+                    <x-ui.button :href="Route::has('auth.register') ? route('auth.register') : '#'" size="md">
+                        {{ __('nav.register') }}
+                    </x-ui.button>
+                @endguest
             </div>
 
             <div class="mt-5 flex items-center gap-2 border-t border-hairline-soft pt-4">

@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\AdminNotifier;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -51,12 +52,38 @@ return Application::configure(basePath: dirname(__DIR__))
          | مقصور على مسارات admin: نماذج الطالب والزائر لها رسائلها الحقلية.
          */
         $exceptions->reportable(function (Throwable $e) {
-            if (request()->is('admin/*') && ! request()->expectsJson()) {
+            // ⚠️ بوابة المعلّم أيضاً: كانت تسقط بصمت بلا رسالة.
+            if (request()->is('admin/*', 'teacher/*') && ! request()->expectsJson()) {
                 flash()->error('حدث خطأ غير متوقع، يرجى المحاولة لاحقاً.');
+            }
+
+            /*
+             | 🔴 مخنوق داخل reportError نفسها: استثناء داخل حلقة، أو عامل
+             | طابور يعيد محاولة مهمة مكسورة، ينتج آلاف الأخطاء المتطابقة في
+             | الدقيقة — وبلا حارس يمتلئ جدول الإشعارات أسرع مما يُقرأ،
+             | فيصير الجرس عديم الفائدة في اللحظة التي يهمّ فيها فعلاً.
+             |
+             | ⚠️ داخل try: فشل الإشعار نفسه (قاعدة بيانات ساقطة مثلاً) يجب
+             | ألّا يرمي استثناءً ثانياً من داخل معالج الاستثناءات.
+             */
+            try {
+                AdminNotifier::reportError($e, request()->fullUrl());
+            } catch (Throwable) {
+                // لا شيء: الإبلاغ عن الخطأ ليس أهمّ من الخطأ نفسه.
             }
         });
 
         $exceptions->render(function (ValidationException $e, Request $request) {
+            /*
+             | admin فقط — لا teacher. شاشات الأدمن نماذج كاملة الصفحة،
+             | والرسالة بند في جدول الإشعارات الستّ المثبَّت في FlashMatrixTest.
+             |
+             | 🔴 بوابة المعلّم مُستثناة عمداً: نماذجها نوافذ منبثقة تُعاد فتحها
+             | (data-reopen) وبداخلها أخطاء الحقول الظاهرة (@error) — توست ✗ ملء
+             | الشاشة فوقها يحجب النموذج الذي يجب تصحيحه، ويكرّر ما هو معروض
+             | أصلاً. خطأ التحقّق مدخل مستخدم لا عطل خادم؛ الاستثناء الحقيقي
+             | (reportable أعلاه) ما زال يومض للمعلّم.
+             */
             if ($request->is('admin/*') && ! $request->expectsJson()) {
                 flash()->error('يرجى التأكد من تصحيح الأخطاء في النموذج.');
             }

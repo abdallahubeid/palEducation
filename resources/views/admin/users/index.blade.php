@@ -54,6 +54,7 @@
             ['label' => 'الاسم'],
             ['label' => 'البريد'],
             ['label' => 'النوع', 'width' => 'w-28'],
+            ['label' => 'الملف العام', 'width' => 'w-56'],
             ['label' => 'الحالة', 'width' => 'w-28'],
             ['label' => 'إجراءات', 'align' => 'end'],
         ]">
@@ -79,6 +80,55 @@
 
                     <td class="px-4 py-3">
                         <x-admin.status-badge status="neutral" :label="$types[$user->roleName()]['label'] ?? '—'" />
+                    </td>
+
+                    {{-- Teacher-only column. 🔴 Both values are DERIVED: the
+                         branch falls back to the subject's when none is set,
+                         and the lecture figure is counted from published
+                         lectures — the same number the public card shows, so
+                         the two can never disagree. --}}
+                    <td class="px-4 py-3">
+                        @if ($user->userable instanceof \App\Models\Teacher)
+                            @php $teacher = $user->userable; @endphp
+
+                            <div class="flex flex-wrap items-center gap-1.5">
+                                <x-admin.status-badge
+                                    :status="$teacher->is_publicly_listed ? 'active' : 'hidden'"
+                                    :label="$teacher->is_publicly_listed ? 'ظاهر' : 'مخفي'" />
+
+                                @if ($branch = $teacher->primaryBranch())
+                                    <span class="rounded-md bg-surface px-2 py-0.5 text-micro text-stone">
+                                        {{ $branch->name }}
+                                    </span>
+                                @endif
+
+                                <span class="text-micro text-stone">
+                                    <span class="num font-medium text-slate">{{ $teacher->published_lectures_count ?? 0 }}</span>
+                                    محاضرة
+                                </span>
+
+                                {{-- ملخّص المواد المسندة.
+
+                                     ⚠️ يقرأ العلاقة المحمّلة مسبقاً في
+                                     الكنترولر (morphWith على subjects.branch)،
+                                     فلا يكلّف استعلاماً لكل صفّ. و«بلا مواد»
+                                     حالة تُعرض لا تُخفى: معلّم بلا إسناد لا
+                                     يرى شيئاً يديره حين يدخل. --}}
+                                @php $assignedCount = $teacher->relationLoaded('subjects') ? $teacher->subjects->count() : null; @endphp
+
+                                @if ($assignedCount === 0)
+                                    <span class="rounded-md bg-warn/12 px-2 py-0.5 text-micro text-warn-deep">
+                                        بلا مواد
+                                    </span>
+                                @elseif ($assignedCount !== null)
+                                    <span class="rounded-md bg-accent/10 px-2 py-0.5 text-micro text-accent-deep">
+                                        <span class="num font-semibold">{{ $assignedCount }}</span> مادة
+                                    </span>
+                                @endif
+                            </div>
+                        @else
+                            <span class="text-micro text-muted">—</span>
+                        @endif
                     </td>
 
                     <td class="px-4 py-3">
@@ -113,7 +163,9 @@
                             @can('delete-users')
                                 @unless ($user->is(auth()->user()))
                                     <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
-                                          onsubmit="return confirm('حذف حساب «{{ $user->name }}»؟ ينتقل إلى سلّة المحذوفات.')">
+                                          data-confirm-title="حذف حساب «{{ $user->name }}»؟"
+                                          data-confirm="ينتقل الحساب وسجلّه إلى سلّة المحذوفات معاً، ويمكن استرجاعهما."
+                                          data-confirm-action="نعم، احذفه">
                                         @csrf
                                         @method('DELETE')
                                         <x-admin.btn variant="danger">حذف</x-admin.btn>

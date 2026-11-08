@@ -244,10 +244,15 @@ it('يحذف الشريحة حذفاً ناعماً وتحتفظ بصورتها 
 // ── إعدادات الشريط العلوي ───────────────────────────────────────
 
 it('يحفظ روابط التواصل الثلاثة', function () {
+    // ⚠️ الحقول تحت اسم اللوح: name="navbar[social_link1]" لا اسماً
+    // مسطّحاً — الألواح كلها في صفحة واحدة، والاسم المسطّح يجعل old()
+    // و$errors تتسرّب بين لوحين يتشاركان اسم حقل.
     actingAs($this->admin)->put(route('admin.settings.navbar.update'), [
-        'social_link1' => 'https://facebook.com/paledu',
-        'social_link2' => 'https://instagram.com/paledu',
-        'social_link3' => null,
+        'navbar' => [
+            'social_link1' => 'https://facebook.com/paledu',
+            'social_link2' => 'https://instagram.com/paledu',
+            'social_link3' => null,
+        ],
     ])->assertRedirect(route('admin.settings.index', ['tab' => 'navbar']));
 
     expect(Setting::get('navbar.social_link1'))->toBe('https://facebook.com/paledu')
@@ -257,19 +262,19 @@ it('يحفظ روابط التواصل الثلاثة', function () {
 
 it('يرفض رابطاً غير https ويرفض ما ليس رابطاً', function () {
     actingAs($this->admin)->put(route('admin.settings.navbar.update'), [
-        'social_link1' => 'http://facebook.com/paledu',   // غير مشفّر
-    ])->assertSessionHasErrors('social_link1');
+        'navbar' => ['social_link1' => 'http://facebook.com/paledu'],   // غير مشفّر
+    ])->assertSessionHasErrors('navbar.social_link1');
 
     actingAs($this->admin)->put(route('admin.settings.navbar.update'), [
-        'social_link2' => 'ليس رابطاً',
-    ])->assertSessionHasErrors('social_link2');
+        'navbar' => ['social_link2' => 'ليس رابطاً'],
+    ])->assertSessionHasErrors('navbar.social_link2');
 
     expect(Setting::get('navbar.social_link1'))->toBeNull();
 });
 
 it('لا يكرّر صفّ الإعداد عند الحفظ المتكرّر', function () {
     foreach (['https://a.test/1', 'https://a.test/2'] as $url) {
-        actingAs($this->admin)->put(route('admin.settings.navbar.update'), ['social_link1' => $url]);
+        actingAs($this->admin)->put(route('admin.settings.navbar.update'), ['navbar' => ['social_link1' => $url]]);
     }
 
     expect(Setting::where('key', 'navbar.social_link1')->count())->toBe(1)

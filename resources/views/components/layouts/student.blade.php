@@ -5,6 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="{{ $description ?? __('common.meta_description') }}">
+    {{-- نبضة تقدّم المشاهدة ترسل POST — تحتاج الرمز. --}}
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ isset($title) ? $title . ' — ' . __('common.brand') : __('common.brand') }}</title>
 

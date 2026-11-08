@@ -1,5 +1,5 @@
 @props([
-    'variant' => 'primary',   // primary | secondary | ghost | danger
+    'variant' => 'primary',   // primary | secondary | ghost | danger | success
     'href' => null,
     'type' => 'submit',
 ])
@@ -20,6 +20,19 @@
         'secondary' => 'border border-hairline bg-canvas text-steel hover:border-hairline-strong hover:text-ink',
         'ghost' => 'text-steel hover:bg-surface hover:text-ink',
         'danger' => 'border border-hairline bg-canvas text-error-deep hover:border-error/40 hover:bg-error/8',
+
+        /*
+         * 🔴 Same shape as `danger`, opposite meaning. Both are OUTLINE
+         * buttons — identical height, padding, radius and border to
+         * `secondary` — differing only in text colour, which is how this
+         * panel already distinguishes a destructive action from a neutral
+         * one without breaking the row's alignment.
+         *
+         * Added so "approve" can sit beside "edit" and "delete" at exactly
+         * their dimensions. The filled `primary` it replaced was a
+         * different height class of object in a row of outline controls.
+         */
+        'success' => 'border border-hairline bg-canvas text-accent-deep hover:border-accent/40 hover:bg-accent/8',
     ];
 
     $classes = trim($base.' '.($variants[$variant] ?? $variants['primary']));

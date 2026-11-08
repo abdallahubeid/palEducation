@@ -3,8 +3,13 @@
     'teacherName'   => 'أ. سامر خليل',
     'teacherAvatar' => null,
     'subjectLabel'  => null,
-    'unreadCount'   => 3,
 ])
+
+@php
+    // 🔴 العدّ الحقيقي من الحساب المسجَّل. الجرس يتولّاه بعد التحميل عبر
+    // الاستطلاع؛ هذه القيمة ترسم الشارة الابتدائية فقط.
+    $unreadCount = auth()->user()?->unreadNotifications()->count() ?? 0;
+@endphp
 
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
@@ -13,6 +18,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
+    {{-- الجرس يرسل POST لتعليم المقروء — يحتاج الرمز. --}}
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ $title ? $title . ' — ' . __('common.brand') : __('common.brand') }}</title>
 
@@ -21,13 +28,24 @@
 <body class="bg-ground text-charcoal antialiased">
 
     {{--
+        🔴 كانت مفقودة من هذه القشرة بالكامل: كل flash()->success في
+        كنترولرات المعلّم كانت تُخزَّن في الجلسة ثم **لا تُعرَض أبداً**،
+        فيبدو الحفظ بلا أثر. المكوّن نفسه المستعمل في قشرة الأدمن —
+        يرسم الرسائل على الخادم، وapp.js يرفعها إلى SweetAlert2.
+
+        ⚠️ العرض الخادمي هو الأساس لا الترقية: بلا JS تبقى الرسالة
+        مقروءة على الصفحة.
+    --}}
+    <x-admin.flash />
+
+    {{--
         قشرة المعلم — سطح أداتي (tool-like) لا سطح قراءة:
         شريط جانبي أضيق (60 مقابل 64)، شريط علوي أقصر، ومساحات داخلية أقل
         من قشرة الطالب. الطالب يقرأ هنا ساعات؛ المعلم يمسح ويتصرّف.
 
         data-shell هو هدف أصناف الحالة (is-collapsed) — نفس عقد قشرة الطالب.
     --}}
-    <div data-shell class="lg:flex">
+    <div data-shell class="flex min-h-screen flex-col lg:flex-row">
         <x-layout.teacher-sidebar />
 
         <div class="flex min-w-0 flex-1 flex-col">

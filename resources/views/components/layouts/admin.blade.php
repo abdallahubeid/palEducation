@@ -50,7 +50,10 @@
                 في المتصفّح، والثاني يُرفض.
             --}}
             @if ($undo)
-                <div class="border-b border-warn/25 bg-warn/10 px-4 py-2.5 sm:px-6">
+                {{-- data-admin-undo lets the SweetAlert toast SUBMIT this
+                     form rather than link to it: the toast's undo button
+                     reuses this exact POST, CSRF token included. --}}
+                <div data-admin-undo class="border-b border-warn/25 bg-warn/10 px-4 py-2.5 sm:px-6">
                     <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3">
                         <span class="inline-flex items-center gap-2 text-caption font-medium text-warn-deep">
                             <x-icon name="alert" class="size-4 shrink-0" />
@@ -65,7 +68,7 @@
                                            border-warn/40 bg-canvas px-3 py-1.5 text-caption font-semibold
                                            text-warn-deep transition hover:bg-warn/10">
                                 <x-icon name="undo" class="size-4 rtl:-scale-x-100" />
-                                {{ $undo['label'] }}
+                                <span data-undo-label>{{ $undo['label'] }}</span>
                             </button>
                         </form>
                     </div>

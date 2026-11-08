@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\LibraryCategory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -23,29 +25,30 @@ class LibraryFile extends Model
         'lecture_id',
         'teacher_id',
         'title',
-        'original_filename',
-        'storage_path',
-        'mime_type',
-        'size_bytes',
+        'category',
+        'unit_name',
+        'page_count',
         'is_published',
+        'published_at',
         'uploaded_by',
     ];
 
-    /**
-     * 🔴 storage_path محجوب عن أي تسلسل (JSON، استجابة، Livewire payload).
-     * تسريب المسار الداخلي يكشف بنية القرص الخاص ويمنح المهاجم نصف الطريق.
-     * download_count عدّاد يُدار بـincrement() لا بإسناد جملي من الطلب.
+    /*
+     * 🔁 storage_path لم يعد هنا — انتقل إلى media مع بقية مقاييس الملف،
+     * وحجبه صار مسؤولية Media نفسه.
+     *
+     * ⚠️ download_count يبقى عدّاداً يُدار بـincrement() لا بإسناد جملي من
+     * الطلب — ولهذا هو غائب عن $fillable أعلاه.
      */
-    protected $hidden = [
-        'storage_path',
-    ];
 
     protected function casts(): array
     {
         return [
-            'size_bytes' => 'integer',
+            'category' => LibraryCategory::class,
+            'page_count' => 'integer',
             'download_count' => 'integer',
             'is_published' => 'boolean',
+            'published_at' => 'datetime',
         ];
     }
 
@@ -54,6 +57,71 @@ class LibraryFile extends Model
     | العلاقات
     |--------------------------------------------------------------------------
     */
+
+    /**
+     * الملف نفسه.
+     *
+     * 🔴 morphOne لا morphMany: لملف المكتبة أصل واحد بالتعريف. morphMany
+     * كان سيسمح بصفّين لنفس السجلّ ويجعل «الملف» أيّهما أرجعه الاستعلام.
+     *
+     * ⚠️ الصفّ يحمل disk = 'private'، فـMedia::url() يُرجع null له عمداً —
+     * التسليم عبر controller يفحص الصلاحية، لا برابط مباشر.
+     */
+    public function media(): MorphOne
+    {
+        return $this->morphOne(Media::class, 'mediable');
+    }
+
+    /** الوحدة المعروضة: الموروثة من المحاضرة إن وُجدت، وإلا الخاصة بالملف. */
+    public function unitLabel(): ?string
+    {
+        /*
+         * 🔴 تُحسب ولا تُخزَّن. نسخ وحدة المحاضرة إلى الملف يعني قيمتين
+         * تنحرفان أول ما يعدّل المعلّم وحدة المحاضرة — والملف يبقى معلّقاً
+         * على وحدة لم تعد موجودة.
+         */
+        if ($this->relationLoaded('lecture') && $this->lecture && filled($this->lecture->unit_name)) {
+            return $this->lecture->unit_name;
+        }
+
+        return filled($this->unit_name) ? $this->unit_name : null;
+    }
+
+    /**
+     * هل يمكن عرضه داخل المتصفّح؟
+     *
+     * ⚠️ PDF فقط. زرّ «معاينة» على ملف Word أو ZIP زرّ لا يعمل — وغيابه
+     * أصدق من تعطيله.
+     */
+    public function isPreviewable(): bool
+    {
+        return $this->media?->mime_type === 'application/pdf';
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | النطاقات
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * ملفات المواد المسندة لهذا المعلّم.
+     *
+     * 🔴 الفلترة على **المادة** لا على uploaded_by: المعلّم يدير ملفات مادته
+     * كلها بما رفعه زميل سبقه، تماماً كالمحاضرات.
+     */
+    public function scopeForTeacher(Builder $query, Teacher $teacher): Builder
+    {
+        return $query->whereIn('subject_id', $teacher->subjects()->select('subjects.id'));
+    }
+
+    /** ما يراه الطالب: منشور وحلّ تاريخه. */
+    public function scopeVisible(Builder $query): Builder
+    {
+        return $query->where('is_published', true)
+            ->where(fn (Builder $q) => $q->whereNull('published_at')
+                ->orWhere('published_at', '<=', now()));
+    }
 
     public function subject(): BelongsTo
     {
@@ -107,18 +175,15 @@ class LibraryFile extends Model
         $this->incrementQuietly('download_count');
     }
 
-    /** الحجم بصيغة مقروءة. الأرقام تبقى غربية 0-9 والوحدة LTR. */
+    /**
+     * الحجم بصيغة مقروءة.
+     *
+     * 🔁 الرقم انتقل إلى media، فالدالة تُفوَّض بدل أن تُحذف: اسمها عقد قائم
+     * تستعمله شاشات أخرى، وحذفه كان سيكسرها. تُرجع '0 B' حين لا ملف — وهي
+     * الحالة الوحيدة التي لا حجم فيها أصلاً.
+     */
     public function humanSize(): string
     {
-        $units = ['B', 'KB', 'MB', 'GB'];
-        $size = (float) $this->size_bytes;
-        $unit = 0;
-
-        while ($size >= 1024 && $unit < count($units) - 1) {
-            $size /= 1024;
-            $unit++;
-        }
-
-        return round($size, $unit === 0 ? 0 : 1).' '.$units[$unit];
+        return $this->media?->humanSize() ?? '0 B';
     }
 }

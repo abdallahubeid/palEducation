@@ -19,6 +19,8 @@
         "@laravel/multiplex": "^0.4.1"
     },
     "dependencies": {
-        "alpinejs": "^3.16.3"
+        "alpinejs": "^3.16.3",
+        "cropperjs": "^1.6.2",
+        "sweetalert2": "^11.26.25"
     }
 }

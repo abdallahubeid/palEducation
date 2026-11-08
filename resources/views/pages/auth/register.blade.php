@@ -1,12 +1,8 @@
 @php
     // المحافظات — قائمة ثابتة (ليست كياناً في قاعدة البيانات).
-    $governorates = [
-        'jenin' => 'جنين', 'tulkarm' => 'طولكرم', 'nablus' => 'نابلس',
-        'qalqilya' => 'قلقيلية', 'salfit' => 'سلفيت', 'ramallah' => 'رام الله والبيرة',
-        'jericho' => 'أريحا', 'jerusalem' => 'القدس', 'bethlehem' => 'بيت لحم',
-        'hebron' => 'الخليل', 'gaza' => 'غزة', 'north-gaza' => 'شمال غزة',
-        'deir-albalah' => 'دير البلح', 'khan-younis' => 'خان يونس', 'rafah' => 'رفح',
-    ];
+    // 🔁 Moved to lang/ar/governorates.php — the testimonial card needs the
+    // same list, and two copies of fifteen names is how they start to differ.
+    $governorates = __('governorates');
 
     $countries = ['ps' => 'فلسطين', 'jo' => 'الأردن', 'ot' => 'دولة أخرى'];
 

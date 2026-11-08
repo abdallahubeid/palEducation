@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -49,8 +50,19 @@ class Student extends Model
         return $this->belongsTo(Branch::class);
     }
 
+    /** تقدّم مشاهدة هذا الطالب لكل محاضرة لمسها — م-5. */
+    public function progress(): HasMany
+    {
+        return $this->hasMany(LectureProgress::class);
+    }
+
+    /** ملفات المكتبة التي وصل إليها هذا الطالب — لعدّاد الموارد. */
+    public function libraryAccess(): HasMany
+    {
+        return $this->hasMany(StudentLibraryAccess::class);
+    }
+
     // ⏳ العلاقات الآتية تُفعَّل مع موجات لاحقة:
     // subscriptions() → HasMany(Subscription::class)
-    // progress()      → HasMany(LectureProgress::class)
     // attempts()      → HasMany(QuizAttempt::class)
 }

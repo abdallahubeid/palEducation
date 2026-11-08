@@ -72,7 +72,9 @@
                         @if (! $isSystem)
                             @can('delete-roles')
                                 <form method="POST" action="{{ route('admin.roles.destroy', $role) }}"
-                                      onsubmit="return confirm('حذف الدور «{{ $role->name }}»؟ لا يمكن التراجع.')">
+                                      data-confirm-title="حذف الدور «{{ $role->name }}»؟"
+                                      data-confirm="الأدوار لا تُحذف حذفاً ناعماً — لا سلّة ولا تراجع بعد هذا الإجراء."
+                                      data-confirm-action="نعم، احذف الدور">
                                     @csrf
                                     @method('DELETE')
                                     <x-admin.btn variant="danger">حذف</x-admin.btn>

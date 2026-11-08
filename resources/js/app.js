@@ -1,10 +1,33 @@
 // palEducation — تفاعلات الواجهة
 //
-// ⚠️ Alpine مثبَّت الآن عبر npm مباشرةً، لا عبر Livewire 3 (غير مثبّت).
-// يُستعمل في **لوحة الأدمن فقط** حيث الحالة التفاعلية حقيقية (مفاتيح
-// الصلاحيات). كل ما بُني قبله من تفاعل الواجهة العامة يبقى vanilla —
-// لا تُعاد كتابته بلا سبب، فالصفحات العامة لا تحتاج إطاراً.
+// ⚠️ Alpine مثبَّت عبر npm مباشرةً، لا عبر Livewire 3 (غير مثبّت).
+//
+// 🔁 كان **للوحة الأدمن وحدها**. لم يعد كذلك: نموذج إضافة رأي الطالب في
+// الصفحة الرئيسية يستعمله (نافذة عائمة بحالة نجوم وإرسال غير متزامن) —
+// وهي حالة تفاعلية حقيقية لا يبرّر إعادة كتابتها بـvanilla. الحزمة تُحمَّل
+// أصلاً في كل صفحة، فالكلفة صفر.
+//
+// ما بقي من تفاعل الواجهة العامة يبقى vanilla — لا تُعاد كتابته بلا سبب.
 import Alpine from 'alpinejs';
+
+/*
+ * SweetAlert2 — bundled through Vite, never a CDN.
+ *
+ * 🔴 The stylesheet is imported here rather than into app.css on purpose.
+ * Tailwind 4 puts its utilities inside @layer and SweetAlert2 ships plain
+ * unlayered CSS: unlayered rules beat layered ones regardless of
+ * specificity, so pulling it into app.css would let .swal2-* silently
+ * outrank Tailwind utilities anywhere the two meet. Imported from JS it
+ * lands in its own chunk and only ever styles the dialog.
+ */
+/*
+ * 🔴 مُجمَّع عبر npm لا عبر CDN — نفس قاعدة SweetAlert2: أداة الملف الشخصي
+ * يجب أن تعمل بلا اتصال بطرف ثالث، وبنسخة مثبّتة لا تتغيّر تحتنا.
+ */
+import Cropper from 'cropperjs';
+import 'cropperjs/dist/cropper.css';
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
 
 window.Alpine = Alpine;
 
@@ -364,6 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initStudentSidebar();
     initTabs();
     initLecturePlayer();
+    initLectureProgress();
     initFocusMode();
     initQuizRunner();
     initLectureViewSwitcher();
@@ -395,6 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initAdminShell();
     initTrashSelection();
     initFlash();
+    initConfirmActions();
     initSettingsTabs();
 });
 
@@ -1627,6 +1652,107 @@ function initLecturePlayer() {
     });
 }
 
+/* ── تقدّم مشاهدة المحاضرة — م-5 ───────────────────────────
+   🔴 تحقّق خادمي موثوق: المشغّل لا يقول «اكتمل». يرسل المقطع المُشاهَد منذ
+   آخر نبضة [from,to] بالثواني عبر YouTube IFrame API، والخادم يدمج المقاطع
+   ويقرّر الاكتمال.
+
+   ترقية لا شرط: لو تعذّر تحميل واجهة يوتيوب أو رُفض الطلب، الصفحة تعمل
+   ومشاهدة الفيديو تعمل — التقدّم وحده لا يُسجَّل. */
+function initLectureProgress() {
+    const host = document.querySelector('[data-lecture-progress]');
+    const iframe = host?.querySelector('iframe');
+    const url = host?.dataset.lectureProgressUrl;
+    if (!host || !iframe || !url) return;
+
+    // تحميل واجهة يوتيوب مرّة واحدة للصفحة.
+    if (!window.YT && !document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+        const tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        document.head.appendChild(tag);
+    }
+
+    let player = null;
+    let segmentStart = null;   // currentTime حين بدأ التشغيل المتّصل الحالي
+    let poll = null;
+
+    const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
+    async function send(from, to) {
+        from = Math.floor(from);
+        to = Math.floor(to);
+        // مقاطع دقيقة (تحديث موضع، اهتزاز) لا تُرسَل.
+        if (to - from < 2) return;
+
+        try {
+            await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrf(),
+                    Accept: 'application/json',
+                },
+                body: JSON.stringify({ from, to }),
+                keepalive: true,
+            });
+        } catch {
+            // انقطاع لحظي — النبضة التالية تغطّي نفس المدى.
+        }
+    }
+
+    function flush() {
+        if (segmentStart === null || !player) return;
+
+        const now = player.getCurrentTime?.() ?? segmentStart;
+
+        // فقط التشغيل الأمامي المتّصل يُحتسب — القفز للخلف يبدأ مقطعاً جديداً.
+        if (now > segmentStart) send(segmentStart, now);
+
+        segmentStart = now;
+    }
+
+    function build() {
+        if (player || !window.YT?.Player) return;
+
+        player = new window.YT.Player(iframe, {
+            events: {
+                onStateChange: (event) => {
+                    const YT = window.YT;
+
+                    if (event.data === YT.PlayerState.PLAYING) {
+                        segmentStart = player.getCurrentTime();
+                        clearInterval(poll);
+                        poll = setInterval(flush, 15000);
+
+                        return;
+                    }
+
+                    clearInterval(poll);
+                    flush();
+                    segmentStart = null;
+                },
+            },
+        });
+    }
+
+    if (window.YT?.Player) {
+        build();
+    }
+
+    // يوتيوب ينادي هذه عالمياً حين تجهز الواجهة — نسلسل مع أي مستمع سابق.
+    const previous = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+        previous?.();
+        build();
+    };
+
+    // مغادرة الصفحة أو إخفاء التبويب: أرسل ما تبقّى قبل أن يضيع.
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) flush();
+    });
+}
+
 /* ── وضع التركيز — الشريط الجانبي ينطوي أثناء المشاهدة ────
    [data-shell].is-focus يُقرأ في app.css. يعود عند الانتهاء. */
 function initFocusMode() {
@@ -1814,29 +1940,30 @@ function initContactForm() {
     const fields = () => Array.from(formPanel.querySelectorAll('input, select, textarea'));
     const idleLabel = submit.textContent.trim();
 
-    submit.addEventListener('click', () => {
-        // Use the browser's own constraint validation rather than reimplementing it.
-        const invalid = fields().find((f) => f.required && !f.checkValidity());
-        if (invalid) {
-            invalid.reportValidity();
-            invalid.focus();
-            return;
-        }
-
+    /*
+     * 🔁 The form POSTS for real now. This used to fake the whole thing —
+     * a setTimeout that swapped in the success panel while nothing was ever
+     * sent anywhere.
+     *
+     * What is left is progressive enhancement only: a disabled button and a
+     * "sending…" label so a slow connection does not look like a dead click,
+     * and a double submit cannot queue two messages. The server renders the
+     * success panel on the redirect, so none of this is load-bearing.
+     */
+    formPanel.addEventListener('submit', () => {
+        // The browser's own constraint validation already ran and blocked
+        // the submit if anything was invalid — by here it has passed.
         submit.disabled = true;
         submit.textContent = submit.dataset.sendingLabel || idleLabel;
-
-        // Stands in for the request. Replaced by a real POST once a backend exists.
-        window.setTimeout(() => {
-            formPanel.hidden = true;
-            successPanel.hidden = false;
-            submit.disabled = false;
-            submit.textContent = idleLabel;
-            // Move focus to the confirmation so screen-reader users are told it happened.
-            successPanel.querySelector('h2')?.setAttribute('tabindex', '-1');
-            successPanel.querySelector('h2')?.focus();
-        }, 900);
     });
+
+    // Announce the confirmation when the server renders it, so screen-reader
+    // users are told the message went rather than left on a silent page.
+    if (!successPanel.hidden) {
+        const heading = successPanel.querySelector('h2');
+        heading?.setAttribute('tabindex', '-1');
+        heading?.focus();
+    }
 
     reset?.addEventListener('click', () => {
         fields().forEach((f) => {
@@ -2165,31 +2292,160 @@ function initTrashSelection() {
     sync();
 }
 
-/* ── إشعارات لوحة التحكّم — إغلاق يدوي وتلاشٍ تلقائي ──────
-   المكوّن يرسم الإشعار على الخادم؛ هذا يضيف الإغلاق فقط. بلا هذا
-   السكربت تبقى الإشعارات ظاهرة حتى الانتقال التالي — مزعج لا معطّل. */
+/* ── Admin notifications — SweetAlert2 toasts ──────────────────────
+ *
+ * 🔴 The server still renders every message as visible HTML inside
+ * x-admin.flash, and this reads those nodes and re-presents them. It does
+ * NOT consume a JSON payload, and that is deliberate:
+ *
+ *   - notifications broke three separate times here, each time silently,
+ *     and every failure was in the presentation layer. The raw text living
+ *     in the HTML is what FlashMatrixTest pins, and it is the reason a
+ *     broken toast is now visible rather than invisible.
+ *   - with no JS the server markup simply stays on screen and still works.
+ *
+ * So SweetAlert is an UPGRADE over a working baseline, never the only path.
+ */
+/*
+ * ONE dialog shape for the whole panel.
+ *
+ * 🔴 Every alert — created, updated, deleted, restored, failed, and every
+ * confirmation — is the same centred modal with the same radius, padding,
+ * typography and button styling. Mixing corner toasts with centre modals
+ * made identical outcomes look like different kinds of event; a delete that
+ * whispered from the corner and a delete that stopped the page read as two
+ * different features rather than one.
+ *
+ * RTL comes from <html dir>, which SweetAlert honours; buttonsStyling is
+ * off so the buttons are project components rather than library defaults.
+ */
+const SWAL_BASE = {
+    buttonsStyling: false,
+    reverseButtons: true,
+    heightAuto: false,
+    customClass: {
+        popup: 'swal-panel',
+        title: 'swal-panel__title',
+        htmlContainer: 'swal-panel__body',
+        actions: 'swal-panel__actions',
+        confirmButton: 'swal-panel__btn swal-panel__btn--confirm',
+        denyButton: 'swal-panel__btn swal-panel__btn--deny',
+        cancelButton: 'swal-panel__btn swal-panel__btn--cancel',
+    },
+};
+
+const swalPanel = Swal.mixin(SWAL_BASE);
+
+/* Server tone class → SweetAlert icon. That class is already the pinned
+   contract with the Blade component, so it is the safest thing to key on. */
+const FLASH_TONES = [
+    { match: 'bg-error/10', icon: 'error', title: 'حدث خطأ' },
+    { match: 'bg-warn/10', icon: 'warning', title: 'تم الحذف' },
+    { match: 'bg-tag/10', icon: 'info', title: 'تم التحديث' },
+    { match: 'bg-accent/10', icon: 'success', title: 'تمّت العملية بنجاح' },
+];
+
 function initFlash() {
     const root = document.querySelector('[data-flash]');
     if (!root) return;
 
-    const dismiss = (item) => {
-        item.classList.add('opacity-0', '-translate-y-2');
-        /* الإزالة بعد الانتقال لا فوراً، وإلا اختفى بلا حركة */
-        setTimeout(() => {
-            item.remove();
-            if (!root.querySelector('[data-flash-item]')) root.remove();
-        }, 300);
-    };
+    const items = [...root.querySelectorAll('[data-flash-item]')];
+    if (!items.length) return;
 
-    root.querySelectorAll('[data-flash-item]').forEach((item, i) => {
-        item.querySelector('[data-flash-close]')
-            ?.addEventListener('click', () => dismiss(item));
+    /* The undo control is a real PATCH form with CSRF rendered in the shell.
+       The toast never links to it — it SUBMITS it. A restore mutates server
+       state, and an <a> injected by JS carries no token. */
+    const undoForm = document.querySelector('[data-admin-undo] form');
+    const undoLabel = document.querySelector('[data-admin-undo] [data-undo-label]')?.textContent?.trim();
 
-        /* 🔴 الأخطاء لا تختفي وحدها: رسالة «صحّح الأخطاء» قد تكون الشيء
-           الوحيد الذي يشرح لماذا لم يُحفظ النموذج. الباقي يتلاشى. */
-        if (item.classList.contains('bg-error/10')) return;
+    /* Drop the server markup only now that SweetAlert is definitely taking
+       over, so a failed import leaves the working baseline in place. */
+    root.remove();
 
-        setTimeout(() => dismiss(item), 5000 + i * 400);
+    /* Modals are blocking, so they queue instead of stacking: firing four
+       at once would leave three invisible behind the first. */
+    const queue = items
+        .map((item) => {
+            const text = item.querySelector('p')?.textContent?.trim() ?? '';
+            if (!text) return null;
+
+            const tone = FLASH_TONES.find((t) => item.classList.contains(t.match)) ?? FLASH_TONES[2];
+
+            return { text, tone };
+        })
+        .filter(Boolean);
+
+    (async () => {
+        for (const [i, entry] of queue.entries()) {
+            /* Undo rides on the first delete notice only — one restore form
+               exists per response, and offering it twice would be a lie. */
+            const canUndo = Boolean(undoForm) && entry.tone.icon === 'warning' && i === 0;
+
+            const result = await swalPanel.fire({
+                icon: entry.tone.icon,
+                title: entry.tone.title,
+                text: entry.text,
+                showConfirmButton: true,
+                confirmButtonText: 'حسناً',
+                showDenyButton: canUndo,
+                denyButtonText: undoLabel || 'تراجع',
+                /* Errors wait for a click. The rest close on their own —
+                   but "fix the errors in the form" may be the only thing
+                   explaining why nothing saved, so it never disappears. */
+                timer: entry.tone.icon === 'error' ? undefined : 4000,
+                timerProgressBar: entry.tone.icon !== 'error',
+            });
+
+            if (result.isDenied && canUndo) {
+                undoForm.submit();
+
+                return;
+            }
+        }
+    })();
+}
+
+/* ── Destructive-action confirmation ───────────────────────────────
+ *
+ * Any form carrying data-confirm asks first. Replaces window.confirm(),
+ * which cannot be styled and reads as a browser warning rather than as
+ * part of the panel.
+ *
+ * ⚠️ Progressive, not required: the form still posts normally if this
+ * script never runs. The guard is the route permission, never the dialog.
+ */
+function initConfirmActions() {
+    document.querySelectorAll('form[data-confirm]').forEach((form) => {
+        form.addEventListener('submit', (event) => {
+            if (form.dataset.confirmed === '1') return;
+
+            event.preventDefault();
+
+            /* Same mixin as the outcome notices: a confirmation and the
+               notice that follows it are one conversation, so they must not
+               look like two different systems talking. */
+            swalPanel
+                .fire({
+                    icon: 'warning',
+                    title: form.dataset.confirmTitle || 'تأكيد',
+                    text: form.dataset.confirm,
+                    showCancelButton: true,
+                    confirmButtonText: form.dataset.confirmAction || 'نعم، تابع',
+                    cancelButtonText: 'إلغاء',
+                    /* Focus starts on Cancel: the destructive button must
+                       not be one stray Enter away. */
+                    focusCancel: true,
+                })
+                .then((result) => {
+                    if (!result.isConfirmed) return;
+
+                    /* Flag then resubmit: form.submit() does not re-fire
+                       this listener, but the flag keeps that true if it
+                       ever changes. */
+                    form.dataset.confirmed = '1';
+                    form.submit();
+                });
+        });
     });
 }
 
@@ -2320,6 +2576,726 @@ Alpine.data('permissionGrid', (config) => ({
         },
     }));
 
+/* ═══════════════════════════════════════════════════════════════
+   النشرة البريدية — تحديد المستلمين وطيّ قائمة الشريط الجانبي
+   ═══════════════════════════════════════════════════════════════ */
+
+/*
+ * 🔴 المصدر الوحيد للحقيقة هو خانات الاختيار نفسها، لا مصفوفة في Alpine.
+ * الخانة هي الحقل المُرسَل فعلاً؛ أي حالة موازية في JS تنحرف عنها عند أول
+ * تغيير لا يمرّ بالمستمع — والانحراف هنا يعني إرسال بريد لمن لم يُحدَّد.
+ * لذلك `count` مشتقّ بالعدّ لا محسوب تراكمياً.
+ */
+function countChecked(root, selector) {
+    return root.querySelectorAll(`${selector}:checked`).length;
+}
+
+Alpine.data('subscriberSelection', () => ({
+    count: 0,
+
+    init() {
+        this.recount();
+    },
+
+    get allChecked() {
+        const boxes = this.$el.querySelectorAll('[data-row-check]');
+
+        // ⚠️ صفر خانات ليست «الكل محدَّد»: بلا هذا الشرط تظهر خانة
+        // «تحديد الكل» مؤشَّرة على جدول لا يملك ما يُحدَّد.
+        return boxes.length > 0 && this.count === boxes.length;
+    },
+
+    recount() {
+        this.count = countChecked(this.$el, '[data-row-check]');
+    },
+
+    toggleAll(checked) {
+        this.$el.querySelectorAll('[data-row-check]').forEach((box) => {
+            box.checked = checked;
+        });
+
+        this.recount();
+    },
+}));
+
+Alpine.data('campaignAudience', (total) => ({
+    count: total,
+
+    init() {
+        this.recount();
+    },
+
+    get allChecked() {
+        const boxes = this.$el.querySelectorAll('[data-audience-check]');
+
+        return boxes.length > 0 && this.count === boxes.length;
+    },
+
+    recount() {
+        this.count = countChecked(this.$el, '[data-audience-check]');
+    },
+
+    toggleAll(checked) {
+        /*
+         * ⚠️ يشمل الصفوف المخفيّة بالتصفية عمداً. «تحديد الكل» تعني القائمة
+         * كلها لا ما يظهر منها الآن — ولو عنت المرئي فقط لأرسل الأدمن نشرة
+         * إلى ثلاثة أشخاص وهو يظن أنه أرسلها إلى ثلاثمئة.
+         */
+        this.$el.querySelectorAll('[data-audience-check]').forEach((box) => {
+            box.checked = checked;
+        });
+
+        this.recount();
+    },
+
+    /* تصفية عرض فقط — لا تلمس ما هو محدَّد إطلاقاً. */
+    filter(term) {
+        const needle = term.trim().toLowerCase();
+        let visible = 0;
+
+        this.$el.querySelectorAll('[data-audience-row]').forEach((row) => {
+            const match = row.dataset.email.toLowerCase().includes(needle);
+            row.hidden = !match;
+            if (match) visible++;
+        });
+
+        const empty = this.$el.querySelector('[data-audience-empty]');
+        if (empty) empty.hidden = visible > 0;
+    },
+
+    /*
+     * 🔴 آخر حاجز قبل الإرسال. الخادم يرفض القائمة الفارغة أيضاً، لكن الرفض
+     * هناك يكلّف الأدمن رحلة ذهاب وإياب بنشرة كتبها للتوّ.
+     */
+    guard(event) {
+        if (this.count === 0) event.preventDefault();
+    },
+}));
+
+/*
+ * معاينة حملة — مودال واحد يُغذّى من الصفّ المضغوط.
+ *
+ * 🔴 النصّ يصل عبر data-* لا عبر تضمينه في onclick: Blade يهرّب السمات،
+ * فنشرة تحتوي علامة اقتباس لا تكسر الوسم.
+ */
+Alpine.data('campaignPreview', () => ({
+    showing: false,
+    subject: '',
+    body: '',
+    sender: '',
+    count: 0,
+    date: '',
+
+    open(button) {
+        this.subject = button.dataset.campaignSubject || '';
+        this.body = button.dataset.campaignBody || '';
+        this.sender = button.dataset.campaignSender || '';
+        this.count = button.dataset.campaignCount || 0;
+        this.date = button.dataset.campaignDate || '';
+        this.showing = true;
+
+        /*
+         * ⚠️ التركيز ينتقل داخل المودال: بدونه يبقى في الصفّ خلف الطبقة،
+         * فمستخدم لوحة المفاتيح يتنقّل في جدول لا يراه. و$nextTick لأن
+         * العنصر ما زال مخفيّاً في هذه اللحظة ولا يقبل التركيز.
+         */
+        this.$nextTick(() => this.$refs.closer?.focus());
+
+        // منع تمرير الصفحة خلف المودال.
+        document.body.style.overflow = 'hidden';
+    },
+
+    close() {
+        this.showing = false;
+        document.body.style.overflow = '';
+    },
+
+    destroy() {
+        // لو أُزيل المكوّن والمودال مفتوح، لا تترك الصفحة بلا تمرير.
+        document.body.style.overflow = '';
+    },
+}));
+/* ═══════════════════════════════════════════════════════════════
+   جرس الإشعارات — استطلاع دوري بلا تحديث للصفحة
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════
+   محاضرات المعلّم — نموذج واحد للإنشاء والتعديل
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════
+   مكتبة المعلّم — نموذج واحد للرفع والتعديل
+   ═══════════════════════════════════════════════════════════════ */
+
+Alpine.data('teacherLibrary', () => ({
+    formModal: false,
+    editing: false,
+    action: '',
+    form: {
+        title: '', subject_id: '', lecture_id: '', category: 'summary',
+        unit_name: '', page_count: '', is_published: false,
+    },
+
+    init() {
+        /*
+         * ⚠️ النموذج المعاد بأخطاء يُفتح على ما كُتب: Blade أعاد ملء الحقول
+         * بـold()، وتصفيرها هنا كان سيمسح ما كتبه المعلّم للتوّ.
+         *
+         * 🔴 editing وaction يُقرآن من الخادم: تعديل فشل تحقّقه يجب أن يُعاد
+         * فتحه تعديلاً على مسار PUT الصحيح، لا رفعاً جديداً — نفس عقد
+         * teacher/lectures.
+         */
+        if (this.$root.dataset.reopen === '1') {
+            this.editing = this.$root.dataset.reopenEditing === '1';
+            this.action = this.$root.dataset.reopenAction || this.$root.dataset.storeUrl;
+
+            try {
+                Object.assign(this.form, JSON.parse(this.$root.dataset.reopenForm || '{}'));
+            } catch {
+                /* الافتراضات تبقى */
+            }
+
+            this.formModal = true;
+        }
+    },
+
+    openCreate() {
+        this.editing = false;
+        this.action = this.$root.dataset.storeUrl;
+        this.form = {
+            title: '', subject_id: '', lecture_id: '', category: 'summary',
+            unit_name: '', page_count: '', is_published: false,
+        };
+        this.formModal = true;
+    },
+
+    /* يُملأ من بيانات الصفّ المعروضة — لا طلب شبكة لجلب ما هو ظاهر أصلاً. */
+    openEdit(file) {
+        this.editing = true;
+        this.action = file.action;
+        this.form = {
+            title: file.title ?? '',
+            subject_id: String(file.subject_id ?? ''),
+            lecture_id: file.lecture_id ? String(file.lecture_id) : '',
+            category: file.category ?? 'summary',
+            unit_name: file.unit_name ?? '',
+            page_count: file.page_count ?? '',
+            is_published: Boolean(file.is_published),
+        };
+        this.formModal = true;
+    },
+
+    close() {
+        this.formModal = false;
+    },
+}));
+Alpine.data('teacherLectures', () => ({
+    formModal: false,
+    editing: false,
+    action: '',
+    form: { title: '', subject_id: '', video_url: '', description: '', unit_name: '', status: 'draft' },
+
+    /*
+     * ⚠️ النسخة الابتدائية تُلتقط من الخادم عند التركيب: حين يفشل التحقّق
+     * يعيد Blade ملء الحقول بـold()، وتصفيرها هنا كان سيمسح ما كتبه
+     * المعلّم للتوّ — وهو أسوأ ما يمكن أن يفعله نموذج بعد خطأ.
+     */
+    init() {
+        this.snapshot = { ...this.form };
+
+        // نموذج أُعيد بأخطاء: يُفتح مباشرةً على ما كُتب بدل أن يختفي.
+        if (this.$root.dataset.reopen === '1') {
+            this.editing = this.$root.dataset.reopenEditing === '1';
+            this.action = this.$root.dataset.reopenAction || this.action;
+
+            try {
+                Object.assign(this.form, JSON.parse(this.$root.dataset.reopenForm || '{}'));
+            } catch {
+                /* الافتراضات تبقى */
+            }
+
+            this.formModal = true;
+        }
+    },
+
+    openCreate() {
+        this.editing = false;
+        this.action = this.$root.dataset.storeUrl;
+        this.form = { ...this.snapshot, title: '', subject_id: '', video_url: '', description: '', unit_name: '', status: 'draft' };
+        this.formModal = true;
+    },
+
+    /* يُملأ من بيانات الصفّ المعروضة — لا طلب شبكة لجلب ما هو ظاهر أصلاً. */
+    openEdit(lecture) {
+        this.editing = true;
+        this.action = lecture.action;
+        this.form = {
+            title: lecture.title ?? '',
+            subject_id: String(lecture.subject_id ?? ''),
+            video_url: lecture.video_url ?? '',
+            description: lecture.description ?? '',
+            unit_name: lecture.unit_name ?? '',
+            status: lecture.status ?? 'draft',
+        };
+        this.formModal = true;
+    },
+
+    close() {
+        this.formModal = false;
+    },
+}));
+/* جرس الإشعارات — استطلاع دوري، يخدم قشرتَي الأدمن والمعلّم بلا فرق.
+   المسارات تُمرَّر من Blade فتغيير بادئة مسار لا يترك سلسلة مكسورة في JS. */
+Alpine.data('bellFeed', (endpoints) => ({
+    open: false,
+    items: [],
+    unread: 0,
+    loading: true,
+    failed: false,
+    timer: null,
+    chime: false,
+
+    init() {
+        /*
+         * ⚠️ التفضيل يُقرأ داخل try: المتصفّح في وضع خاص أو بمنع تخزين
+         * المواقع يرمي عند مجرّد القراءة، لا عند الكتابة فقط.
+         */
+        try {
+            this.chime = localStorage.getItem('paledu-notif-chime') === '1';
+        } catch {
+            this.chime = false;
+        }
+
+        this.fetchItems();
+        this.schedule();
+
+        /*
+         * 🔴 يتوقّف الاستطلاع حين يُخفى التبويب ويستأنف عند العودة. بدونه كل
+         * تبويب لوحة متروك مفتوحاً يضرب الخادم أربع مرات في الدقيقة إلى
+         * الأبد — ويُبقي الجلسة حيّة إلى ما لا نهاية أيضاً.
+         */
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                this.stop();
+            } else {
+                this.fetchItems();
+                this.schedule();
+            }
+        });
+    },
+
+    destroy() {
+        this.stop();
+    },
+
+    schedule() {
+        this.stop();
+        this.timer = setInterval(() => this.fetchItems(), 15000);
+    },
+
+    stop() {
+        if (this.timer) clearInterval(this.timer);
+        this.timer = null;
+    },
+
+    async fetchItems() {
+        try {
+            const res = await fetch(endpoints.index, {
+                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            });
+
+            /*
+             * 🔴 الجلسة المنتهية توقف الاستطلاع نهائياً. بدون ذلك يستمرّ
+             * التبويب المتروك في ضرب مسار يعيد 401 كل خمس عشرة ثانية
+             * إلى الأبد.
+             */
+            if (res.status === 401 || res.status === 419 || res.status === 403) {
+                this.stop();
+                this.failed = true;
+                return;
+            }
+
+            if (!res.ok) throw new Error(res.status);
+
+            const data = await res.json();
+            const previous = this.unread;
+
+            this.items = data.notifications ?? [];
+            this.unread = data.unread_count ?? 0;
+            this.failed = false;
+
+            // النغمة عند الزيادة فقط — لا عند كل استطلاع ناجح.
+            if (this.unread > previous && previous !== 0) this.ping();
+        } catch {
+            /*
+             * ⚠️ فشل الشبكة صامت عمداً: انقطاع لحظي لا يستحق تنبيهاً، والجرس
+             * يبقي آخر قائمة معروفة بدل أن يفرغ نفسه.
+             */
+            this.failed = true;
+        } finally {
+            this.loading = false;
+        }
+    },
+
+    /* نغمة قصيرة مُولَّدة — بلا ملف صوت يُحمَّل مع كل صفحة. */
+    ping() {
+        if (!this.chime) return;
+
+        try {
+            const Ctx = window.AudioContext || window.webkitAudioContext;
+            if (!Ctx) return;
+
+            const ctx = new Ctx();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.frequency.value = 880;
+            gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.05, ctx.currentTime + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.25);
+
+            osc.connect(gain).connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.26);
+            osc.onended = () => ctx.close();
+        } catch {
+            // المتصفّح يمنع الصوت قبل أول تفاعل — لا شيء يُفعل حياله.
+        }
+    },
+
+    toggleChime() {
+        this.chime = !this.chime;
+
+        try {
+            localStorage.setItem('paledu-notif-chime', this.chime ? '1' : '0');
+        } catch {
+            // تفضيل عرض فقط: تعذّر حفظه لا يمنع تشغيله لهذه الجلسة.
+        }
+    },
+
+    csrf() {
+        return document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+    },
+
+    async markRead(item) {
+        if (item.read) return;
+
+        // ⚠️ تفاؤلي: الشارة تنقص فوراً ثم يصحّحها الخادم. الانتظار حتى تعود
+        // الاستجابة يجعل النقرة تبدو غير مستجيبة على شبكة بطيئة.
+        item.read = true;
+        this.unread = Math.max(0, this.unread - 1);
+
+        try {
+            const res = await fetch(endpoints.read.replace('__ID__', item.id), {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': this.csrf(),
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+
+            if (res.ok) this.unread = (await res.json()).unread_count ?? this.unread;
+        } catch {
+            this.fetchItems();   // إعادة المزامنة عند الفشل
+        }
+    },
+
+    async markAll() {
+        this.items.forEach((item) => { item.read = true; });
+        this.unread = 0;
+
+        try {
+            await fetch(endpoints.readAll, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': this.csrf(),
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+        } catch {
+            this.fetchItems();
+        }
+    },
+
+    /* فتح إشعار: يُعلَّم مقروءاً ثم يُنتقل — لا العكس. */
+    async visit(item) {
+        await this.markRead(item);
+
+        if (item.url) window.location.href = item.url;
+    },
+}));
+/* ═══════════════════════════════════════════════════════════════
+   صفحة الإشعارات — إجراءات غير متزامنة
+   ═══════════════════════════════════════════════════════════════ */
+
+/*
+ * 🔴 كل دالة هنا **تُرجع** النتيجة، والصفّ هو من يحدّث حالته منها. الأب لا
+ * يملك وصولاً إلى نطاق الابن في Alpine، فمحاولة قلب `read` من داخل الأب
+ * كانت ستفشل بصمت — تنجح الكتابة على الخادم ولا يتغيّر شيء على الشاشة.
+ */
+Alpine.data('notificationsPage', (endpoints, unreadCount, readCount) => ({
+    unread: unreadCount,
+    read: readCount,
+    total: unreadCount + readCount,
+    busy: false,
+
+    csrf() {
+        return document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+    },
+
+    async call(url, method) {
+        this.busy = true;
+
+        try {
+            const res = await fetch(url, {
+                method,
+                headers: {
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': this.csrf(),
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+
+            if (!res.ok) return null;
+
+            const data = await res.json();
+
+            // العدّادات تأتي من الخادم في كل استجابة، فلا تُحسب مرتين.
+            this.unread = data.unread_count ?? this.unread;
+            this.read = data.read_count ?? this.read;
+            this.total = data.total_count ?? this.total;
+
+            return data;
+        } catch {
+            return null;
+        } finally {
+            this.busy = false;
+        }
+    },
+
+    /* يقلب صفّاً بين مقروء وغير مقروء. يُرجع الحمولة المحدَّثة أو null. */
+    async toggle(id) {
+        const data = await this.call(endpoints.toggle.replace('__ID__', id), 'POST');
+
+        return data?.notification ?? null;
+    },
+
+    async remove(id) {
+        const data = await this.call(endpoints.destroy.replace('__ID__', id), 'DELETE');
+
+        return data !== null;
+    },
+
+    /*
+     * الانتقال بعد تعليم الإشعار مقروءاً لا قبله.
+     *
+     * ⚠️ يستعمل مسار read لا toggle: read متكافئ القوى (idempotent) فيترك
+     * المقروء مقروءاً، بينما toggle كان سيجعل فتحَ إشعارٍ مقروء يعيده غير
+     * مقروء — عكس ما تعنيه النقرة تماماً.
+     */
+    async visit(id, url) {
+        await this.call(endpoints.read.replace('__ID__', id), 'POST');
+
+        window.location.href = url;
+    },
+    /*
+     * 🔴 الإجراءان الجماعيان يعيدان تحميل الصفحة بعد نجاحهما، بعنوانها الحالي
+     * (فيبقى التبويب ورقم الصفحة). تحديث الصفوف في المكان كان سيترك ترقيم
+     * الصفحات كاذباً: حذف كل المقروءة من صفحة ٣ يترك صفحة ٣ فارغة وعدّاداً
+     * لا يطابق ما يُعرض.
+     */
+    async markAll() {
+        if (await this.call(endpoints.readAll, 'POST')) window.location.reload();
+    },
+
+    async clearRead() {
+        if (await this.call(endpoints.clearRead, 'DELETE')) window.location.reload();
+    },
+}));
+Alpine.data('sidebarDisclosure', (initiallyOpen = false) => ({
+    open: initiallyOpen,
+    collapsed: false,
+
+    init() {
+        /*
+         * 🔴 مصدر حالة الطيّ هو الشريط الجانبي نفسه لا [data-shell]: قشرة
+         * الأدمن لا تستعمل is-collapsed إطلاقاً (تلك لقشرتَي الطالب
+         * والمعلّم)، بل تبدّل lg:w-20 على [data-admin-sidebar] في
+         * initAdminShell. مراقبة العنصر الخطأ كانت ستفشل بصمت — بلا خطأ
+         * ولا شيء في الـconsole.
+         */
+        const sidebar = document.querySelector('[data-admin-sidebar]');
+        if (!sidebar) return;
+
+        const sync = () => {
+            this.collapsed = sidebar.classList.contains('lg:w-20');
+        };
+
+        sync();
+
+        /*
+         * ⚠️ مراقب لا مستمع حدث: الطيّ يُبدَّل بـclassList.toggle ولا يُطلق
+         * أي حدث. المراقبة على السمة نفسها هي الرابط الوحيد الذي لا ينكسر
+         * لو تغيّر ذلك الكود.
+         */
+        this.observer = new MutationObserver(sync);
+        this.observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+    },
+
+    destroy() {
+        this.observer?.disconnect();
+    },
+
+    /* مفتوحة دائماً في شريط الأيقونات — انظر تعليق القالب. */
+    get expanded() {
+        return this.open || this.collapsed;
+    },
+}));
+
+/* ═══════════════════════════════════════════════════════════════
+   صورة الحساب — قصّ وتدوير ومعاينة
+   ═══════════════════════════════════════════════════════════════ */
+
+Alpine.data('avatarEditor', () => ({
+    cropping: false,
+    viewing: false,
+    busy: false,
+    cropper: null,
+    fileName: '',
+
+    /* اختيار ملف يفتح المحرّر — ولا يرفع شيئاً بعد. */
+    pick(event) {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        this.fileName = file.name;
+
+        /*
+         * ⚠️ قراءة محلّية بالكامل: الصورة لا تغادر المتصفّح قبل أن يضغط
+         * المستخدم «تأكيد». إلغاء المحرّر يجب ألّا يترك ملفاً على الخادم.
+         */
+        const reader = new FileReader();
+        reader.onload = (e) => this.openCropper(e.target.result);
+        reader.readAsDataURL(file);
+
+        /*
+         * 🔴 تصفير حقل الاختيار: بدونه لا يُطلق `change` لو اختار المستخدم
+         * **نفس** الملف مرّة ثانية بعد الإلغاء — فيبدو الزر معطّلاً.
+         */
+        event.target.value = '';
+    },
+
+    openCropper(src) {
+        this.cropping = true;
+
+        this.$nextTick(() => {
+            const image = this.$refs.source;
+            image.src = src;
+
+            this.cropper?.destroy();
+
+            this.cropper = new Cropper(image, {
+                aspectRatio: 1,          // الصورة الرمزية دائرية — 1:1 حصراً
+                viewMode: 1,             // لا يخرج إطار القصّ عن حدود الصورة
+                autoCropArea: 0.9,
+                background: false,
+                responsive: true,
+                /*
+                 * ⚠️ الحاوية بـdir="ltr": أدوات cropper تحسب الإحداثيات
+                 * من اليسار، وقلبها مع الصفحة يجعل السحب يتحرّك عكس اليد.
+                 */
+            });
+
+            this.$refs.confirm?.focus();
+        });
+    },
+
+    rotate(degrees) {
+        this.cropper?.rotate(degrees);
+    },
+
+    zoom(ratio) {
+        this.cropper?.zoom(ratio);
+    },
+
+    reset() {
+        this.cropper?.reset();
+    },
+
+    /*
+     * 🔴 النتيجة تُوضَع في <input type="file"> حقيقي عبر DataTransfer، فيصل
+     * الخادم **ملفاً** يخضع لقاعدة mimes الاعتيادية. Base64 في حقل نصّي كان
+     * سيجعل نوع الملف ادّعاءَ العميل لا فحصَ الخادم.
+     */
+    confirm() {
+        if (!this.cropper || this.busy) return;
+
+        this.busy = true;
+
+        const canvas = this.cropper.getCroppedCanvas({
+            width: 512,
+            height: 512,
+            imageSmoothingQuality: 'high',
+        });
+
+        canvas.toBlob((blob) => {
+            if (!blob) {
+                this.busy = false;
+                return;
+            }
+
+            const file = new File([blob], this.safeName(), { type: 'image/png' });
+
+            /*
+             * ⚠️ DataTransfer غير متاح في متصفّحات قديمة جداً. في تلك الحالة
+             * لا نُسقط الرفع بصمت: نغلق المحرّر ونُبقي الرسالة ظاهرة بدل أن
+             * يضغط المستخدم زرّاً لا يفعل شيئاً.
+             */
+            if (typeof DataTransfer === 'undefined') {
+                this.busy = false;
+                this.cropping = false;
+                window.alert('متصفّحك لا يدعم القصّ داخل الصفحة — حدّثه أو ارفع صورة مربّعة.');
+                return;
+            }
+
+            const transfer = new DataTransfer();
+            transfer.items.add(file);
+            this.$refs.upload.files = transfer.files;
+
+            this.close();
+            this.$refs.form.submit();
+        }, 'image/png', 0.92);
+    },
+
+    /* اسم ملف آمن: اسم المصدر قد يحمل محارف مسار. */
+    safeName() {
+        const base = (this.fileName || 'avatar').replace(/\.[^.]+$/, '').replace(/[^\w-]+/g, '-');
+
+        return `${base || 'avatar'}.png`;
+    },
+
+    close() {
+        this.cropper?.destroy();
+        this.cropper = null;
+        this.cropping = false;
+        this.busy = false;
+    },
+
+    /* عارض الصورة بحجمها الكامل. */
+    view() {
+        this.viewing = true;
+    },
+
+    closeViewer() {
+        this.viewing = false;
+    },
+
+    destroy() {
+        this.cropper?.destroy();
+    },
+}));
 /* ⚠️ آخر سطر في الملف عمداً: start() تُطلق alpine:init تزامنياً،
    فكل Alpine.data() يجب أن يُسجَّل قبلها. */
 Alpine.start();

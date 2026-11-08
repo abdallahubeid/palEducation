@@ -68,6 +68,11 @@ return [
     'tab_lectures' => 'محاضرات',
     'tab_files' => 'ملفات',
     'module_completed_suffix' => 'مكتملة',
+    // ⚠️ اسم المجموعة الافتراضية: محاضرة بلا وحدة لا تختفي من تنقّل
+    // مادتها — تُجمَّع تحت عنوان محايد بدل أن تُسقَط.
+    'lecture_default_unit' => 'محاضرات المادة',
+    'lecture_now_playing' => 'جاري المشاهدة',
+    'lecture_unit_count' => ':count محاضرة',
     'course_outline_title' => 'محتوى المادة',
     'topic_text_label' => 'الملف النصي',
     'topic_video_label' => 'فيديو المحاضرة',

@@ -1,29 +1,15 @@
 <?php
 
+/*
+ | 🔁 The newsletter copy, the legal lines and all four link columns
+ | moved to `settings` (Setting::FOOTER_DEFAULTS) so an admin can edit
+ | them. What stays here is INTERFACE text — a form label, a button, the
+ | tagline — which is not admin-authored content.
+ */
 return [
-    'newsletter_title' => 'كن أول من يعرف',
-    'newsletter_body' => 'مستجدّات الوزارة، ومواعيد الامتحانات، والمواد الجديدة على المنصة — رسالة واحدة أسبوعياً، دون حشو.',
     'email_label' => 'بريدك الإلكتروني',
     'subscribe' => 'اشترك',
 
     'tagline' => 'منصة تعليمية لطلبة الثانوية العامة في فلسطين، بمحتوى مخصّص لكل فرع على حدة.',
 
-    'product' => 'المنصة',
-    'platform' => 'عن المنصة',
-    'support' => 'الدعم',
-    'legal' => 'قانوني',
-
-    'library' => 'المكتبة',
-    'teachers' => 'المعلّمون',
-    'join_us' => 'انضم كمعلّم',
-    'contact' => 'تواصل معنا',
-    'help_center' => 'مركز المساعدة',
-    'faq' => 'الأسئلة الشائعة',
-    'report_issue' => 'الإبلاغ عن مشكلة',
-    'privacy' => 'سياسة الخصوصية',
-    'terms' => 'الشروط والأحكام',
-    'refund' => 'سياسة الاسترجاع',
-
-    'rights' => 'pal education — جميع الحقوق محفوظة',
-    'made_in' => 'صُنع في فلسطين',
 ];

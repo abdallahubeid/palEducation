@@ -29,8 +29,22 @@ class DatabaseSeeder extends Seeder
             BranchSeeder::class,
             AcademicTermSeeder::class,
             SubjectSeeder::class,
+            // After SubjectSeeder: the roster attaches real lectures, which need
+            // both a subject and an academic term to exist first.
+            TeacherSeeder::class,
             SliderSeeder::class,
             NavbarSettingSeeder::class,
+            CtaSettingSeeder::class,
+            HowSettingSeeder::class,
+            StepSeeder::class,
+            FeatureSeeder::class,
+            PricingPlanSeeder::class,
+            // After BranchSeeder: each review creates a student, and
+            // students.branch_id is NOT NULL with a foreign key.
+            TestimonialSeeder::class,
+            FaqSeeder::class,
+            NewsSeeder::class,
+            SettingSeeder::class,
         ]);
 
         if (! app()->environment('local')) {
@@ -54,10 +68,14 @@ class DatabaseSeeder extends Seeder
             'email_verified_at' => now(),
         ])->syncRoleToShape();
 
+        // 🔴 is_publicly_listed = false. This is a LOGIN fixture, not a
+        // profile: the public roster now renders straight from this table,
+        // so leaving it true put "معلّم تجريبي" with no portrait and zero
+        // lectures on the landing page beside the four real teachers.
         $teacher = Teacher::create([
             'full_name' => 'معلّم تجريبي',
             'title' => 'معلّم الرياضيات',
-            'is_publicly_listed' => true,
+            'is_publicly_listed' => false,
         ]);
         $teacher->user()->create([
             'email' => 'teacher@paleducation.test',

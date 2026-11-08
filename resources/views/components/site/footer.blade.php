@@ -1,40 +1,20 @@
 @php
-    $columns = [
-        [
-            'title' => __('footer.product'),
-            'links' => [
-                ['label' => __('nav.branches'),    'route' => 'branches.index'],
-                ['label' => __('nav.pricing'),     'route' => 'pricing'],
-                ['label' => __('footer.library'),  'route' => null],
-                ['label' => __('footer.teachers'), 'route' => null],
-            ],
-        ],
-        [
-            'title' => __('footer.platform'),
-            'links' => [
-                ['label' => __('nav.about'),      'route' => null, 'anchor' => 'about'],
-                ['label' => __('nav.news'),       'route' => 'news.index'],
-                ['label' => __('footer.join_us'), 'route' => null],
-                ['label' => __('footer.contact'), 'route' => 'contact'],
-            ],
-        ],
-        [
-            'title' => __('footer.support'),
-            'links' => [
-                ['label' => __('footer.help_center'),  'route' => null],
-                ['label' => __('footer.faq'),          'route' => null],
-                ['label' => __('footer.report_issue'), 'route' => null],
-            ],
-        ],
-        [
-            'title' => __('footer.legal'),
-            'links' => [
-                ['label' => __('footer.privacy'), 'route' => null],
-                ['label' => __('footer.terms'),   'route' => null],
-                ['label' => __('footer.refund'),  'route' => null],
-            ],
-        ],
-    ];
+    /*
+     * 🔴 The footer reads settings DIRECTLY rather than taking them from a
+     * controller. It renders on every public page — home, branches, news,
+     * contact, pricing, the auth screens — and half of those are still
+     * Route::view with no controller to pass anything through. One read here
+     * beats threading the same array through eight call sites.
+     *
+     * ⚠️ Two queries total (Setting::footer() and the columns share one
+     * resolve() call each), not one per link.
+     */
+    $footer = \App\Models\Setting::footer();
+    $columns = \App\Models\Setting::footerColumns();
+
+    // :year is substituted at render time — a hardcoded year in the stored
+    // string is correct for a few months and wrong forever after.
+    $copyright = str_replace(':year', (string) date('Y'), $footer['copyright_text']);
 @endphp
 
 <footer class="bg-canvas-dark">
@@ -44,12 +24,26 @@
 
             {{-- النشرة البريدية وحدها في العمود الأول --}}
             <div class="sm:col-span-2 lg:col-span-1">
-                <h2 class="text-h5 font-semibold text-on-dark">{{ __('footer.newsletter_title') }}</h2>
+                <h2 class="text-h5 font-semibold text-on-dark">{{ $footer['newsletter_title'] }}</h2>
                 <p class="mt-2.5 max-w-sm text-caption leading-relaxed text-on-dark-muted">
-                    {{ __('footer.newsletter_body') }}
+                    {{ $footer['newsletter_sub_title'] }}
                 </p>
 
-                <form class="mt-5 flex max-w-sm flex-col gap-2.5 sm:flex-row" method="POST" action="#">
+                {{-- الحالة تُعرَض هنا لا في صفحة منفصلة: النموذج في تذييل كل
+                     صفحة، فالعودة إلى الصفحة نفسها تُبقي القارئ حيث كان. --}}
+                @if (session('newsletter.status'))
+                    <p role="status"
+                       class="mt-5 rounded-lg bg-accent/15 px-4 py-3 text-caption text-on-dark">
+                        {{ __('newsletter.'.session('newsletter.status')) }}
+                    </p>
+                @endif
+
+                @error('email')
+                    <p class="mt-5 rounded-lg bg-error/20 px-4 py-3 text-caption text-on-dark">{{ $message }}</p>
+                @enderror
+
+                <form class="mt-5 flex max-w-sm flex-col gap-2.5 sm:flex-row"
+                      method="POST" action="{{ route('newsletter.subscribe') }}">
                     @csrf
                     <label for="newsletter-email" class="sr-only">{{ __('footer.email_label') }}</label>
                     <input id="newsletter-email"
@@ -82,7 +76,12 @@
                     <ul class="mt-4 flex flex-col gap-1 lg:gap-3">
                         @foreach ($column['links'] as $link)
                             <li>
-                                <a href="{{ isset($link['anchor']) ? route('home') . '#' . $link['anchor'] : ($link['route'] && Route::has($link['route']) ? route($link['route']) : '#') }}"
+                                {{-- The href comes straight from the parsed
+                                     link. Setting::parseLinks() has already
+                                     forced anything that is not #, /… or
+                                     http(s)://… down to # — these render on
+                                     every public page. --}}
+                                <a href="{{ $link['href'] }}"
                                    class="inline-flex min-h-11 items-center text-caption text-on-dark-muted transition
                                           hover:text-accent-on-dark lg:min-h-0">
                                     {{ $link['label'] }}
@@ -105,9 +104,13 @@
 
             <div class="flex flex-col items-center gap-1.5 text-caption text-on-dark/45
                         sm:flex-row sm:gap-5">
-                <p>&copy; <span class="num">{{ date('Y') }}</span> {{ __('footer.rights') }}</p>
+                {{-- The year lives inside the stored string via :year,
+                     so an admin can reword the whole line freely. --}}
+                <p>&copy; {{ $copyright }}</p>
                 <span class="hidden size-1 rounded-full bg-on-dark/20 sm:block" aria-hidden="true"></span>
-                <p>{{ __('footer.made_in') }}</p>
+                @if (filled($footer['made_in_text']))
+                    <p>{{ $footer['made_in_text'] }}</p>
+                @endif
             </div>
         </div>
     </div>

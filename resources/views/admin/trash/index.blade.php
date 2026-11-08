@@ -78,7 +78,9 @@
 
                     <form method="POST" action="{{ route('admin.trash.force-selected') }}"
                           data-trash-form="force"
-                          onsubmit="return confirm('حذف نهائي للعناصر المحددة بلا رجعة. متابعة؟')">
+                          data-confirm-title="حذف نهائي للمحدد"
+                          data-confirm="لا يمكن استعادة العناصر المحددة ولا مرفقاتها بعد هذا الإجراء."
+                          data-confirm-action="نعم، احذفها نهائياً">
                         @csrf
                         @method('DELETE')
                         @if ($activeType)<input type="hidden" name="type" value="{{ $activeType }}">@endif
@@ -97,7 +99,9 @@
                 </form>
 
                 <form method="POST" action="{{ route('admin.trash.empty') }}"
-                      onsubmit="return confirm('سيُحذف كل المعروض نهائياً بلا رجعة. متابعة؟')">
+                      data-confirm-title="تفريغ السلّة"
+                      data-confirm="سيُحذف كل المعروض نهائياً بلا رجعة، هو ومرفقاته."
+                      data-confirm-action="نعم، فرّغ السلّة">
                     @csrf
                     @method('DELETE')
                     @if ($activeType)<input type="hidden" name="type" value="{{ $activeType }}">@endif
@@ -168,7 +172,9 @@
                                              الحذف الناعم قابل للتراجع، وهذا ليس كذلك. --}}
                                         <form method="POST"
                                               action="{{ route('admin.trash.force-destroy', ['type' => $item['type'], 'id' => $item['id']]) }}"
-                                              onsubmit="return confirm('حذف نهائي بلا رجعة. لا يمكن استعادة العنصر ولا مرفقاته بعده. متابعة؟')">
+                                              data-confirm-title="حذف «{{ $item['title'] }}» نهائياً"
+                                              data-confirm="لا يمكن استعادة العنصر ولا مرفقاته بعد هذا الإجراء."
+                                              data-confirm-action="نعم، احذفه نهائياً">
                                             @csrf
                                             @method('DELETE')
                                             @if ($activeType)<input type="hidden" name="type" value="{{ $activeType }}">@endif

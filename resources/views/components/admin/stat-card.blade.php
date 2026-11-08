@@ -5,6 +5,15 @@
     'icon' => 'chart',
     'accent' => false,
     'href' => null,
+
+    /*
+     * نسبة التغيّر مقابل الفترة السابقة.
+     *
+     * ⚠️ null تعني «لا أساس للمقارنة» لا «صفر». قفزة من 0 إلى 5 ليست
+     * «+500%» — لا نسبة لها أصلاً، وطباعة واحدة تخترع أساساً لم يوجد.
+     * القيمتان تُميَّزان، ولا تُدمجان في 0.
+     */
+    'trend' => null,
 ])
 
 @php
@@ -46,7 +55,35 @@
         </span>
     </div>
 
-    @if ($hint)
-        <p class="relative mt-3 text-micro text-stone">{{ $hint }}</p>
+    @if ($trend !== null || $hint)
+        <div class="relative mt-3 flex flex-wrap items-center gap-2">
+            @if ($trend !== null)
+                @php
+                    /*
+                     * 🔴 كل صنف مكتوب حرفياً كاملاً — فاحص Tailwind لا ينفّذ
+                     * PHP، فـ"text-{$tone}-deep" لا يولّد أي CSS إطلاقاً.
+                     */
+                    $trendTones = [
+                        'up' => 'bg-accent/10 text-accent-deep',
+                        'down' => 'bg-error/10 text-error-deep',
+                        'flat' => 'bg-surface text-stone',
+                    ];
+
+                    $direction = $trend > 0 ? 'up' : ($trend < 0 ? 'down' : 'flat');
+                    $sign = $trend > 0 ? '+' : '';
+                @endphp
+
+                {{-- الرقم والنسبة يبقيان LTR داخل صفحة RTL: علامة الإشارة
+                     أمام الرقم تنقلب بصرياً بدونه فتصير «‎12.5%+‎». --}}
+                <span class="inline-flex items-center rounded-md px-1.5 py-0.5 text-micro font-semibold
+                             {{ $trendTones[$direction] }}">
+                    <bdi dir="ltr" class="tabular-nums">{{ $sign }}{{ $trend }}%</bdi>
+                </span>
+            @endif
+
+            @if ($hint)
+                <p class="text-micro text-stone">{{ $hint }}</p>
+            @endif
+        </div>
     @endif
 </{{ $tag }}>

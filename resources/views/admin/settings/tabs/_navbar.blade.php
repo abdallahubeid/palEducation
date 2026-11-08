@@ -43,10 +43,10 @@
                 {{-- dir=ltr على الحقل وحده: الرابط لاتيني، والتسمية عربية --}}
                 <input type="url"
                        id="{{ $field['key'] }}"
-                       name="{{ $field['key'] }}"
+                       name="navbar[{{ $field['key'] }}]"
                        dir="ltr"
                        placeholder="{{ $field['placeholder'] }}"
-                       value="{{ old($field['key'], $settings['navbar.'.$field['key']] ?? null) }}"
+                       value="{{ old('navbar.'.$field['key'], $settings['navbar.'.$field['key']] ?? null) }}"
                        class="{{ $inputClass }}">
             </div>
         @endforeach

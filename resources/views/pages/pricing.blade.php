@@ -124,7 +124,6 @@
                 </div>
             </div>
 
-            <p class="mt-8 text-caption text-stone">{{ __('home.pricing_note') }}</p>
         </div>
     </section>
 

@@ -28,16 +28,7 @@
             {{ __('common.brand') }}
         </a>
 
-        <button type="button" data-sidebar-collapse-toggle
-                data-collapse-label="{{ __('student.sidebar_collapse') }}"
-                data-expand-label="{{ __('student.sidebar_expand') }}"
-                class="hidden size-9 shrink-0 place-items-center rounded-full text-steel transition hover:bg-surface hover:text-ink lg:grid"
-                aria-label="{{ __('student.sidebar_collapse') }}"
-                aria-expanded="true"
-                title="{{ __('student.sidebar_collapse') }}">
-            <x-icon name="chevron-down" class="size-4 rotate-90 transition-transform duration-300" />
-        </button>
-
+        {{-- زرّ إغلاق الدرج (الجوال) يبقى في الترويسة — غرضه مختلف عن الطيّ. --}}
         <button type="button" data-sidebar-close
                 class="grid size-9 place-items-center rounded-full text-steel transition hover:bg-surface hover:text-ink lg:hidden"
                 aria-label="{{ __('student.sidebar_close') }}">
@@ -64,4 +55,31 @@
             @endforeach
         </ul>
     </nav>
+
+    {{--
+        زرّ الطيّ — أسفل الشريط، بنفس بنية قشرتَي الأدمن والمعلّم.
+
+        🔴 نُقل من الترويسة إلى هنا: في الأعلى كان يزاحم اسم المنصّة وزرّ
+        إغلاق الدرج، وموضعه في اللوحتين الأخريين هو الأسفل — فالقشرات الثلاث
+        تتصرّف بالمثل بدل أن يتعلّم المستخدم ثلاثة مواضع.
+
+        ⚠️ lg:block فقط: على الجوال الشريط درج يُفتح ويُغلق، ولا معنى لطيّه
+        إلى شريط أيقونات — ولهذا بقي زرّ الإغلاق في الترويسة.
+    --}}
+    <div class="hidden shrink-0 border-t border-hairline p-3 lg:block">
+        <button type="button" data-sidebar-collapse-toggle
+                data-collapse-label="{{ __('student.sidebar_collapse') }}"
+                data-expand-label="{{ __('student.sidebar_expand') }}"
+                class="flex w-full cursor-pointer items-center gap-3 overflow-hidden rounded-lg px-3 py-2
+                       text-ui text-steel transition hover:bg-surface hover:text-ink"
+                aria-label="{{ __('student.sidebar_collapse') }}"
+                aria-expanded="true"
+                title="{{ __('student.sidebar_collapse') }}">
+            {{-- سهم رأسي مُدار: يدور مع حالة الطيّ ولا ينعكس مع الاتجاه. --}}
+            <x-icon name="chevron-down" class="size-5 shrink-0 rotate-90 transition-transform duration-300" />
+            <span data-sidebar-label class="truncate transition-opacity duration-200">
+                {{ __('student.sidebar_collapse') }}
+            </span>
+        </button>
+    </div>
 </aside>

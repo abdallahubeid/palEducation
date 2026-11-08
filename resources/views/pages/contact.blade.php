@@ -6,68 +6,34 @@
      | on one screen (form + channels + hours + an accent FAQ card), which read as
      | busy and made the aside compete with the form. Now there are TWO cards -
      | the form, and one channels card with hours folded into its foot - plus a
-     | single quiet line of text for the FAQ deflection. Fewer containers, more
-     | air, one obvious action.
+     | single quiet line of text for the FAQ deflection.
      |
-     | Contact details are mock. Every value is a Latin/numeric string that sits
-     | inside Arabic prose, so each is rendered through <bdi dir="ltr"> - an
-     | un-isolated phone number or email visually reorders in RTL and becomes
+     | 🔁 The contact details used to be hardcoded here. They now arrive from
+     | `settings` via ContactController as $contact, $channels and $hoursRows.
+     | The dial-safe forms of each number are derived there too: tel: and wa.me
+     | both reject spaces, and wa.me rejects the leading plus as well.
+     |
+     | ⚠️ Every latin or numeric value still renders inside <bdi dir="ltr"> -
+     | an un-isolated phone number or email visually reorders in RTL and becomes
      | impossible to read or copy correctly.
      */
-    $phoneDisplay   = '+970 599 123 456';
-    $phoneDial      = '+970599123456';   // bare form: tel: and wa.me reject spaces
-    $whatsappDigits = '970599123456';    // wa.me wants digits only, no plus
-    $email          = 'support@paleducation.ps';
-
-    $channels = [
-        [
-            'icon'  => 'users',
-            'label' => __('public.contact_whatsapp'),
-            'value' => $phoneDisplay,
-            'href'  => 'https://wa.me/' . $whatsappDigits,
-            'external' => true,
-        ],
-        [
-            'icon'  => 'card',
-            'label' => __('public.contact_phone_channel'),
-            'value' => $phoneDisplay,
-            'href'  => 'tel:' . $phoneDial,
-            'external' => false,
-        ],
-        [
-            'icon'  => 'mail',
-            'label' => __('public.contact_email_channel'),
-            'value' => $email,
-            'href'  => 'mailto:' . $email,
-            'external' => false,
-        ],
-        [
-            'icon'  => 'home',
-            'label' => __('public.contact_office'),
-            'value' => __('public.contact_office_desc'),
-            'href'  => null,          // static: renders as a div, never a dead link
-            'external' => false,
-            'plain' => true,          // Arabic text, so no <bdi> and no LTR
-        ],
-    ];
-
-    $topics = [
-        'general' => __('public.contact_topic_general'),
-        'support' => __('public.contact_topic_support'),
-        'sales'   => __('public.contact_topic_sales'),
-        'signup'  => __('public.contact_topic_signup'),
-    ];
+    // 🔴 From the ENUM, not a literal list. The controller validates the
+    // submitted value against those same cases, so a select built from a
+    // second copy could offer an option the server would reject.
+    $topics = \App\Enums\ContactSubject::options();
 @endphp
 
-<x-layouts.public :title="__('public.contact_eyebrow')">
+<x-layouts.public :title="$contact['badge_text']">
 
     {{-- ═══ Masthead ═══ --}}
     <section class="border-b border-hairline bg-canvas py-14 lg:py-20">
         <div class="mx-auto max-w-[1280px] px-6">
             <div class="measure">
-                <x-ui.rule-label>{{ __('public.contact_eyebrow') }}</x-ui.rule-label>
-                <h1 class="mt-5 text-h1 font-bold text-ink">{{ __('public.contact_title') }}</h1>
-                <p class="mt-4 text-lead leading-[1.8] text-steel">{{ __('public.contact_lede') }}</p>
+                <x-ui.rule-label>{{ $contact['badge_text'] }}</x-ui.rule-label>
+                <h1 class="mt-5 text-h1 font-bold text-ink">{{ $contact['title'] }}</h1>
+                @if (filled($contact['sub_title']))
+                    <p class="mt-4 text-lead leading-[1.8] text-steel">{{ $contact['sub_title'] }}</p>
+                @endif
             </div>
         </div>
     </section>
@@ -95,13 +61,30 @@
                             left looking at a form they already sent. Same pattern as the
                             forgot-password screen.
                         --}}
-                        <div data-contact-panel="form">
+                        {{-- 🔁 A REAL form now. It used to be a JS-only mock:
+                             the submit button toggled a success panel and
+                             nothing was ever sent anywhere. --}}
+                        <form method="POST" action="{{ route('contact.store') }}"
+                              data-contact-panel="form" @if (session('contact.sent')) hidden @endif>
+                            @csrf
+
                             <h2 class="text-h4 font-semibold text-ink">{{ __('public.contact_form_title') }}</h2>
+
+                            {{-- Validation errors come back on a redirect, so
+                                 they are shown here rather than swallowed. --}}
+                            @if ($errors->any())
+                                <ul class="mt-5 space-y-1 rounded-xl border border-error/25 bg-error/10 px-4 py-3">
+                                    @foreach ($errors->all() as $error)
+                                        <li class="text-caption text-error-deep">{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            @endif
 
                             <div class="mt-7 grid gap-5 sm:grid-cols-2">
                                 <x-ui.input :label="__('public.contact_name')"
                                             name="name"
                                             required
+                                            :value="old('name')"
                                             :placeholder="__('public.contact_name_placeholder')" />
 
                                 {{-- dir=ltr on the FIELD only - the Arabic label keeps its own direction --}}
@@ -110,6 +93,7 @@
                                             type="email"
                                             dir="ltr"
                                             required
+                                            :value="old('email')"
                                             placeholder="name@example.com" />
 
                                 <x-ui.input :label="__('public.contact_phone')"
@@ -117,11 +101,15 @@
                                             type="tel"
                                             dir="ltr"
                                             :hint="__('public.contact_phone_hint')"
+                                            :value="old('phone')"
                                             placeholder="+970 5xx xxx xxx"
                                             class="sm:col-span-2" />
 
+                                {{-- 🔴 name matches the COLUMN, not the old
+                                     mock's "topic": the controller validates
+                                     subject_type against the enum. --}}
                                 <x-ui.select :label="__('public.contact_topic')"
-                                             name="topic"
+                                             name="subject_type"
                                              required
                                              :placeholder="__('public.contact_topic_placeholder')"
                                              :options="$topics"
@@ -142,19 +130,24 @@
                                     A real <button>, not an anchor: it carries a disabled
                                     state while sending, which an anchor cannot express.
                                 --}}
+                                {{-- type=submit, not button: the form posts
+                                     for real, and the JS only adds the
+                                     "sending…" label on top. --}}
                                 <x-ui.button variant="primary"
                                              size="md"
-                                             type="button"
+                                             type="submit"
                                              class="w-full shrink-0 sm:w-auto"
                                              data-contact-submit
                                              data-sending-label="{{ __('public.contact_sending') }}">
                                     {{ __('public.contact_submit') }}
                                 </x-ui.button>
                             </div>
-                        </div>
+                        </form>
 
-                        {{-- Success panel --}}
-                        <div data-contact-panel="success" hidden class="py-10 text-center">
+                        {{-- Success panel. Shown by the SERVER after a real
+                             submission, so it works with JS disabled too. --}}
+                        <div data-contact-panel="success" @unless (session('contact.sent')) hidden @endunless
+                             class="py-10 text-center">
                             <span class="mx-auto grid size-16 place-items-center rounded-full bg-accent text-on-primary">
                                 <x-icon name="check" class="size-8" />
                             </span>
@@ -181,6 +174,11 @@
                 <aside class="mt-8 lg:col-span-5 lg:col-start-8 lg:mt-0">
                     <div class="rounded-xxl bg-canvas p-6 shadow-subtle ring-1 ring-hairline sm:p-7">
                         <h2 class="text-h5 font-semibold text-ink">{{ __('public.contact_channels_title') }}</h2>
+
+                        {{-- ⚠️ Validation guarantees at least one channel, so an
+                             empty list here means every optional row was cleared
+                             after the required one — still worth not rendering a
+                             bare <ul>. --}}
 
                         <ul class="mt-2 flex flex-col divide-y divide-hairline-soft">
                             @foreach ($channels as $c)
@@ -237,19 +235,31 @@
                         <div class="mt-5 rounded-lg bg-surface p-4">
                             <p class="text-caption font-semibold text-stone">{{ __('public.contact_hours_title') }}</p>
 
-                            <dl class="mt-3 flex flex-col gap-2 text-ui">
-                                <div class="flex items-center justify-between gap-3">
-                                    <dt class="text-steel">{{ __('public.contact_hours_weekdays') }}</dt>
-                                    <dd><bdi dir="ltr" class="num font-semibold text-ink">{{ __('public.contact_hours_weekdays_time') }}</bdi></dd>
-                                </div>
+                            {{-- Rows come parsed from one textarea: `Label: value`
+                                 split on the FIRST colon, because Arabic clock
+                                 times carry colons of their own. A line without
+                                 one renders as a note under the table. --}}
+                            @php
+                                $hourPairs = array_filter($hoursRows, fn ($row) => $row['label'] !== null);
+                                $hourNotes = array_filter($hoursRows, fn ($row) => $row['label'] === null);
+                            @endphp
 
-                                <div class="flex items-center justify-between gap-3">
-                                    <dt class="text-steel">{{ __('public.contact_hours_friday') }}</dt>
-                                    <dd class="font-medium text-stone">{{ __('public.contact_hours_closed') }}</dd>
-                                </div>
-                            </dl>
+                            @if ($hourPairs !== [])
+                                <dl class="mt-3 flex flex-col gap-2 text-ui">
+                                    @foreach ($hourPairs as $row)
+                                        <div class="flex items-center justify-between gap-3">
+                                            <dt class="text-steel">{{ $row['label'] }}</dt>
+                                            {{-- bdi: a clock range is numeric and
+                                                 must not mirror inside RTL. --}}
+                                            <dd><bdi dir="ltr" class="num font-semibold text-ink">{{ $row['value'] }}</bdi></dd>
+                                        </div>
+                                    @endforeach
+                                </dl>
+                            @endif
 
-                            <p class="mt-3 text-caption leading-relaxed text-stone">{{ __('public.contact_hours_note') }}</p>
+                            @foreach ($hourNotes as $row)
+                                <p class="mt-3 text-caption leading-relaxed text-stone">{{ $row['value'] }}</p>
+                            @endforeach
                         </div>
                     </div>
 
@@ -257,14 +267,19 @@
                         FAQ deflection as one quiet line, not a bordered accent card.
                         Boxing it made it compete with the form's CTA for attention.
                     --}}
-                    <p class="mt-6 text-body leading-[1.75] text-steel">
-                        {{ __('public.contact_faq_body') }}
-                        <a href="{{ route('pricing') }}#faq"
-                           class="inline-flex min-h-11 items-center gap-1.5 font-semibold text-accent-deep transition hover:underline">
-                            {{ __('public.contact_faq_action') }}
-                            <x-icon name="arrow" class="size-4 rtl:-scale-x-100" />
-                        </a>
-                    </p>
+                    @if (filled($contact['faq_notice']) || filled($contact['faq_btn_text']))
+                        <p class="mt-6 text-body leading-[1.75] text-steel">
+                            {{ $contact['faq_notice'] }}
+
+                            @if (filled($contact['faq_btn_text']) && filled($contact['faq_btn_link']))
+                                <a href="{{ $contact['faq_btn_link'] }}"
+                                   class="inline-flex min-h-11 items-center gap-1.5 font-semibold text-accent-deep transition hover:underline">
+                                    {{ $contact['faq_btn_text'] }}
+                                    <x-icon name="arrow" class="size-4 rtl:-scale-x-100" />
+                                </a>
+                            @endif
+                        </p>
+                    @endif
                 </aside>
             </div>
         </div>

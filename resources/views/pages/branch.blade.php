@@ -1,51 +1,34 @@
 @php
-    // بيانات عرض ثابتة — تُستبدل باستعلام الفرع عند بناء الخادم.
-    // الفرع الحالي يُحدَّد من {slug} المسار؛ نستعمل العلمي كنموذج.
-    $slug = request()->route('branch') ?? 'scientific';
-
-    $catalog = [
-        'scientific' => [
-            'name' => 'الفرع العلمي', 'icon' => 'beaker', 'tone' => 'accent',
-            'summary' => 'الفرع الذي يفتح أبواب كليات الطب والهندسة والعلوم. مواده تقوم على الفهم لا الحفظ — ولهذا كل محاضرة هنا يتبعها كويز فوري يقيس فهمك لا ذاكرتك.',
-            'subjects' => [
-                ['name' => 'الرياضيات', 'teacher' => 'أ. سامر خليل', 'icon' => 'beaker',  'tone' => 'accent', 'lectures' => 12, 'files' => 8],
-                ['name' => 'الفيزياء',  'teacher' => 'أ. رنا عوض',   'icon' => 'compass', 'tone' => 'tag',    'lectures' => 9,  'files' => 5],
-                ['name' => 'الكيمياء',  'teacher' => 'أ. وليد حمد',  'icon' => 'beaker',  'tone' => 'amber',  'lectures' => 10, 'files' => 6],
-                ['name' => 'الأحياء',   'teacher' => 'أ. هدى ناصر',  'icon' => 'book',    'tone' => 'warn',   'lectures' => 11, 'files' => 7],
-                ['name' => 'اللغة العربية', 'teacher' => 'أ. مازن سالم', 'icon' => 'book', 'tone' => 'tag',   'lectures' => 8,  'files' => 4],
-                ['name' => 'اللغة الإنجليزية', 'teacher' => 'أ. لينا فرح', 'icon' => 'book', 'tone' => 'accent', 'lectures' => 8, 'files' => 5],
-                ['name' => 'التربية الإسلامية', 'teacher' => 'أ. أحمد بشير', 'icon' => 'book', 'tone' => 'amber', 'lectures' => 6, 'files' => 3],
-            ],
-            'teachers' => [
-                ['name' => 'أ. سامر خليل', 'photo' => 'images/img1/team-1.jpg', 'subject' => 'الرياضيات', 'initials' => 'س خ', 'lectures' => 12, 'tone' => 'accent'],
-                ['name' => 'أ. رنا عوض',   'photo' => 'images/img1/team-2.jpg', 'subject' => 'الفيزياء',  'initials' => 'ر ع', 'lectures' => 9,  'tone' => 'tag'],
-                ['name' => 'أ. وليد حمد',  'photo' => 'images/img1/team-3.jpg', 'subject' => 'الكيمياء',  'initials' => 'و ح', 'lectures' => 10, 'tone' => 'amber'],
-                ['name' => 'أ. هدى ناصر',  'photo' => 'images/img1/team-4.jpg', 'subject' => 'الأحياء',   'initials' => 'ه ن', 'lectures' => 11, 'tone' => 'warn'],
-            ],
-        ],
-    ];
-
-    $branch = $catalog[$slug] ?? $catalog['scientific'];
-
-    $totalLectures = array_sum(array_column($branch['subjects'], 'lectures'));
-    $totalFiles = array_sum(array_column($branch['subjects'], 'files'));
-
+    /*
+     * 🔴 كل شيء هنا يأتي من الكنترولر. كان هذا الملف يحمل «كتالوجاً» ثابتاً
+     * لفرع واحد (العلمي) ويعرضه لأي slug — أي أن /branches/literary كانت
+     * تعرض مواد الفرع العلمي وأساتذته تحت اسم الفرع الأدبي.
+     *
+     * الوحيد الباقي هنا خريطة النغمات: قيمة accent_token اسم توكن، وربطها
+     * بصنف Tailwind يجب أن يمرّ عبر مصفوفة ثابتة تُكتب فيها الأصناف كاملة
+     * حرفياً — الفاحص لا ينفّذ PHP.
+     */
     $heroTones = [
         'accent' => 'bg-accent/14 text-accent-deep',
-        'tag'    => 'bg-tag/12 text-tag',
-        'amber'  => 'bg-amber/12 text-amber-deep',
-        'warn'   => 'bg-warn/14 text-warn-deep',
+        'tag' => 'bg-tag/12 text-tag',
+        'amber' => 'bg-amber/12 text-amber-deep',
+        'warn' => 'bg-warn/14 text-warn-deep',
     ];
 
-    $stats = [
-        ['value' => count($branch['subjects']), 'label' => __('public.branch_stat_subjects')],
-        ['value' => count($branch['teachers']), 'label' => __('public.branch_stat_teachers')],
-        ['value' => $totalLectures,             'label' => __('public.branch_stat_lectures')],
-        ['value' => $totalFiles,                'label' => __('public.branch_stat_files')],
+    $heroTone = $heroTones[$branch->accent_token] ?? $heroTones['accent'];
+
+    $statCards = [
+        ['value' => $stats['subjects'], 'label' => __('public.branch_stat_subjects')],
+        ['value' => $stats['teachers'], 'label' => __('public.branch_stat_teachers')],
+        ['value' => $stats['lectures'], 'label' => __('public.branch_stat_lectures')],
+        ['value' => $stats['files'], 'label' => __('public.branch_stat_files')],
     ];
+
+    // زرّ التسجيل: مسار حقيقي أو لا زرّ. Route::has يمنع 500 لو لم يُسجَّل بعد.
+    $enrollHref = Route::has('auth.register') ? route('auth.register') : '#';
 @endphp
 
-<x-layouts.public :title="$branch['name']">
+<x-layouts.public :title="$branch->name">
 
     {{-- هيرو الفرع --}}
     <section class="border-b border-hairline bg-canvas py-10 lg:py-14">
@@ -53,36 +36,42 @@
             <x-ui.breadcrumb :items="[
                 ['label' => __('nav.home'), 'href' => route('home')],
                 ['label' => __('public.branch_all_branches'), 'href' => route('branches.index')],
-                ['label' => $branch['name']],
+                ['label' => $branch->name],
             ]" />
 
             <div class="mt-6 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                 <div class="max-w-2xl">
                     <div class="flex items-center gap-4">
-                        <span class="grid size-16 shrink-0 place-items-center rounded-xl {{ $heroTones[$branch['tone']] }}">
-                            <x-icon :name="$branch['icon']" class="size-8" />
+                        <span class="grid size-16 shrink-0 place-items-center rounded-xl {{ $heroTone }}">
+                            <x-icon :name="$branch->icon ?? 'book'" class="size-8" />
                         </span>
 
                         <div class="min-w-0">
                             <p class="text-micro font-semibold text-stone">{{ __('public.branch_eyebrow') }}</p>
-                            <h1 class="mt-1 text-h1 font-bold text-ink">{{ $branch['name'] }}</h1>
+                            <h1 class="mt-1 text-h1 font-bold text-ink">{{ $branch->name }}</h1>
                         </div>
                     </div>
 
-                    {{-- نص يُقرأ فعلاً: 16px · 1.75 · بعرض قراءة محدود --}}
-                    <p class="measure mt-5 text-body leading-[1.75] text-steel">{{ $branch['summary'] }}</p>
+                    {{-- نص يُقرأ فعلاً: 16px · 1.75 · بعرض قراءة محدود.
+                         يُسقَط كاملاً لو كان الوصف فارغاً بدل ترك فراغ. --}}
+                    @if (filled($branch->description))
+                        <p class="measure mt-5 text-body leading-[1.75] text-steel">{{ $branch->description }}</p>
+                    @endif
                 </div>
 
+                {{-- ⚠️ زرّ الفرع من قاعدة البيانات إن وُجد نصّه ورابطه معاً
+                     (hasAction)، وإلا فزرّ التسجيل العام: نصّ بلا رابط يُنتج
+                     زرّاً ميّتاً. --}}
                 <x-ui.button size="lg"
-                             :href="Route::has('auth.register') ? route('auth.register') : '#'"
+                             :href="$branch->hasAction() ? \App\Models\Setting::safeHref($branch->btn_link) : $enrollHref"
                              class="w-full shrink-0 sm:w-auto">
-                    {{ __('public.branch_enroll_action') }}
+                    {{ $branch->hasAction() ? $branch->btn_text : __('public.branch_enroll_action') }}
                 </x-ui.button>
             </div>
 
-            {{-- أربع قيم رقمية — تُبنى من البيانات لا تُكتب يدوياً --}}
+            {{-- أربع قيم رقمية — تُحسب من الصفوف المحمّلة لا تُكتب يدوياً --}}
             <dl class="mt-10 grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-hairline lg:grid-cols-4">
-                @foreach ($stats as $stat)
+                @foreach ($statCards as $stat)
                     <div class="bg-canvas px-5 py-6 text-center">
                         <dt class="order-2 mt-1 text-caption text-stone">{{ $stat['label'] }}</dt>
                         <dd class="num text-h2 font-bold text-ink">{{ $stat['value'] }}</dd>
@@ -100,7 +89,7 @@
                 :title="__('public.branch_subjects_title')"
                 :lede="__('public.branch_subjects_subtitle')" />
 
-            @if (empty($branch['subjects']))
+            @if ($branch->subjects->isEmpty())
                 <div class="tile mt-8">
                     <x-ui.empty-state icon="book"
                                       :title="__('public.branch_subjects_empty_title')"
@@ -113,15 +102,17 @@
                     لا يُمرَّر إطلاقاً (الافتراضي null يُسقط الكتلة).
                 --}}
                 <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    @foreach ($branch['subjects'] as $subject)
+                    @foreach ($branch->subjects as $subject)
                         <x-domain.subject-card
-                            :name="$subject['name']"
-                            :teacher="$subject['teacher']"
-                            :icon="$subject['icon']"
-                            :tone="$subject['tone']"
-                            :lectures-count="$subject['lectures']"
-                            :files-count="$subject['files']"
-                            :href="Route::has('auth.register') ? route('auth.register') : '#'" />
+                            :name="$subject->name"
+                            {{-- أول أستاذ مُسنَد، أو لا شيء: اسم أستاذ مخترع
+                                 أسوأ من خانة فارغة. --}}
+                            :teacher="$subject->teachers->first()?->full_name"
+                            :icon="$subject->icon ?? 'book'"
+                            :tone="$subject->accent_token ?? 'accent'"
+                            :lectures-count="$subject->lectures_count"
+                            :files-count="$subject->library_files_count"
+                            :href="$enrollHref" />
                     @endforeach
                 </div>
             @endif
@@ -136,44 +127,38 @@
                 :title="__('public.branch_teachers_title')"
                 :lede="__('public.branch_teachers_subtitle')" />
 
-            <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                @foreach ($branch['teachers'] as $teacher)
-                    <x-domain.teacher-card
-                        :name="$teacher['name']"
-                        :subject="$teacher['subject']"
-                        :branch="$branch['name']"
-                        :photo="asset($teacher['photo'])"
-                        :initials="$teacher['initials']"
-                        :lectures="$teacher['lectures']"
-                        :tone="$teacher['tone']" />
-                @endforeach
-            </div>
-        </div>
-    </section>
-
-    {{-- دعوة التسجيل --}}
-    <section class="py-16 lg:py-24">
-        <div class="mx-auto max-w-[1280px] px-6">
-            <div class="overflow-hidden rounded-xxl bg-linear-to-bl from-deep-from to-deep-to px-6 py-12 text-center sm:px-12 lg:py-16">
-                <h2 class="text-h2 font-bold text-on-dark">
-                    {{ __('public.branch_enroll_title', ['branch' => $branch['name']]) }}
-                </h2>
-                <p class="measure mx-auto mt-3 text-lead text-on-dark-muted">{{ __('public.branch_enroll_body') }}</p>
-
-                <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                    <x-ui.button variant="on-dark" size="lg"
-                                 :href="Route::has('auth.register') ? route('auth.register') : '#'"
-                                 class="w-full sm:w-auto">
-                        {{ __('public.branch_enroll_action') }}
-                    </x-ui.button>
-
-                    <a href="{{ route('branches.index') }}"
-                       class="inline-flex min-h-11 items-center rounded-full px-5 text-ui font-semibold text-accent-on-dark transition hover:text-on-dark">
-                        {{ __('public.branch_all_branches') }}
-                    </a>
+            @if ($teachers->isEmpty())
+                <div class="tile mt-8">
+                    <x-ui.empty-state icon="user"
+                                      :title="__('public.branch_teachers_empty_title')"
+                                      :body="__('public.branch_teachers_empty_body')" />
                 </div>
-            </div>
+            @else
+                <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                    @foreach ($teachers as $teacher)
+                        <x-domain.teacher-card
+                            :name="$teacher->full_name"
+                            {{-- المادة التي وضعته على هذه الصفحة تحديداً —
+                                 تُلتقط في الكنترولر أثناء التسطيح، لا أول
+                                 مادة له في المنصّة كلها. --}}
+                            :subject="$teacher->branch_subject_name"
+                            :branch="$branch->name"
+                            :photo="$teacher->avatarUrl()"
+                            {{-- بديل الصورة حين لا صورة — الحرفان الأولان من
+                                 الاسم بعد نزع اللقب. --}}
+                            :initials="$teacher->initials()"
+                            :lectures="$teacher->lectures_count ?? 0"
+                            :tone="$branch->accent_token ?? 'accent'" />
+                    @endforeach
+                </div>
+            @endif
         </div>
     </section>
+
+    {{-- 🔴 المكوّن المشترك بدل شريط ثابت — النصّ من إعدادات الأدمن. --}}
+    <x-site.cta-final
+        variant="deep"
+        :secondary-text="__('public.branch_all_branches')"
+        :secondary-link="route('branches.index')" />
 
 </x-layouts.public>

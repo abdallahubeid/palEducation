@@ -89,7 +89,10 @@
                             @can('delete-sliders')
                                 {{-- 🔴 الحذف POST لا رابط: طلب GET يُنفَّذ بجالب
                                      مسبق في المتصفّح أو بزيارة عابرة. --}}
-                                <form method="POST" action="{{ route('admin.sliders.destroy', $slider) }}">
+                                <form method="POST" action="{{ route('admin.sliders.destroy', $slider) }}"
+                                      data-confirm-title="حذف الشريحة؟"
+                                      data-confirm="تنتقل إلى سلّة المحذوفات ويمكن استرجاعها بصورتها."
+                                      data-confirm-action="نعم، احذفها">
                                     @csrf
                                     @method('DELETE')
                                     <x-admin.btn variant="danger">حذف</x-admin.btn>

@@ -5,10 +5,14 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
@@ -140,10 +144,138 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->displayName();
     }
 
-    /** الصورة: المرفوعة أولاً، ثم صورة جوجل. */
+    /*
+    |--------------------------------------------------------------------------
+    | صورة الحساب
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * أصول هذا الحساب — صورة واحدة عملياً.
+     *
+     * 🔴 داخل نطاق جدول media المعلَن: أصول عامة على القرص العام. المنع
+     * القائم يخصّ **المحتوى المدفوع** — لا Lecture ولا LibraryFile يُعرّف
+     * morph هنا أبداً.
+     *
+     * ⚠️ الرابط عامّ لمن يعرفه. هذا سلوك الصور الرمزية في كل تطبيق تقريباً،
+     * لكنه يعني ألّا تُرفع هنا صورة يُفترض أنها خاصّة.
+     */
+    public function media(): MorphMany
+    {
+        return $this->morphMany(Media::class, 'mediable');
+    }
+
+    /** الصورة الواحدة — أوّل أصل بالترتيب. */
+    public function image(): MorphOne
+    {
+        return $this->morphOne(Media::class, 'mediable')
+            ->ofMany('display_order', 'min');
+    }
+
+    /**
+     * رابط الصورة، أو null فيرجع المكوّن إلى الحرف الأول.
+     *
+     * 🔴 الأسبقية معلنة صراحةً وبهذا الترتيب:
+     *   ١) الصورة المرفوعة من شاشة الملف الشخصي (صفّ media) — فعل المستخدم
+     *      المباشر، فيجب أن يغلب كل ما عداه.
+     *   ٢) avatar_path على سجلّ المجال — أصل مبذور من المستودع.
+     *   ٣) google_avatar_url — يأتي من مزوّد الدخول ولا يملك المستخدم تغييره.
+     *
+     * بلا ترتيب معلن، ثلاثة مصادر للصورة نفسها تنحرف ولا أحد يعرف أيّها يظهر.
+     *
+     * ⚠️ يقرأ العلاقة المحمّلة إن وُجدت: بدون ذلك يصير هذا المُلحِق استعلاماً
+     * لكل صفّ في أي قائمة — N+1 مختبئ داخل قراءة خاصيّة.
+     */
+    public function getAvatarUrlAttribute(): ?string
+    {
+        $uploaded = $this->relationLoaded('image') ? $this->image : $this->image()->first();
+
+        if ($uploaded) {
+            return $uploaded->url();
+        }
+
+        if (filled($this->userable?->avatar_path)) {
+            return asset(ltrim($this->userable->avatar_path, '/'));
+        }
+
+        return $this->google_avatar_url;
+    }
+
+    /**
+     * الصورة: المرفوعة أولاً، ثم سجلّ المجال، ثم جوجل.
+     *
+     * ⚠️ مُبقاة كاسم قديم يفوّض إلى المُلحِق — كانت تقرأ avatar_path وحده،
+     * فاستدعاء متبقٍّ لها كان سيتجاهل الصورة المرفوعة بصمت.
+     */
     public function avatar(): ?string
     {
-        return $this->userable?->avatar_path ?? $this->google_avatar_url;
+        return $this->avatar_url;
+    }
+
+    /** هل يملك صورة مرفوعة يمكن حذفها؟ (صورة جوجل ليست ملكه ليحذفها) */
+    public function hasUploadedAvatar(): bool
+    {
+        return $this->image()->exists();
+    }
+
+    /**
+     * يرفع صورة جديدة ويحذف ملف السابقة.
+     *
+     * 🔴 updateOrCreate على العلاقة لا create: للحساب صورة واحدة، وcreate
+     * في كل حفظ يكدّس صفّاً جديداً حتى تصير «الأولى بالترتيب» أيّها أرجعه
+     * الاستعلام صدفةً.
+     */
+    public function syncAvatar(UploadedFile $file): Media
+    {
+        $previous = $this->image?->path;
+
+        // بادئة storage/ ليحلّها asset() عبر الرابط الرمزي — نفس اصطلاح
+        // الشرائح والأخبار.
+        $path = $file->store('avatars', 'public');
+
+        $media = $this->media()->updateOrCreate([], [
+            'path' => 'storage/'.$path,
+            'type' => 'image',
+            'alt_text' => $this->displayName(),
+            'display_order' => 1,
+        ]);
+
+        self::deleteAvatarFile($previous);
+
+        // العلاقة المحمّلة صارت قديمة بعد الكتابة، وأي قراءة لـavatar_url
+        // بعدها في نفس الطلب كانت سترجع المسار السابق.
+        $this->unsetRelation('image');
+
+        return $media;
+    }
+
+    /** يحذف الصورة المرفوعة ويعيد الحساب إلى البديل. */
+    public function clearAvatar(): void
+    {
+        $media = $this->image;
+
+        if (! $media) {
+            return;
+        }
+
+        self::deleteAvatarFile($media->path);
+
+        // forceDelete لا delete: صفّ media محذوف ناعماً يبقى يشغل العلاقة
+        // فيمنع الرجوع إلى البديل، والصورة ليست عنصراً في سلّة المحذوفات.
+        $media->forceDelete();
+
+        $this->unsetRelation('image');
+    }
+
+    /**
+     * ⚠️ الحذف مشروط بالبادئة: الأصول المبذورة تعيش تحت public/images
+     * كملفات مستودع، وحذف أحدها يمسحه من شجرة العمل في كل بيئة ولا يعود.
+     */
+    private static function deleteAvatarFile(?string $path): void
+    {
+        if ($path && str_starts_with($path, 'storage/')) {
+            Storage::disk('public')->delete(str_replace('storage/', '', $path));
+        }
     }
 
     /**

@@ -17,7 +17,7 @@
             {{ __('teacher.profile_public_note') }}
         </x-ui.alert>
 
-        <form data-demo-submit="{{ route('teacher.profile') }}" class="mt-6 flex flex-col gap-6">
+        <form data-demo-submit="{{ route('teacher.profile.edit') }}" class="mt-6 flex flex-col gap-6">
 
             {{-- الصورة --}}
             <section class="tile flex flex-col gap-4 p-5 sm:p-6">
@@ -86,7 +86,7 @@
         </form>
 
         {{-- كلمة المرور — نموذج منفصل عمداً، لا يُحفظ مع بقية الحقول --}}
-        <form data-demo-submit="{{ route('teacher.profile') }}" class="mt-6">
+        <form data-demo-submit="{{ route('teacher.profile.edit') }}" class="mt-6">
             <section class="tile flex flex-col gap-4 p-5 sm:p-6">
                 <h2 class="text-h5 font-semibold text-ink">{{ __('teacher.profile_password_section') }}</h2>
 

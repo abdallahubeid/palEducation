@@ -13,7 +13,7 @@
     $quickActions = [
         ['icon' => 'plus',      'label' => __('teacher.quick_upload_lecture'),   'hint' => __('teacher.quick_upload_lecture_hint'),   'route' => 'teacher.lectures.create'],
         ['icon' => 'folder',    'label' => __('teacher.quick_upload_file'),      'hint' => __('teacher.quick_upload_file_hint'),      'route' => 'teacher.files.create'],
-        ['icon' => 'chart',     'label' => __('teacher.quick_view_performance'), 'hint' => __('teacher.quick_view_performance_hint'), 'route' => 'teacher.performance'],
+        ['icon' => 'chart',     'label' => __('teacher.quick_view_performance'), 'hint' => __('teacher.quick_view_performance_hint'), 'route' => 'teacher.students'],
     ];
 
     $activity = [

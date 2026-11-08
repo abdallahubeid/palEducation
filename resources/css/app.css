@@ -651,3 +651,101 @@
         radial-gradient(85% 65% at 5% 110%, rgb(11 16 74 / 0.08) 0%, transparent 62%),
         linear-gradient(180deg, transparent calc(100% - 120px), var(--color-ground) 100%);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   SweetAlert2 — one dialog shape for the whole admin panel
+   ═══════════════════════════════════════════════════════════════════
+
+   🔴 Wrapped in @layer components on purpose. SweetAlert2's own stylesheet
+   is UNLAYERED, and unlayered CSS beats layered CSS regardless of
+   specificity — so plain rules here would fight the library and win
+   unpredictably, while layered ones stay below it and only fill the gaps
+   the library leaves. This is the same ordering trap that broke QuizOption
+   and Toggle before it was written down.
+
+   Every value is a design token. No hex in this file. */
+@layer components {
+    .swal-panel {
+        border-radius: var(--radius-xl, 1rem);
+        padding: 2rem 1.75rem 1.5rem;
+        background-color: var(--color-canvas);
+        box-shadow: 0 24px 60px -20px rgb(11 16 74 / 0.28);
+        font-family: inherit;
+    }
+
+    .swal-panel__title {
+        color: var(--color-ink);
+        font-size: 1.25rem;
+        font-weight: 700;
+        /* ≥1.3 for Arabic headings — descenders collide below that. */
+        line-height: 1.4;
+        padding: 0;
+    }
+
+    .swal-panel__body {
+        color: var(--color-steel);
+        font-size: 1rem;
+        /* ≥1.75 for Arabic body text. Never letter-spacing: it breaks the
+           joins between characters and stops the word being readable. */
+        line-height: 1.8;
+        letter-spacing: normal;
+        margin-top: 0.75rem;
+    }
+
+    .swal-panel__actions {
+        gap: 0.75rem;
+        margin-top: 1.75rem;
+        width: 100%;
+    }
+
+    .swal-panel__btn {
+        cursor: pointer;
+        border-radius: 0.75rem;
+        padding: 0.625rem 1.25rem;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        transition: filter 150ms ease, background-color 150ms ease;
+        border: 1px solid transparent;
+    }
+
+    .swal-panel__btn:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px rgb(82 95 225 / 0.25);
+    }
+
+    .swal-panel__btn--confirm {
+        background-color: var(--color-accent);
+        color: var(--color-on-primary);
+    }
+
+    .swal-panel__btn--confirm:hover {
+        background-color: var(--color-accent-deep);
+    }
+
+    /* Undo lives on the deny slot: it is neither the primary action nor a
+       cancel, and colouring it like either would misread its weight. */
+    .swal-panel__btn--deny {
+        background-color: var(--color-warn);
+        color: var(--color-on-dark);
+    }
+
+    .swal-panel__btn--deny:hover {
+        filter: brightness(0.95);
+    }
+
+    .swal-panel__btn--cancel {
+        background-color: var(--color-canvas);
+        color: var(--color-steel);
+        border-color: var(--color-hairline-strong);
+    }
+
+    .swal-panel__btn--cancel:hover {
+        background-color: var(--color-surface);
+        color: var(--color-ink);
+    }
+
+    /* The timer bar reads as chrome, not as content. */
+    .swal-panel .swal2-timer-progress-bar {
+        background-color: var(--color-hairline-strong);
+    }
+}

@@ -151,14 +151,27 @@ it('يمنع اعتبار محاضرة بلا مدة خادمية جاهزة ل�
         ->and(makeLecture(['slug' => 'c', 'video_status' => VideoStatus::Processing])->isReadyToPublish())->toBeFalse();
 });
 
-it('يحجب storage_path عن أي تسلسل', function () {
+it('يحجب مسار الملف عن أي تسلسل ويقرأ حجمه من media', function () {
+    /*
+     * 🔁 انعكاس مسجَّل. كانت مقاييس الملف أعمدة على library_files، فصارت في
+     * media بعد توحيد بيانات الملفات. الضمانة نفسها لم تتغيّر: المسار
+     * الداخلي لا يظهر في أي تسلسل — تسريبه يكشف بنية القرص الخاص.
+     */
     $file = LibraryFile::create([
         'subject_id' => $this->subject->id, 'teacher_id' => $this->teacher->id,
-        'title' => 'ملف', 'original_filename' => 'a.pdf',
-        'storage_path' => 'private/secret/a.pdf',
-        'mime_type' => 'application/pdf', 'size_bytes' => 1048576,
+        'title' => 'ملف', 'category' => 'summary',
     ]);
 
-    expect($file->toJson())->not->toContain('private/secret')
-        ->and($file->humanSize())->toBe('1 MB');
+    $file->media()->create([
+        'path' => 'library/secret/a.pdf',
+        'disk' => 'private',
+        'type' => 'document',
+        'original_filename' => 'a.pdf',
+        'mime_type' => 'application/pdf',
+        'size_bytes' => 1048576,
+    ]);
+
+    expect($file->fresh()->toJson())->not->toContain('library/secret')
+        // ⚠️ humanSize بقيت باسمها وتُفوَّض إلى media — الاسم عقد قائم.
+        ->and($file->fresh()->humanSize())->toBe('1 MB');
 });

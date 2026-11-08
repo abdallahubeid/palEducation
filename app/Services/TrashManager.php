@@ -21,11 +21,18 @@ class TrashManager
      *
      * @return Collection<int, array{type:string,type_label:string,id:int,title:string,subtitle:?string,deleted_at:?Carbon,token:string}>
      */
-    public function items(?string $type = null): Collection
+    public function items(?string $type = null, ?array $onlyTypes = null): Collection
     {
         $resources = TrashableResources::all();
 
-        if (TrashableResources::has($type)) {
+        // 🔴 Scoped to what the caller may act on. Permission is per type
+        // now, so an admin who may delete branches but not users must not
+        // even see a trashed user listed.
+        if ($onlyTypes !== null) {
+            $resources = array_intersect_key($resources, array_flip($onlyTypes));
+        }
+
+        if (TrashableResources::has($type) && array_key_exists($type, $resources)) {
             $resources = [$type => $resources[$type]];
         }
 
@@ -52,17 +59,25 @@ class TrashManager
         return $rows->sortByDesc(fn (array $row) => $row['deleted_at']?->timestamp ?? 0)->values();
     }
 
-    public function count(?string $type = null): int
+    public function count(?string $type = null, ?array $onlyTypes = null): int
     {
-        return $this->items($type)->count();
+        return $this->items($type, $onlyTypes)->count();
     }
 
-    /** عدد المحذوفات لكل نوع — لشارات التبويبات. */
-    public function countsByType(): array
+    /**
+     * عدد المحذوفات لكل نوع — لشارات التبويبات.
+     *
+     * @param  array<int, string>|null  $onlyTypes
+     */
+    public function countsByType(?array $onlyTypes = null): array
     {
         $counts = [];
 
-        foreach (TrashableResources::all() as $key => $config) {
+        $resources = $onlyTypes === null
+            ? TrashableResources::all()
+            : array_intersect_key(TrashableResources::all(), array_flip($onlyTypes));
+
+        foreach ($resources as $key => $config) {
             $counts[$key] = ($config['model'])::onlyTrashed()->count();
         }
 
@@ -76,7 +91,16 @@ class TrashManager
         // يُصدر save() أي UPDATE. لا-عملية صامتة.
         $record = TrashableResources::modelFor($type)::onlyTrashed()->find($id);
 
-        return $record ? (bool) $record->restore() : false;
+        if (! $record) {
+            return false;
+        }
+
+        // A type may declare its own restore when the row is only half the
+        // record — a user account is paired with a domain row, and bringing
+        // one back without the other is a broken account, not a restored one.
+        $hook = TrashableResources::all()[$type]['restore'] ?? null;
+
+        return $hook ? (bool) $hook($record) : (bool) $record->restore();
     }
 
     public function forceDestroy(string $type, int|string $id): bool
@@ -89,39 +113,46 @@ class TrashManager
 
         $this->purgeMedia($record);
 
-        return (bool) $record->forceDelete();
+        $hook = TrashableResources::all()[$type]['forceDelete'] ?? null;
+
+        return $hook ? (bool) $hook($record) : (bool) $record->forceDelete();
     }
 
     /**
      * @param  array<int, string>  $tokens  رموز بصيغة "type:id"
+     * @param  array<int, string>|null  $onlyTypes  الأنواع المسموح بها للفاعل
      */
-    public function restoreMany(array $tokens): int
+    public function restoreMany(array $tokens, ?array $onlyTypes = null): int
     {
-        return $this->eachToken($tokens, fn (string $type, string $id) => $this->restore($type, $id));
-    }
-
-    /** @param array<int, string> $tokens */
-    public function forceDestroyMany(array $tokens): int
-    {
-        return $this->eachToken($tokens, fn (string $type, string $id) => $this->forceDestroy($type, $id));
-    }
-
-    /** استعادة كل المعروض في الفلتر الحالي. */
-    public function restoreAll(?string $type = null): int
-    {
-        return $this->restoreMany($this->items($type)->pluck('token')->all());
-    }
-
-    /** تفريغ السلّة — حذف نهائي لكل المعروض في الفلتر الحالي. */
-    public function empty(?string $type = null): int
-    {
-        return $this->forceDestroyMany($this->items($type)->pluck('token')->all());
+        return $this->eachToken($tokens, fn (string $type, string $id) => $this->restore($type, $id), $onlyTypes);
     }
 
     /**
      * @param  array<int, string>  $tokens
+     * @param  array<int, string>|null  $onlyTypes
      */
-    private function eachToken(array $tokens, callable $action): int
+    public function forceDestroyMany(array $tokens, ?array $onlyTypes = null): int
+    {
+        return $this->eachToken($tokens, fn (string $type, string $id) => $this->forceDestroy($type, $id), $onlyTypes);
+    }
+
+    /** استعادة كل المعروض في الفلتر الحالي. */
+    public function restoreAll(?string $type = null, ?array $onlyTypes = null): int
+    {
+        return $this->restoreMany($this->items($type, $onlyTypes)->pluck('token')->all(), $onlyTypes);
+    }
+
+    /** تفريغ السلّة — حذف نهائي لكل المعروض في الفلتر الحالي. */
+    public function empty(?string $type = null, ?array $onlyTypes = null): int
+    {
+        return $this->forceDestroyMany($this->items($type, $onlyTypes)->pluck('token')->all(), $onlyTypes);
+    }
+
+    /**
+     * @param  array<int, string>  $tokens
+     * @param  array<int, string>|null  $onlyTypes
+     */
+    private function eachToken(array $tokens, callable $action, ?array $onlyTypes = null): int
     {
         $done = 0;
 
@@ -131,6 +162,13 @@ class TrashManager
             // نوع غير معروف أو معرّف غير رقمي يُتجاهَل بصمت: الرموز تأتي من
             // نموذج يستطيع المستخدم تحريره، فلا تُثق بها.
             if (! TrashableResources::has($type) || ! ctype_digit((string) $id)) {
+                continue;
+            }
+
+            // 🔴 وكذلك النوع الذي لا يملك الفاعل صلاحيته. الرمز مركّب يصل من
+            // النموذج، فتحديد صفٍّ من نوع محظور لا يُرفَض الطلب كلّه — يُتجاهَل
+            // الصفّ وحده، تماماً كالرمز المزوَّر.
+            if ($onlyTypes !== null && ! in_array($type, $onlyTypes, true)) {
                 continue;
             }
 

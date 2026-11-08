@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Pivots\SubjectTeacher;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -65,8 +68,39 @@ class Subject extends Model
     public function teachers(): BelongsToMany
     {
         return $this->belongsToMany(Teacher::class, 'subject_teacher')
-            ->withPivot(['is_primary', 'assigned_at', 'assigned_by'])
-            ->withCasts(['is_primary' => 'boolean', 'assigned_at' => 'datetime']);
+            ->using(SubjectTeacher::class)
+            ->withPivot(['is_primary', 'assigned_at', 'assigned_by']);
+    }
+
+    /**
+     * صورة الغلاف — أصل تسويقي عام كبقية ما في جدول media.
+     *
+     * 🔴 الغلاف صورة عرض لا محتوى مدفوع. المنع القائم يخصّ **المحتوى** نفسه:
+     * lectures و library_files تبقى على القرص الخاص خلف فحص صلاحية ولا
+     * تُعرّف morph هنا أبداً.
+     *
+     * ⚠️ التصريح بـmedia() يُدخل المادة تلقائياً في TrashManager::purgeMedia،
+     * وهو ما يمنع الحذف النهائي من ترك صفوف وملفات يتيمة — mediable_id بلا
+     * مفتاح أجنبي فلا تتالي.
+     */
+    public function media(): MorphMany
+    {
+        return $this->morphMany(Media::class, 'mediable');
+    }
+
+    /** الغلاف الواحد — أوّل أصل بالترتيب. */
+    public function image(): MorphOne
+    {
+        return $this->morphOne(Media::class, 'mediable')
+            ->ofMany('display_order', 'min');
+    }
+
+    /** رابط الغلاف، أو null فترجع البطاقة إلى أيقونتها. */
+    public function getCoverUrlAttribute(): ?string
+    {
+        $cover = $this->relationLoaded('image') ? $this->image : $this->image()->first();
+
+        return $cover?->url();
     }
 
     public function lectures(): HasMany

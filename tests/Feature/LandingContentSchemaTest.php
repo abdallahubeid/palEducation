@@ -10,6 +10,8 @@ use App\Models\Media;
 use App\Models\Setting;
 use App\Models\Slider;
 use App\Models\Step;
+use App\Models\Subject;
+use App\Models\Teacher;
 use App\Models\Testimonial;
 use Illuminate\Database\QueryException;
 
@@ -99,11 +101,45 @@ it('لا يُعرّف علاقة وسائط على الخطوات ولا الم�
     }
 });
 
-it('لا يفتح للمحتوى المدفوع أي طريق إلى جدول media العام', function () {
-    // 🔴 lectures و library_files على القرص الخاص خلف فحص صلاحية.
-    // إرفاقهما هنا ينقلهما إلى قرص عام = تسريب.
-    expect(method_exists(Lecture::class, 'media'))->toBeFalse()
-        ->and(method_exists(LibraryFile::class, 'media'))->toBeFalse();
+it('لا يفتح للمحتوى المدفوع أي طريق إلى قرص عام', function () {
+    /*
+     * 🔁 انعكاس مسجَّل. كان الحارس **بنيوياً**: لا LibraryFile يُعرّف media()
+     * إطلاقاً، فيستحيل وصول محتوى مدفوع إلى جدول عام. وحّد القرار المعماري
+     * بيانات الملفات في media، فسقط ذلك الحارس ووجب أن يحلّ محلّه أقوى منه
+     * لا أضعف.
+     *
+     * الحارس الجديد ثلاثي، وهذا الاختبار يثبته كاملاً:
+     *   ١) صفّ ملف المكتبة يعلن قرصه `private`
+     *   ٢) Media::url() **يرفض** بناء رابط عامّ له ويُرجع null
+     *   ٣) Lecture ما زال بلا media() — الفيديو عند مزوّد خارجي لا عندنا
+     */
+    expect(method_exists(Lecture::class, 'media'))->toBeFalse();
+
+    $branch = Branch::create(['name' => 'علمي', 'slug' => 'sci-guard', 'display_order' => 9]);
+    $subject = Subject::create([
+        'branch_id' => $branch->id, 'name' => 'مادة', 'slug' => 'guard-subject', 'is_published' => true,
+    ]);
+    $teacher = Teacher::create(['full_name' => 'أ. حارس', 'is_publicly_listed' => false]);
+
+    $file = LibraryFile::create([
+        'subject_id' => $subject->id, 'teacher_id' => $teacher->id,
+        'title' => 'ملف مدفوع', 'category' => 'summary',
+    ]);
+
+    $media = $file->media()->create([
+        'path' => 'library/1/secret.pdf',
+        'disk' => 'private',
+        'type' => MediaType::Document,
+        'mime_type' => 'application/pdf',
+        'size_bytes' => 1024,
+    ]);
+
+    expect($media->disk)->toBe('private')
+        ->and($media->isPrivate())->toBeTrue()
+        // 🔴 لبّ الضمانة: لا رابط عامّ لمحتوى مدفوع مهما استُدعيت الدالة.
+        ->and($media->url())->toBeNull()
+        // ولا يعيش تحت public/ أصلاً.
+        ->and($media->path)->not->toStartWith('storage/');
 });
 
 // ── التقييم ─────────────────────────────────────────────────────
