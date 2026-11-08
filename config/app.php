@@ -94,9 +94,11 @@ return [
     |
     */
 
-    'locale' => env('APP_LOCALE', 'en'),
+    // 🔴 الافتراضي عربي: lang/ar هو مجلد الترجمة الوحيد. بيئة بلا .env
+    // (كـVercel) كانت تقع على en فتُعرَض مفاتيح الترجمة خاماً واتجاه LTR.
+    'locale' => env('APP_LOCALE', 'ar'),
 
-    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
+    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'ar'),
 
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
 
