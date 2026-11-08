@@ -133,9 +133,14 @@ Route::get('/newsletter/unsubscribed', [UnsubscribeController::class, 'done'])
 | يعرض كل مكوّن في كل حالاته وفي الاتجاهين، وهو سطح العمل الذي
 | صُمّمت عليه مكوّنات النماذج ذات الحالة (Select/Checkbox/Radio/Password).
 |
-| ⚠️ يجب استثناؤه أو حجبه قبل أي نشر إنتاجي — noindex وحدها لا تكفي.
+| 🔴 محجوب في الإنتاج (404): noindex وحدها لا تكفي، والمسار يبقى مسجَّلاً
+| باسمه لأن قوالب أخرى تستدعي route('styleguide').
 */
-Route::view('/styleguide', 'pages.styleguide')->name('styleguide');
+Route::get('/styleguide', function () {
+    abort_if(app()->isProduction(), 404);
+
+    return view('pages.styleguide');
+})->name('styleguide');
 
 /*
 |--------------------------------------------------------------------------

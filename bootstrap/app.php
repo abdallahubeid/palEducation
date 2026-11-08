@@ -27,6 +27,11 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // 🔴 خلف وكيل عكسي (Vercel وغيره): بدون الثقة بترويسات X-Forwarded-*
+        // يرى Laravel الطلب http فيولّد روابط الأصول والتوقيعات بـhttp،
+        // فيحجب المتصفّح الأنماط والسكربتات كمحتوى مختلط.
+        $middleware->trustProxies(at: '*');
+
         $middleware->redirectGuestsTo(fn () => route('auth.login'));
 
         // 🔴 spatie/laravel-permission لا يسجّل هذه الأسماء تلقائياً — تُعلَن
